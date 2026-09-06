@@ -459,20 +459,50 @@ function openDraftEditorModal() {
   const editorArea = document.getElementById('draft-editor-area');
   editorArea.innerHTML = draftDoc.currentContent || '';
 
+  // 에디터 내 커서 위치(Range) 실시간 저장 이벤트 등록
+  editorArea.addEventListener('keyup', saveEditorSelection);
+  editorArea.addEventListener('mouseup', saveEditorSelection);
+  editorArea.addEventListener('focus', saveEditorSelection);
+
   document.getElementById('editor-modal').style.display = 'flex';
 }
 
 function closeDraftEditorModal() {
   if (confirm('작성 중인 임시 내용이 파기됩니다. 닫으시겠습니까?')) {
     draftDoc = null;
+    savedEditorRange = null;
     document.getElementById('editor-modal').style.display = 'none';
+  }
+}
+
+// 에디터 커서(Range) 보존
+let savedEditorRange = null;
+
+function saveEditorSelection() {
+  const sel = window.getSelection();
+  if (sel.rangeCount > 0) {
+    const range = sel.getRangeAt(0);
+    const editorArea = document.getElementById('draft-editor-area');
+    if (editorArea.contains(range.commonAncestorContainer)) {
+      savedEditorRange = range.cloneRange();
+    }
+  }
+}
+
+function restoreEditorSelection() {
+  if (savedEditorRange) {
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(savedEditorRange);
   }
 }
 
 // 리치 텍스트 서식 명령
 function formatDoc(cmd, val = null) {
   document.getElementById('draft-editor-area').focus();
+  restoreEditorSelection();
   document.execCommand(cmd, false, val);
+  saveEditorSelection();
 }
 
 // 조항 추가 모달 열기 (제목/본문 분리 입력, 다음 번호 자동 감지)
@@ -528,11 +558,17 @@ function confirmAddArticle() {
   const artTitle = document.getElementById('modal-art-title').value.trim() || '조항 제목';
   const rawBody = document.getElementById('modal-art-body').value.trim() || '① 여기에 세부 절차 내용을 입력하십시오.';
 
-  // 본문의 여러 줄(항, 호)을 HTML <p> 단위로 깔끔하게 변환
+  // 본문의 여러 줄(항, 호)을 HTML <p> 단위로 변환 (기존에 삽입된 <a> 링크 태그는 보존)
   const bodyParagraphs = rawBody.split('\n')
     .map(line => line.trim())
     .filter(line => line.length > 0)
-    .map(line => `<p class="article-body">${escapeHtml(line)}</p>`)
+    .map(line => {
+      // 만약 링크 태그(<a ...)가 포함되어 있으면 태그를 보존하고, 없으면 escapeHtml 적용
+      if (/<a\s+[^>]*href=/i.test(line)) {
+        return `<p class="article-body">${line}</p>`;
+      }
+      return `<p class="article-body">${escapeHtml(line)}</p>`;
+    })
     .join('\n');
 
   // 조항 번호 ID 추출 (예: 제5조 -> art-5)
@@ -924,10 +960,17 @@ async function deleteDocumentById(docId, docTitle) {
 let pickerSelectedDoc = null;
 let pickerSelectedClause = null;
 let pickerLoadedDocsCache = {};
+let pickerTargetContext = 'editor'; // 'editor' 또는 'modal-art-body'
 
-async function openLinkPickerModal() {
+async function openLinkPickerModal(targetContext = 'editor') {
+  pickerTargetContext = targetContext;
   pickerSelectedDoc = null;
   pickerSelectedClause = null;
+
+  // 에디터에서 호출한 경우 현재 커서 위치 보존
+  if (targetContext === 'editor') {
+    saveEditorSelection();
+  }
 
   document.getElementById('link-picker-search').value = '';
   document.getElementById('link-target-display').innerText = '선택되지 않음';
@@ -1109,7 +1152,7 @@ function filterLinkPicker() {
   }
 }
 
-// 선택 완료 및 에디터 본문에 하이퍼링크 삽입
+// 선택 완료 및 에디터 본문(또는 신규 조항 모달 textarea)에 하이퍼링크 삽입
 function confirmInsertLink() {
   if (!pickerSelectedDoc) {
     alert('연계할 규정을 선택해 주십시오.');
@@ -1130,8 +1173,36 @@ function confirmInsertLink() {
 
   const linkHtml = `<a href="${targetUrl}" class="ref-link" style="color:#1d4ed8; text-decoration:underline; font-weight:600;" target="_self" title="${escapeHtml(pickerSelectedDoc.title)} 바로가기">${escapeHtml(displayText)}</a> `;
 
-  // 리치 에디터에 안전하게 링크 HTML 삽입
-  formatDoc('insertHTML', linkHtml);
+  // 1. 신규 조항 추가 모달(textarea)에서 호출된 경우
+  if (pickerTargetContext === 'modal-art-body') {
+    const textarea = document.getElementById('modal-art-body');
+    if (textarea) {
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const val = textarea.value;
+      const insertText = linkHtml + ' ';
+      textarea.value = val.substring(0, start) + insertText + val.substring(end);
+      textarea.focus();
+      const nextPos = start + insertText.length;
+      textarea.setSelectionRange(nextPos, nextPos);
+    }
+  } else {
+    // 2. 메인 웹 에디터(contenteditable)에서 호출된 경우
+    const editorArea = document.getElementById('draft-editor-area');
+    editorArea.focus();
+
+    // 저장된 커서 위치가 유효하면 해당 위치에 삽입, 없으면 맨 끝에 안전 추가
+    if (savedEditorRange) {
+      restoreEditorSelection();
+      try {
+        document.execCommand('insertHTML', false, linkHtml);
+      } catch (e) {
+        editorArea.insertAdjacentHTML('beforeend', ' ' + linkHtml);
+      }
+    } else {
+      editorArea.insertAdjacentHTML('beforeend', ' ' + linkHtml);
+    }
+  }
 
   closeLinkPickerModal();
 }
