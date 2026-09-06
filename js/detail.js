@@ -38,6 +38,9 @@ async function loadDocument(docId, targetClause, keyword) {
     // 즐겨찾기 상태 갱신
     updateBookmarkButton();
 
+    // 최고 관리자 도구 노출 여부 제어
+    updateSuperAdminToolbar();
+
     // 특정 조항 딥링크 스크롤
     if (targetClause) {
       setTimeout(() => {
@@ -51,6 +54,17 @@ async function loadDocument(docId, targetClause, keyword) {
     }
   } catch (e) {
     alert('문서를 불러올 수 없습니다: ' + e.message);
+  }
+}
+
+function updateSuperAdminToolbar() {
+  const saDropdown = document.getElementById('super-admin-dropdown');
+  if (saDropdown) {
+    saDropdown.style.display = AUTH.isSuperAdmin() ? 'inline-block' : 'none';
+  }
+  const editBtn = document.getElementById('btn-edit-doc');
+  if (editBtn) {
+    editBtn.style.display = AUTH.isAdmin() ? 'inline-flex' : 'none';
   }
 }
 
@@ -173,29 +187,80 @@ function highlightKeyword(keyword) {
 }
 
 // ----------------------------------------------------------------
-// [보안 인쇄 및 워터마크, 인쇄 로그]
+// [최고 관리자 전용 메뉴 및 인쇄/다운로드 제어]
 // ----------------------------------------------------------------
-async function triggerSecurityPrint() {
+function toggleSuperAdminMenu() {
+  const menu = document.getElementById('menu-superadmin');
+  if (menu) {
+    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+  }
+}
+
+// 외부 클릭 시 드롭다운 닫기
+document.addEventListener('click', (e) => {
+  const dropdown = document.getElementById('super-admin-dropdown');
+  if (dropdown && !dropdown.contains(e.target)) {
+    const menu = document.getElementById('menu-superadmin');
+    if (menu) menu.style.display = 'none';
+  }
+});
+
+/** 1. 최고 관리자 전용: 공식 관리본 인쇄 (워터마크 완전 삭제 & 관리본 도장) */
+async function triggerOfficialControlledPrint() {
+  if (!AUTH.isSuperAdmin()) {
+    alert('관리본(워터마크 삭제) 인쇄는 최고 관리자만 가능합니다.');
+    return;
+  }
+
   const user = AUTH.getUser();
-  const userEmail = user ? user.email : '비회원(외부접속)';
+  const userEmail = user ? user.email : '최고관리자';
   const now = new Date();
   const timeStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
 
-  // 1. 인쇄용 상단 헤더 텍스트 주입
-  const headerMeta = document.getElementById('print-watermark-text');
-  if (headerMeta) {
-    headerMeta.innerText = `출력자: ${userEmail} | 출력일시: ${timeStr} | 문서보안: 비제어본`;
+  // 워터마크 레이어 완전 초기화 (배경 워터마크 삭제)
+  const watermarkLayer = document.getElementById('print-watermark-layer');
+  if (watermarkLayer) {
+    watermarkLayer.style.backgroundImage = 'none';
   }
 
-  // 2. 대각선 45도 반투명 워터마크 캔버스 생성 및 배경 이미지 적용
+  // 상단 헤더: 공식 관리본 표기
+  const headerMeta = document.getElementById('print-watermark-text');
+  if (headerMeta) {
+    headerMeta.innerHTML = `<strong style="color:#d9480f;font-size:11pt;">[관리본 - CONTROLLED COPY]</strong> | 출력자: ${userEmail} | 출력일시: ${timeStr} | (주)세방테크 KOSHA-MS`;
+  }
+
+  // 감사 로그 전송
+  await API.logPrint(currentDoc.id, currentDoc.title, `${userEmail} [관리본 출력 / 워터마크 제외]`);
+
+  // 드롭다운 닫기 및 인쇄 창 호출
+  const menu = document.getElementById('menu-superadmin');
+  if (menu) menu.style.display = 'none';
+
+  window.print();
+}
+
+/** 2. 일반 사용자용: 비관리본 인쇄 (대각선 워터마크 강제 유지) */
+async function triggerSecurityPrint() {
+  const user = AUTH.getUser();
+  const userEmail = user ? user.email : '일반사용자(비관리본)';
+  const now = new Date();
+  const timeStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+
+  // 1. 인쇄용 상단 헤더 텍스트 주입 (비관리본 명시)
+  const headerMeta = document.getElementById('print-watermark-text');
+  if (headerMeta) {
+    headerMeta.innerText = `출력자: ${userEmail} | 출력일시: ${timeStr} | 문서보안: 비관리본 (UNCONTROLLED COPY)`;
+  }
+
+  // 2. 대각선 45도 반투명 워터마크 캔버스 생성 및 배경 이미지 강제 적용
   const canvas = document.createElement('canvas');
-  canvas.width = 450;
+  canvas.width = 460;
   canvas.height = 300;
   const ctx = canvas.getContext('2d');
   ctx.rotate(-25 * Math.PI / 180);
   ctx.font = 'bold 15px "Pretendard", "Malgun Gothic", sans-serif';
   ctx.fillStyle = '#000000';
-  ctx.fillText('(주)세방테크 KOSHA-MS 비제어본', -30, 160);
+  ctx.fillText('(주)세방테크 KOSHA-MS [비관리본]', -30, 160);
   ctx.font = '12px "Pretendard", "Malgun Gothic", sans-serif';
   ctx.fillText(`출력자: ${userEmail}`, -30, 185);
   ctx.fillText(`출력일시: ${timeStr}`, -30, 205);
@@ -206,10 +271,79 @@ async function triggerSecurityPrint() {
   }
 
   // 3. 백엔드로 인쇄 감사 로그 비동기 전송
-  await API.logPrint(currentDoc.id, currentDoc.title, userEmail);
+  await API.logPrint(currentDoc.id, currentDoc.title, `${userEmail} [비관리본 출력]`);
 
   // 4. 인쇄 다이얼로그 호출
   window.print();
+}
+
+/** 3. 최고 관리자 전용: Word (.doc/.docx) 다운로드 */
+function downloadAsDocx() {
+  if (!AUTH.isSuperAdmin()) {
+    alert('DOCX 다운로드는 최고 관리자만 가능합니다.');
+    return;
+  }
+
+  const docHtml = `
+    <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+    <head><meta charset='utf-8'><title>${currentDoc.title}</title>
+    <style>
+      body { font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; line-height: 1.7; font-size: 11pt; color: #111; }
+      table.doc-header-tbl { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
+      table.doc-header-tbl th, table.doc-header-tbl td { border: 1px solid #333; padding: 7px 10px; font-size: 10pt; }
+      table.doc-header-tbl th { background-color: #f1f3f5; }
+      h1.main-title { text-align: center; font-size: 22pt; margin: 30px 0 20px 0; color: #194a9a; border-bottom: 2px solid #194a9a; padding-bottom: 10px; }
+      .doc-article { margin-bottom: 20px; border-bottom: 1px dashed #ccc; padding-bottom: 12px; }
+      .article-title { font-size: 13pt; color: #0b3a75; font-weight: bold; margin-bottom: 6px; }
+      .art-num { color: #d9480f; font-weight: bold; }
+      .article-body { text-indent: 10px; line-height: 1.8; margin-bottom: 5px; }
+      .rev-badge { color: #1864ab; font-size: 9pt; }
+    </style></head>
+    <body>
+      <table class="doc-header-tbl">
+        <tr>
+          <th colspan="4" style="text-align:center;font-size:13pt;background-color:#194a9a;color:#ffffff;font-weight:bold;">
+            (주)세방테크 안전보건경영시스템 표준 [관리본]
+          </th>
+        </tr>
+        <tr>
+          <th width="20%">문서번호</th><td width="30%">${currentDoc.docNumber || '-'}</td>
+          <th width="20%">제·개정구분</th><td width="30%">${currentDoc.currentVersion || '-'}</td>
+        </tr>
+        <tr>
+          <th>시행일자</th><td>${currentDoc.effectiveDate || '-'}</td>
+          <th>주관부서</th><td>${currentDoc.department || '-'}</td>
+        </tr>
+      </table>
+      <h1 class="main-title">${currentDoc.title}</h1>
+      <div>${currentDoc.currentContent || ''}</div>
+    </body></html>
+  `;
+
+  const blob = new Blob(['\ufeff', docHtml], { type: 'application/msword;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `[세방테크]_${currentDoc.docNumber}_${currentDoc.title}_(${currentDoc.currentVersion}).doc`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  // 메뉴 닫기
+  const menu = document.getElementById('menu-superadmin');
+  if (menu) menu.style.display = 'none';
+}
+
+/** 4. 최고 관리자 전용: PDF 다운로드 (워터마크 제외 클린 PDF) */
+function downloadAsPdf() {
+  if (!AUTH.isSuperAdmin()) {
+    alert('PDF 다운로드는 최고 관리자만 가능합니다.');
+    return;
+  }
+  // 워터마크 없는 공식 관리본 인쇄 트리거 후 대상에서 "PDF로 저장" 선택 유도
+  alert("안내: 인쇄 다이얼로그 창에서 [대상: PDF로 저장]을 선택하시면 워터마크가 없는 고화질 클린 PDF로 다운로드됩니다.");
+  triggerOfficialControlledPrint();
 }
 
 // ----------------------------------------------------------------

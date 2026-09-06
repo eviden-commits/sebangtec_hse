@@ -35,11 +35,37 @@
       <span class="version-tag" id="doc-ver-tag">Rev.3</span>
     </div>
     <div class="toolbar-right">
-      <button class="tool-btn" onclick="triggerSecurityPrint()"><i class="fa-solid fa-print"></i> 보안 인쇄</button>
+      <!-- 일반 사용자: 비관리본 보안 인쇄 (워터마크 강제) -->
+      <button class="tool-btn" id="btn-user-print" onclick="triggerSecurityPrint()" title="워터마크가 강제 합성되는 비관리본으로 인쇄합니다.">
+        <i class="fa-solid fa-print"></i> 보안 인쇄 (비관리본)
+      </button>
+
+      <!-- Super Admin 전용 도구 (워터마크 삭제/관리본 인쇄, DOCX/PDF 다운로드) -->
+      <div class="dropdown super-admin-only" id="super-admin-dropdown" style="display:none;">
+        <button type="button" class="tool-btn super-btn" onclick="toggleSuperAdminMenu()" title="최고 관리자 전용 문서 제어 기능">
+          <i class="fa-solid fa-crown"></i> 관리자 문서 제어 <i class="fa-solid fa-caret-down"></i>
+        </button>
+        <div class="dropdown-menu" id="menu-superadmin" style="display:none;">
+          <a href="javascript:void(0)" onclick="triggerOfficialControlledPrint()">
+            <i class="fa-solid fa-stamp" style="color:#d9480f;"></i> <strong>관리본 인쇄 (워터마크 삭제)</strong>
+          </a>
+          <a href="javascript:void(0)" onclick="downloadAsDocx()">
+            <i class="fa-solid fa-file-word" style="color:#1864ab;"></i> Word (DOCX) 다운로드
+          </a>
+          <a href="javascript:void(0)" onclick="downloadAsPdf()">
+            <i class="fa-solid fa-file-pdf" style="color:#e03131;"></i> PDF 다운로드 (클린 문서)
+          </a>
+        </div>
+      </div>
+
       <button class="tool-btn" onclick="copyShareUrl()"><i class="fa-solid fa-share-nodes"></i> URL 공유</button>
       <button class="tool-btn" id="btn-bookmark" onclick="toggleBookmark()"><i class="fa-regular fa-star"></i> 즐겨찾기</button>
       <button class="tool-btn" onclick="openRevisionHistoryModal()"><i class="fa-solid fa-clock-rotate-left"></i> 개정이력/신구대조</button>
-      <button class="tool-btn admin-only" id="btn-edit-doc" style="display:none;" onclick="openDraftEditorModal()"><i class="fa-solid fa-pen-to-square"></i> 규정 수정·개정</button>
+      
+      <!-- Super Admin & Admin 전용 규정 제/개정 (쓰기 모드) -->
+      <button class="tool-btn admin-only btn-write-mode" id="btn-edit-doc" style="display:none;" onclick="openDraftEditorModal()">
+        <i class="fa-solid fa-file-pen"></i> 규정 제·개정 (쓰기 모드)
+      </button>
     </div>
   </div>
 
