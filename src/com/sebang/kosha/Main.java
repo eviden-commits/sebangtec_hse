@@ -171,6 +171,19 @@ public class Main {
                 return;
             }
 
+            // DELETE /api/documents/{id} (규정 폐지/삭제)
+            if ("DELETE".equalsIgnoreCase(method) && path.startsWith("/api/documents/")) {
+                String docId = path.substring("/api/documents/".length()).trim();
+                Path filePath = DOCS_DIR.resolve(docId + ".json");
+                if (Files.exists(filePath)) {
+                    Files.delete(filePath);
+                    sendJsonResponse(exchange, 200, "{\"success\":true,\"message\":\"규정이 삭제/폐지되었습니다.\"}");
+                } else {
+                    sendJsonResponse(exchange, 404, "{\"error\":\"Document not found\"}");
+                }
+                return;
+            }
+
             sendJsonResponse(exchange, 405, "{\"error\":\"Method Not Allowed\"}");
         }
     }

@@ -210,27 +210,96 @@ body {
   overflow-y: auto;
   flex-shrink: 0;
 }
-.tree-header, .clause-index-header {
+.tree-header {
+  padding: 8px 15px;
+  background-color: #edf2f7;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 13px;
+  color: #4a5568;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.clause-index-header {
   padding: 10px 15px;
   background-color: #edf2f7;
   border-bottom: 1px solid var(--border-color);
   font-size: 13px;
   color: #4a5568;
 }
+.btn-tree-add {
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: background-color 0.15s;
+}
+.btn-tree-add:hover {
+  background-color: var(--primary-dark);
+}
 .tree-body {
   padding: 12px;
   border-bottom: 1px solid var(--border-color);
 }
 .tree-node {
-  padding: 6px 10px;
+  padding: 6px 8px;
   border-radius: 4px;
   margin-bottom: 4px;
   cursor: pointer;
   font-size: 13px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
   color: #333;
+  position: relative;
+}
+.tree-node .node-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tree-node .node-actions {
+  display: none;
+  align-items: center;
+  gap: 4px;
+}
+.tree-node:hover .node-actions {
+  display: inline-flex;
+}
+.btn-node-opt {
+  background: white;
+  border: 1px solid #cbd5e1;
+  color: #64748b;
+  width: 22px;
+  height: 22px;
+  border-radius: 3px;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-node-opt:hover {
+  background-color: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+.btn-node-opt.opt-del:hover {
+  background-color: #e03131;
+  color: white;
+  border-color: #e03131;
 }
 .tree-node:hover {
   background-color: var(--primary-light);
@@ -242,8 +311,8 @@ body {
   color: var(--primary-dark);
   border-left: 3px solid var(--primary);
 }
-.tree-node.depth-1 { margin-left: 15px; }
-.tree-node.depth-2 { margin-left: 30px; font-size: 12px; }
+.tree-node.depth-1 { margin-left: 14px; }
+.tree-node.depth-2 { margin-left: 28px; font-size: 12px; }
 
 .clause-nav-list {
   list-style: none;

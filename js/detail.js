@@ -99,42 +99,89 @@ function getCategoryName(cat) {
   return '사내 표준';
 }
 
-// 좌측 표준 체계 트리 렌더링
+// 좌측 표준 체계 트리 렌더링 (+ 자식 규정 추가 및 폐지 기능 연계)
 function renderHierarchyTree(currentDocId) {
   const treeArea = document.getElementById('hierarchy-tree-area');
   if (!treeArea) return;
   treeArea.innerHTML = '';
 
+  const isAdminUser = AUTH.isAdmin();
+
+  // 트리 헤더의 전체 추가 버튼 노출 상태 동기화
+  const addBtn = document.querySelector('.btn-tree-add');
+  if (addBtn) {
+    addBtn.style.display = isAdminUser ? 'inline-flex' : 'none';
+  }
+
   // 매뉴얼 찾기 (최상위)
   const manuals = allDocs.filter(d => d.category === 'MANUAL');
 
   manuals.forEach(m => {
-    const mNode = document.createElement('div');
-    mNode.className = `tree-node depth-0 ${m.id === currentDocId ? 'active' : ''}`;
-    mNode.innerHTML = `<i class="fa-solid fa-folder-open"></i> <span>${m.title}</span>`;
-    mNode.onclick = () => location.href = `detail.html?id=${m.id}`;
+    const mNode = createTreeNodeElement(m, 0, currentDocId, isAdminUser, 'PROCEDURE');
     treeArea.appendChild(mNode);
 
     // 하부 절차서들
     const procs = allDocs.filter(d => d.parentId === m.id || (m.childrenIds && m.childrenIds.includes(d.id)));
     procs.forEach(p => {
-      const pNode = document.createElement('div');
-      pNode.className = `tree-node depth-1 ${p.id === currentDocId ? 'active' : ''}`;
-      pNode.innerHTML = `<i class="fa-solid fa-file-lines"></i> <span>${p.title}</span>`;
-      pNode.onclick = () => location.href = `detail.html?id=${p.id}`;
+      const pNode = createTreeNodeElement(p, 1, currentDocId, isAdminUser, 'INSTRUCTION');
       treeArea.appendChild(pNode);
 
       // 하부 지침서들
       const insts = allDocs.filter(d => d.parentId === p.id || (p.childrenIds && p.childrenIds.includes(d.id)));
       insts.forEach(ins => {
-        const insNode = document.createElement('div');
-        insNode.className = `tree-node depth-2 ${ins.id === currentDocId ? 'active' : ''}`;
-        insNode.innerHTML = `<i class="fa-solid fa-file-code"></i> <span>${ins.title}</span>`;
-        insNode.onclick = () => location.href = `detail.html?id=${ins.id}`;
+        const insNode = createTreeNodeElement(ins, 2, currentDocId, isAdminUser, null);
         treeArea.appendChild(insNode);
       });
     });
   });
+
+  // 상위가 지정되지 않은 기타 절차서/지침서가 있는 경우 처리
+  const assignedIds = new Set([
+    ...manuals.map(d => d.id),
+    ...manuals.flatMap(m => allDocs.filter(d => d.parentId === m.id || (m.childrenIds && m.childrenIds.includes(d.id))).map(d => d.id)),
+    ...allDocs.filter(d => d.category === 'INSTRUCTION').map(d => d.id)
+  ]);
+  const unassigned = allDocs.filter(d => !assignedIds.has(d.id));
+  if (unassigned.length > 0) {
+    unassigned.forEach(u => {
+      const uNode = createTreeNodeElement(u, 1, currentDocId, isAdminUser, null);
+      treeArea.appendChild(uNode);
+    });
+  }
+}
+
+// 트리 노드 엘리먼트 생성 헬퍼
+function createTreeNodeElement(doc, depth, currentDocId, isAdminUser, childCategoryToAdd) {
+  const node = document.createElement('div');
+  node.className = `tree-node depth-${depth} ${doc.id === currentDocId ? 'active' : ''}`;
+
+  let iconHtml = '<i class="fa-solid fa-file-lines"></i>';
+  if (depth === 0) iconHtml = '<i class="fa-solid fa-folder-open"></i>';
+  else if (depth === 2) iconHtml = '<i class="fa-solid fa-file-code"></i>';
+
+  let actionsHtml = '';
+  if (isAdminUser) {
+    actionsHtml = '<div class="node-actions">';
+    if (childCategoryToAdd) {
+      const childName = childCategoryToAdd === 'PROCEDURE' ? '절차서' : '지침서';
+      actionsHtml += `<button type="button" class="btn-node-opt" onclick="event.stopPropagation(); openNewDocModal('${childCategoryToAdd}', '${doc.id}')" title="하위 ${childName} 추가"><i class="fa-solid fa-plus"></i></button>`;
+    }
+    // 최상위 매뉴얼(MAN-KOSHA-01)은 안전을 위해 폐지 버튼 제외
+    if (doc.id !== 'MAN-KOSHA-01') {
+      actionsHtml += `<button type="button" class="btn-node-opt opt-del" onclick="event.stopPropagation(); deleteDocumentById('${doc.id}', '${escapeHtml(doc.title)}')" title="규정 폐지/삭제"><i class="fa-solid fa-trash-can"></i></button>`;
+    }
+    actionsHtml += '</div>';
+  }
+
+  node.innerHTML = `
+    <div class="node-content" onclick="location.href='detail.html?id=${doc.id}'">
+      ${iconHtml}
+      <span title="${escapeHtml(doc.title)}">${escapeHtml(doc.title)}</span>
+    </div>
+    ${actionsHtml}
+  `;
+
+  return node;
 }
 
 // 조항 목차 점프 리스트 생성
@@ -680,4 +727,197 @@ function escapeHtml(str) {
 function highlightChanges(oldText, newText) {
   if (oldText === newText) return newText;
   return `<span class="diff-add">${newText}</span>`;
+}
+
+// ----------------------------------------------------------------
+// [모달 4] 신규 절차서 / 지침서 추가 & 폐지 관리 로직
+// ----------------------------------------------------------------
+function openNewDocModal(targetCategory = 'PROCEDURE', parentId = null) {
+  if (!AUTH.isAdmin()) {
+    alert('규정 제정 및 추가는 관리자 권한이 필요합니다.');
+    return;
+  }
+
+  const catSelect = document.getElementById('new-doc-category');
+  catSelect.value = targetCategory;
+
+  updateParentOptions(targetCategory, parentId);
+
+  // 기본값 설정
+  document.getElementById('new-doc-title').value = '';
+  document.getElementById('new-doc-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('new-doc-dept').value = '품질안전보건실';
+  document.getElementById('new-doc-summary').value = 'KOSHA-MS 안전보건경영체계 고도화에 따른 신규 규정 제정';
+
+  // 추천 문서번호 설정
+  suggestDocNumber(targetCategory);
+
+  document.getElementById('new-doc-modal').style.display = 'flex';
+  setTimeout(() => {
+    document.getElementById('new-doc-title').focus();
+  }, 100);
+}
+
+function closeNewDocModal() {
+  document.getElementById('new-doc-modal').style.display = 'none';
+}
+
+function onNewDocCategoryChange() {
+  const cat = document.getElementById('new-doc-category').value;
+  updateParentOptions(cat, null);
+  suggestDocNumber(cat);
+}
+
+function updateParentOptions(category, selectedParentId) {
+  const parentSelect = document.getElementById('new-doc-parent');
+  parentSelect.innerHTML = '';
+
+  if (category === 'MANUAL') {
+    const opt = document.createElement('option');
+    opt.value = '';
+    opt.textContent = '(최상위 매뉴얼 - 상위 없음)';
+    parentSelect.appendChild(opt);
+    return;
+  }
+
+  if (category === 'PROCEDURE') {
+    // 절차서는 매뉴얼을 부모로 가짐
+    const manuals = allDocs.filter(d => d.category === 'MANUAL');
+    manuals.forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = m.id;
+      opt.textContent = `[매뉴얼] ${m.title}`;
+      if (selectedParentId === m.id) opt.selected = true;
+      parentSelect.appendChild(opt);
+    });
+  } else if (category === 'INSTRUCTION') {
+    // 지침서는 절차서를 부모로 가짐
+    const procs = allDocs.filter(d => d.category === 'PROCEDURE');
+    procs.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = `[절차서] ${p.title}`;
+      if (selectedParentId === p.id) opt.selected = true;
+      parentSelect.appendChild(opt);
+    });
+  }
+}
+
+function suggestDocNumber(category) {
+  const prefix = category === 'PROCEDURE' ? 'ST-PR' : (category === 'INSTRUCTION' ? 'ST-IN' : 'ST-MN');
+  const count = allDocs.filter(d => d.category === category).length + 1;
+  const seq = String(count).padStart(3, '0');
+  document.getElementById('new-doc-num').value = `${prefix}-${seq}`;
+}
+
+async function confirmCreateNewDoc() {
+  const title = document.getElementById('new-doc-title').value.trim();
+  const category = document.getElementById('new-doc-category').value;
+  const parentId = document.getElementById('new-doc-parent').value || null;
+  const docNumber = document.getElementById('new-doc-num').value.trim() || 'ST-DOC-001';
+  const effectiveDate = document.getElementById('new-doc-date').value || new Date().toISOString().split('T')[0];
+  const department = document.getElementById('new-doc-dept').value.trim() || '품질안전보건실';
+  const summary = document.getElementById('new-doc-summary').value.trim() || '신규 규정 최초 제정';
+
+  if (!title) {
+    alert('규정 명칭(제목)을 입력해 주십시오.');
+    document.getElementById('new-doc-title').focus();
+    return;
+  }
+
+  const prefix = category === 'PROCEDURE' ? 'PRC-KOSHA' : (category === 'INSTRUCTION' ? 'INS-KOSHA' : 'MAN-KOSHA');
+  const catCount = allDocs.filter(d => d.category === category).length + 1;
+  const newId = `${prefix}-${String(catCount).padStart(2, '0')}`;
+
+  const user = AUTH.getUser();
+  const author = user ? user.email : 'admin@sebangtec.com';
+
+  const defaultContent = `
+<div class="doc-article" id="art-1">
+  <h3 class="article-title"><span class="art-num">제1조</span> (목적)</h3>
+  <p class="article-body">본 규정은 (주)세방테크의 안전보건경영시스템 운영에 있어 ${escapeHtml(title)}에 관한 세부 기준 및 절차를 확립함을 목적으로 한다.</p>
+</div>
+
+<div class="doc-article" id="art-2">
+  <h3 class="article-title"><span class="art-num">제2조</span> (적용범위)</h3>
+  <p class="article-body">회사의 본사 및 모든 시공 현장, 관계 협력업체의 작업 절차에 적용한다.</p>
+</div>
+
+<div class="doc-article" id="art-3">
+  <h3 class="article-title"><span class="art-num">제3조</span> (책임과 권한)</h3>
+  <p class="article-body">① 총괄책임자는 본 규정의 제반 이행 실태를 감독하고 필요한 조치를 취하여야 한다.</p>
+  <p class="article-body">② 현장 관리책임자는 해당 작업 착수 전 본 규정에 명시된 안전보건 조치가 완료되었는지 확인하여야 한다.</p>
+</div>`;
+
+  const newDoc = {
+    id: newId,
+    category: category,
+    parentId: parentId,
+    title: title,
+    docNumber: docNumber,
+    currentVersion: 'Rev.1',
+    effectiveDate: effectiveDate,
+    department: department,
+    childrenIds: [],
+    revisions: [
+      {
+        version: 'Rev.1',
+        date: effectiveDate,
+        author: author,
+        summary: summary,
+        content: defaultContent
+      }
+    ],
+    currentContent: defaultContent
+  };
+
+  try {
+    // 1. 새 문서 저장
+    await API.saveDocument(newDoc);
+
+    // 2. 부모 문서의 childrenIds에 등록
+    if (parentId) {
+      const parentDoc = allDocs.find(d => d.id === parentId);
+      if (parentDoc) {
+        if (!parentDoc.childrenIds) parentDoc.childrenIds = [];
+        if (!parentDoc.childrenIds.includes(newId)) {
+          parentDoc.childrenIds.push(newId);
+          await API.saveDocument(parentDoc);
+        }
+      }
+    }
+
+    alert(`신규 ${getCategoryName(category)} [${title}]이(가) 등록되었습니다.\n해당 규정 상세 페이지로 이동합니다.`);
+    closeNewDocModal();
+    location.href = `detail.html?id=${newId}`;
+  } catch (err) {
+    alert('규정 등록 중 오류가 발생했습니다: ' + err.message);
+  }
+}
+
+// 규정 폐지 / 삭제
+async function deleteDocumentById(docId, docTitle) {
+  if (!AUTH.isAdmin()) {
+    alert('규정 폐지는 관리자 권한이 필요합니다.');
+    return;
+  }
+
+  const confirmMsg = `[주의] '${docTitle}' (${docId}) 규정을 폐지(삭제)하시겠습니까?\n\n폐지된 규정은 포털 및 계층 트리에서 즉시 제외됩니다.`;
+  if (!confirm(confirmMsg)) return;
+
+  try {
+    await API.deleteDocument(docId);
+    alert(`'${docTitle}' 규정이 정상적으로 폐지되었습니다.`);
+    
+    // 현재 보고 있던 문서가 삭제된 문서인 경우 최상위 매뉴얼로 이동
+    if (currentDoc && currentDoc.id === docId) {
+      location.href = 'detail.html?id=MAN-KOSHA-01';
+    } else {
+      // 목록 재갱신
+      allDocs = await API.getDocuments();
+      renderHierarchyTree(currentDoc ? currentDoc.id : 'MAN-KOSHA-01');
+    }
+  } catch (err) {
+    alert('규정 폐지 중 오류가 발생했습니다: ' + err.message);
+  }
 }

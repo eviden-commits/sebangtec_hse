@@ -76,6 +76,9 @@
     <aside class="sidebar-tree no-print">
       <div class="tree-header">
         <h4><i class="fa-solid fa-folder-tree"></i> 표준 체계 계층</h4>
+        <button class="btn-tree-add admin-only" onclick="openNewDocModal()" title="신규 절차서/지침서 규정 추가" style="display:none;">
+          <i class="fa-solid fa-plus"></i> 추가
+        </button>
       </div>
       <div class="tree-body" id="hierarchy-tree-area">
         <!-- 계층 트리 JS 렌더링 -->
@@ -355,6 +358,69 @@
       <div class="modal-footer">
         <button class="btn-cancel" onclick="closeArticleModal()">취소</button>
         <button class="btn-primary" onclick="confirmAddArticle()"><i class="fa-solid fa-plus"></i> 조항 본문 삽입</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- [모달 4] 신규 절차서/지침서 규정 생성 모달 (트리 계층 연계) -->
+  <div id="new-doc-modal" class="modal-backdrop no-print" style="display:none; z-index: 10006;">
+    <div class="modal-dialog" style="max-width: 620px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-folder-plus"></i> 신규 절차서 / 지침서 규정 제정</h3>
+        <button class="btn-close" onclick="closeNewDocModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+          <div class="form-group">
+            <label style="display:block; font-size:13px; font-weight:600; margin-bottom:4px;">규정 분류 (구분)</label>
+            <select id="new-doc-category" class="editor-select" style="width:100%; height:38px;" onchange="onNewDocCategoryChange()">
+              <option value="PROCEDURE">절차서 (Procedure)</option>
+              <option value="INSTRUCTION">지침서 (Instruction)</option>
+              <option value="MANUAL">매뉴얼 (Manual)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label style="display:block; font-size:13px; font-weight:600; margin-bottom:4px;">상위 규정 (연계 계층)</label>
+            <select id="new-doc-parent" class="editor-select" style="width:100%; height:38px;">
+              <!-- JS로 동적 옵션 채움 -->
+            </select>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 12px;">
+          <div class="form-group">
+            <label style="display:block; font-size:13px; font-weight:600; margin-bottom:4px;">규정 명칭 (제목)</label>
+            <input type="text" id="new-doc-title" placeholder="예: 작업중지권 행사 관리 절차서" style="width:100%; padding:8px 10px; border:1px solid #ccc; border-radius:4px; font-size:13.5px;">
+          </div>
+          <div class="form-group">
+            <label style="display:block; font-size:13px; font-weight:600; margin-bottom:4px;">문서 번호 (Code)</label>
+            <input type="text" id="new-doc-num" placeholder="예: ST-PR-002" style="width:100%; padding:8px 10px; border:1px solid #ccc; border-radius:4px; font-size:13.5px; font-weight:600;">
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+          <div class="form-group">
+            <label style="display:block; font-size:13px; font-weight:600; margin-bottom:4px;">시행 일자</label>
+            <input type="date" id="new-doc-date" style="width:100%; padding:8px 10px; border:1px solid #ccc; border-radius:4px; font-size:13px;">
+          </div>
+          <div class="form-group">
+            <label style="display:block; font-size:13px; font-weight:600; margin-bottom:4px;">주관 부서</label>
+            <input type="text" id="new-doc-dept" value="품질안전보건실" style="width:100%; padding:8px 10px; border:1px solid #ccc; border-radius:4px; font-size:13px;">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label style="display:block; font-size:13px; font-weight:600; margin-bottom:4px;">제정 사유 (최초 제정 내역)</label>
+          <input type="text" id="new-doc-summary" value="KOSHA-MS 안전보건경영체계 고도화에 따른 신규 규정 제정" style="width:100%; padding:8px 10px; border:1px solid #ccc; border-radius:4px; font-size:13px;">
+        </div>
+
+        <div style="background-color:#f0f9ff; border:1px solid #bae6fd; border-radius:6px; padding:10px 12px; font-size:12.5px; color:#0369a1;">
+          <i class="fa-solid fa-lightbulb"></i> 생성 완료 시 기본 조항 템플릿(목적, 적용범위 등)이 탑재된 신규 문서가 등록되며, 즉시 해당 문서로 이동하여 편집할 수 있습니다.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeNewDocModal()">취소</button>
+        <button class="btn-primary" onclick="confirmCreateNewDoc()"><i class="fa-solid fa-check"></i> 규정 등록 및 이동</button>
       </div>
     </div>
   </div>

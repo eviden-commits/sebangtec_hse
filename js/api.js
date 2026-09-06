@@ -36,22 +36,53 @@ const API = {
 
   // 문서 전체 목록 조회
   async getDocuments() {
+    let docs = [];
     try {
       const res = await fetch('/api/documents');
-      if (res.ok) return await res.json();
+      if (res.ok) docs = await res.json();
     } catch (ignored) {}
 
     // 정적 파일 폴백
-    try {
-      const res = await fetch('data/documents_index.json');
-      if (res.ok) return await res.json();
-    } catch (ignored) {}
+    if (!docs || docs.length === 0) {
+      try {
+        const res = await fetch('data/documents_index.json');
+        if (res.ok) docs = await res.json();
+      } catch (ignored) {}
+    }
 
-    return [];
+    // 로컬스토리지에 추가/수정/삭제된 문서 오버라이드 반영
+    const deletedIds = JSON.parse(localStorage.getItem('deleted_doc_ids') || '[]');
+    docs = docs.filter(d => !deletedIds.includes(d.id));
+
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith('doc_')) {
+        const id = k.substring(4);
+        if (!deletedIds.includes(id)) {
+          try {
+            const localDoc = JSON.parse(localStorage.getItem(k));
+            const existingIdx = docs.findIndex(d => d.id === id);
+            if (existingIdx >= 0) {
+              docs[existingIdx] = localDoc;
+            } else {
+              docs.push(localDoc);
+            }
+          } catch (e) {}
+        }
+      }
+    }
+
+    return docs;
   },
 
   // 특정 문서 단건 조회
   async getDocument(docId) {
+    // 로컬스토리지 오버라이드 확인
+    const local = localStorage.getItem('doc_' + docId);
+    if (local) {
+      try { return JSON.parse(local); } catch (e) {}
+    }
+
     try {
       const res = await fetch(`/api/documents/${docId}`);
       if (res.ok) return await res.json();
@@ -65,6 +96,14 @@ const API = {
 
   // 문서 저장 (신규 등록 or 개정 발행)
   async saveDocument(docData) {
+    // 삭제 목록에서 제거 (재등록 시)
+    const deletedIds = JSON.parse(localStorage.getItem('deleted_doc_ids') || '[]');
+    const newDeleted = deletedIds.filter(id => id !== docData.id);
+    localStorage.setItem('deleted_doc_ids', JSON.stringify(newDeleted));
+
+    // 정적 및 오프라인 환경을 위해 항상 로컬스토리지에도 저장
+    localStorage.setItem('doc_' + docData.id, JSON.stringify(docData));
+
     try {
       const res = await fetch('/api/documents', {
         method: 'POST',
@@ -74,9 +113,27 @@ const API = {
       if (res.ok) return await res.json();
     } catch (ignored) {}
 
-    // 정적 호스팅 환경에서는 로컬스토리지에 오버라이드 저장
-    localStorage.setItem('doc_' + docData.id, JSON.stringify(docData));
-    return { success: true, message: '브라우저 로컬 저장소에 발행되었습니다. (정적 모드)' };
+    return { success: true, message: '규정이 성공적으로 등록/발행되었습니다.' };
+  },
+
+  // 규정 폐지 / 삭제
+  async deleteDocument(docId) {
+    // 로컬스토리지 오버라이드 및 삭제 기록
+    localStorage.removeItem('doc_' + docId);
+    const deletedIds = JSON.parse(localStorage.getItem('deleted_doc_ids') || '[]');
+    if (!deletedIds.includes(docId)) {
+      deletedIds.push(docId);
+      localStorage.setItem('deleted_doc_ids', JSON.stringify(deletedIds));
+    }
+
+    try {
+      const res = await fetch(`/api/documents/${docId}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) return await res.json();
+    } catch (ignored) {}
+
+    return { success: true, message: '규정이 폐지/삭제되었습니다.' };
   },
 
   // 통합 검색
