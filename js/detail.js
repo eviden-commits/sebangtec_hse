@@ -600,11 +600,7 @@ function insertTableDialog() {
 }
 
 function insertRefLink() {
-  const url = prompt('연결할 절차서/지침서 문서 ID 또는 URL을 입력하세요:', 'detail.html?id=PRC-KOSHA-01');
-  const title = prompt('본문에 표시할 링크 텍스트:', '[위험성평가 관리 절차서]');
-  if (url && title) {
-    formatDoc('insertHTML', `<a href="${url}" class="ref-link" style="color:#1d4ed8; text-decoration:underline; font-weight:600;">${escapeHtml(title)}</a> `);
-  }
+  openLinkPickerModal();
 }
 
 // 개정 차수 자동 추천
@@ -920,4 +916,222 @@ async function deleteDocumentById(docId, docTitle) {
   } catch (err) {
     alert('규정 폐지 중 오류가 발생했습니다: ' + err.message);
   }
+}
+
+// ----------------------------------------------------------------
+// [모달 5] 연계 규정 및 조항 딥링크 트리맵 브라우저 로직
+// ----------------------------------------------------------------
+let pickerSelectedDoc = null;
+let pickerSelectedClause = null;
+let pickerLoadedDocsCache = {};
+
+async function openLinkPickerModal() {
+  pickerSelectedDoc = null;
+  pickerSelectedClause = null;
+
+  document.getElementById('link-picker-search').value = '';
+  document.getElementById('link-target-display').innerText = '선택되지 않음';
+  document.getElementById('link-custom-text').value = '';
+  document.getElementById('btn-confirm-link').disabled = true;
+
+  document.getElementById('picker-clauses-title').innerHTML = '<i class="fa-solid fa-list-ol"></i> 조항 선택 (좌측에서 규정을 먼저 선택하세요)';
+  document.getElementById('picker-clause-list').innerHTML = '<div class="picker-empty-guide">좌측에서 규정을 선택하면 세부 조항 목록이 표시됩니다.</div>';
+
+  renderLinkPickerTree(allDocs);
+
+  document.getElementById('link-picker-modal').style.display = 'flex';
+  setTimeout(() => {
+    document.getElementById('link-picker-search').focus();
+  }, 100);
+}
+
+function closeLinkPickerModal() {
+  document.getElementById('link-picker-modal').style.display = 'none';
+}
+
+// 트리맵 렌더링
+function renderLinkPickerTree(docsToRender) {
+  const treeListEl = document.getElementById('picker-tree-list');
+  treeListEl.innerHTML = '';
+
+  const manuals = docsToRender.filter(d => d.category === 'MANUAL');
+
+  manuals.forEach(m => {
+    appendPickerTreeItem(m, 0, treeListEl);
+
+    const procs = docsToRender.filter(d => d.parentId === m.id || (m.childrenIds && m.childrenIds.includes(d.id)));
+    procs.forEach(p => {
+      appendPickerTreeItem(p, 1, treeListEl);
+
+      const insts = docsToRender.filter(d => d.parentId === p.id || (p.childrenIds && p.childrenIds.includes(d.id)));
+      insts.forEach(ins => {
+        appendPickerTreeItem(ins, 2, treeListEl);
+      });
+    });
+  });
+
+  // 기타 미분류
+  const assigned = new Set([
+    ...manuals.map(d => d.id),
+    ...manuals.flatMap(m => docsToRender.filter(d => d.parentId === m.id || (m.childrenIds && m.childrenIds.includes(d.id))).map(d => d.id)),
+    ...docsToRender.filter(d => d.category === 'INSTRUCTION').map(d => d.id)
+  ]);
+  const others = docsToRender.filter(d => !assigned.has(d.id));
+  others.forEach(o => appendPickerTreeItem(o, 1, treeListEl));
+}
+
+function appendPickerTreeItem(doc, depth, container) {
+  const item = document.createElement('div');
+  item.className = `picker-tree-item depth-${depth} ${pickerSelectedDoc && pickerSelectedDoc.id === doc.id ? 'active' : ''}`;
+  item.id = `picker-item-${doc.id}`;
+
+  let icon = '<i class="fa-solid fa-file-lines"></i>';
+  if (depth === 0) icon = '<i class="fa-solid fa-folder-open"></i>';
+  else if (depth === 2) icon = '<i class="fa-solid fa-file-code"></i>';
+
+  item.innerHTML = `${icon} <span>${escapeHtml(doc.title)}</span>`;
+  item.onclick = () => selectPickerDoc(doc);
+  container.appendChild(item);
+}
+
+// 특정 규정 선택 시 해당 규정의 조항 목록 비동기 파싱 및 노출
+async function selectPickerDoc(doc) {
+  pickerSelectedDoc = doc;
+  pickerSelectedClause = null;
+
+  document.querySelectorAll('.picker-tree-item').forEach(el => el.classList.remove('active'));
+  const currentItem = document.getElementById(`picker-item-${doc.id}`);
+  if (currentItem) currentItem.classList.add('active');
+
+  // 선택 요약 업데이트 (규정 전체 링크 디폴트)
+  document.getElementById('link-target-display').innerText = `[${getCategoryName(doc.category)}] ${doc.title}`;
+  document.getElementById('link-custom-text').value = `[${doc.title}]`;
+  document.getElementById('btn-confirm-link').disabled = false;
+
+  document.getElementById('picker-clauses-title').innerHTML = `<i class="fa-solid fa-list-ol"></i> <strong>${escapeHtml(doc.title)}</strong> 세부 조항 목록`;
+  const clauseListEl = document.getElementById('picker-clause-list');
+  clauseListEl.innerHTML = '<div style="padding:15px; text-align:center; color:#64748b;"><i class="fa-solid fa-spinner fa-spin"></i> 조항 로딩 중...</div>';
+
+  try {
+    let fullDoc = pickerLoadedDocsCache[doc.id];
+    if (!fullDoc) {
+      fullDoc = await API.getDocument(doc.id);
+      pickerLoadedDocsCache[doc.id] = fullDoc;
+    }
+
+    renderPickerClauses(fullDoc);
+  } catch (err) {
+    clauseListEl.innerHTML = '<div style="color:#e03131; padding:15px;">조항을 불러오지 못했습니다. 규정 전체에 대한 링크는 가능합니다.</div>';
+  }
+}
+
+// 조항 목록 렌더링
+function renderPickerClauses(doc) {
+  const clauseListEl = document.getElementById('picker-clause-list');
+  clauseListEl.innerHTML = '';
+
+  // 규정 전체 바로가기 옵션 (최상단)
+  const allDocOption = document.createElement('div');
+  allDocOption.className = 'picker-clause-item active';
+  allDocOption.innerHTML = `
+    <div class="picker-clause-num"><i class="fa-solid fa-file-export"></i> 규정 전문 바로가기 (특정 조항 미지정)</div>
+    <div class="picker-clause-preview">${escapeHtml(doc.title)} 문서 전체로 이동하는 링크를 생성합니다.</div>
+  `;
+  allDocOption.onclick = () => {
+    pickerSelectedClause = null;
+    document.querySelectorAll('.picker-clause-item').forEach(el => el.classList.remove('active'));
+    allDocOption.classList.add('active');
+    document.getElementById('link-target-display').innerText = `[${getCategoryName(doc.category)}] ${doc.title}`;
+    document.getElementById('link-custom-text').value = `[${doc.title}]`;
+  };
+  clauseListEl.appendChild(allDocOption);
+
+  // HTML 본문에서 .doc-article 요소들 추출
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = doc.currentContent || '';
+  const articles = tempDiv.querySelectorAll('.doc-article');
+
+  if (articles.length === 0) {
+    const emptyNotice = document.createElement('div');
+    emptyNotice.className = 'picker-empty-guide';
+    emptyNotice.textContent = '등록된 세부 조항이 없습니다.';
+    clauseListEl.appendChild(emptyNotice);
+    return;
+  }
+
+  articles.forEach(art => {
+    const titleEl = art.querySelector('.article-title');
+    const titleText = titleEl ? titleEl.innerText.trim() : '조항';
+    const bodyEl = art.querySelector('.article-body') || art;
+    const bodyText = bodyEl ? bodyEl.innerText.trim() : '';
+
+    const clauseItem = document.createElement('div');
+    clauseItem.className = 'picker-clause-item';
+    clauseItem.innerHTML = `
+      <div class="picker-clause-num"><i class="fa-solid fa-bookmark"></i> ${escapeHtml(titleText)}</div>
+      <div class="picker-clause-preview">${escapeHtml(bodyText)}</div>
+    `;
+
+    clauseItem.onclick = () => {
+      pickerSelectedClause = {
+        id: art.id,
+        title: titleText
+      };
+
+      document.querySelectorAll('.picker-clause-item').forEach(el => el.classList.remove('active'));
+      clauseItem.classList.add('active');
+
+      document.getElementById('link-target-display').innerText = `${doc.title} > ${titleText}`;
+      document.getElementById('link-custom-text').value = `[${doc.title} ${titleText}]`;
+    };
+
+    clauseListEl.appendChild(clauseItem);
+  });
+}
+
+// 실시간 검색 필터링 (규정명 + 조항 검색)
+function filterLinkPicker() {
+  const query = document.getElementById('link-picker-search').value.trim().toLowerCase();
+  if (!query) {
+    renderLinkPickerTree(allDocs);
+    return;
+  }
+
+  const matchedDocs = allDocs.filter(d => {
+    return d.title.toLowerCase().includes(query) || (d.docNumber && d.docNumber.toLowerCase().includes(query));
+  });
+
+  renderLinkPickerTree(matchedDocs);
+
+  // 검색어가 있을 때 첫 번째 검색 결과 자동 선택
+  if (matchedDocs.length > 0) {
+    selectPickerDoc(matchedDocs[0]);
+  }
+}
+
+// 선택 완료 및 에디터 본문에 하이퍼링크 삽입
+function confirmInsertLink() {
+  if (!pickerSelectedDoc) {
+    alert('연계할 규정을 선택해 주십시오.');
+    return;
+  }
+
+  let targetUrl = `detail.html?id=${pickerSelectedDoc.id}`;
+  if (pickerSelectedClause && pickerSelectedClause.id) {
+    targetUrl += `#${pickerSelectedClause.id}`;
+  }
+
+  let displayText = document.getElementById('link-custom-text').value.trim();
+  if (!displayText) {
+    displayText = pickerSelectedClause 
+      ? `[${pickerSelectedDoc.title} ${pickerSelectedClause.title}]`
+      : `[${pickerSelectedDoc.title}]`;
+  }
+
+  const linkHtml = `<a href="${targetUrl}" class="ref-link" style="color:#1d4ed8; text-decoration:underline; font-weight:600;" target="_self" title="${escapeHtml(pickerSelectedDoc.title)} 바로가기">${escapeHtml(displayText)}</a> `;
+
+  // 리치 에디터에 안전하게 링크 HTML 삽입
+  formatDoc('insertHTML', linkHtml);
+
+  closeLinkPickerModal();
 }

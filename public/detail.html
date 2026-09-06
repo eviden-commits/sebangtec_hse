@@ -222,7 +222,7 @@
           <!-- 표(테이블), 링크, 조항 추가 -->
           <div class="toolbar-group">
             <button type="button" class="btn-tb" onclick="insertTableDialog()" title="표(Table) 삽입"><i class="fa-solid fa-table"></i> 표 삽입</button>
-            <button type="button" class="btn-tb" onclick="insertRefLink()" title="연계 규정 링크"><i class="fa-solid fa-link"></i> 연계 링크</button>
+            <button type="button" class="btn-tb" onclick="openLinkPickerModal()" title="연계 규정/조항 탐색 트리맵"><i class="fa-solid fa-link"></i> 연계 링크 (트리맵)</button>
             <button type="button" class="btn-tb btn-tb-primary" onclick="openArticleModal()" title="새로운 표준 조항(제n조)을 독립 줄로 추가"><i class="fa-solid fa-circle-plus"></i> <strong>+ 조항 추가 (새줄 입력)</strong></button>
             <button type="button" class="btn-tb" onclick="formatDoc('removeFormat')" title="서식 지우기"><i class="fa-solid fa-eraser"></i></button>
           </div>
@@ -421,6 +421,57 @@
       <div class="modal-footer">
         <button class="btn-cancel" onclick="closeNewDocModal()">취소</button>
         <button class="btn-primary" onclick="confirmCreateNewDoc()"><i class="fa-solid fa-check"></i> 규정 등록 및 이동</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- [모달 5] 연계 규정 및 조항 딥링크 검색/선택 모달 (트리맵 브라우저) -->
+  <div id="link-picker-modal" class="modal-backdrop no-print" style="display:none; z-index: 10007;">
+    <div class="modal-dialog modal-lg" style="max-width: 860px; height: 85vh; display:flex; flex-direction:column;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-link"></i> 연계 규정 및 조항 선택</h3>
+        <button class="btn-close" onclick="closeLinkPickerModal()">&times;</button>
+      </div>
+      <div class="modal-body" style="display:flex; flex-direction:column; gap:12px; overflow:hidden; padding:16px;">
+        
+        <!-- 검색 바 -->
+        <div class="link-search-bar">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="link-picker-search" placeholder="규정명 또는 조항 검색 (예: 위험성평가, 제2조, 긴급대응)" oninput="filterLinkPicker()">
+        </div>
+
+        <!-- 2단 브라우징 영역 (좌: 규정 계층 트리, 우: 해당 규정의 조항 목록) -->
+        <div class="link-picker-container">
+          <div class="link-picker-sidebar">
+            <div class="picker-panel-title"><i class="fa-solid fa-folder-tree"></i> 규정 계층 트리</div>
+            <div class="picker-tree-list" id="picker-tree-list">
+              <!-- 규정 목록 트리 렌더링 -->
+            </div>
+          </div>
+          <div class="link-picker-content">
+            <div class="picker-panel-title" id="picker-clauses-title"><i class="fa-solid fa-list-ol"></i> 조항 선택 (규정을 먼저 선택하세요)</div>
+            <div class="picker-clause-list" id="picker-clause-list">
+              <div class="picker-empty-guide">좌측에서 규정을 선택하면 세부 조항 목록이 표시됩니다.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 선택 요약 및 표시 텍스트 커스텀 -->
+        <div class="link-selected-bar">
+          <div class="link-preview-box">
+            <span class="label">선택 대상:</span>
+            <span id="link-target-display" class="target-name">선택되지 않음</span>
+          </div>
+          <div class="link-text-input-box">
+            <label for="link-custom-text">본문 표시 텍스트:</label>
+            <input type="text" id="link-custom-text" placeholder="예: [위험성평가 관리 절차서 제4조]">
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeLinkPickerModal()">취소</button>
+        <button class="btn-primary" id="btn-confirm-link" onclick="confirmInsertLink()" disabled><i class="fa-solid fa-check"></i> 링크 삽입</button>
       </div>
     </div>
   </div>
