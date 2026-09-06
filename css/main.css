@@ -72,19 +72,25 @@ body {
 .brand-area {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   cursor: pointer;
 }
-.brand-symbol {
-  width: 44px;
-  height: 44px;
-  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-  color: var(--white);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
+.brand-corp-logo {
+  height: 38px;
+  width: auto;
+  object-fit: contain;
+}
+.brand-divider {
+  height: 28px;
+  width: 1px;
+  background-color: #cbd5e1;
+  margin: 0 6px;
+}
+.gate-corp-logo {
+  height: 38px;
+  width: auto;
+  object-fit: contain;
+  margin-bottom: 15px;
 }
 .brand-text h1 {
   font-size: 20px;

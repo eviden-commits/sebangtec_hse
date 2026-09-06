@@ -40,6 +40,14 @@ body {
   gap: 12px;
   cursor: pointer;
 }
+.nav-corp-logo {
+  height: 24px;
+  width: auto;
+  object-fit: contain;
+  background-color: #ffffff;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
 .portal-title {
   font-size: 16px;
   font-weight: 700;
@@ -525,6 +533,12 @@ body {
 @keyframes gateCardPop {
   0% { transform: scale(0.92); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
+}
+.gate-corp-logo {
+  height: 38px;
+  width: auto;
+  object-fit: contain;
+  margin-bottom: 15px;
 }
 .gate-icon {
   width: 60px;
