@@ -34,6 +34,23 @@
       <nav class="main-nav">
         <a href="index.html" class="active">포털 홈</a>
         <a href="detail.html?id=MAN-KOSHA-01">KOSHA 매뉴얼</a>
+        <!-- ISO 시리즈 드롭다운 메뉴 -->
+        <div class="nav-dropdown">
+          <a href="javascript:void(0)" class="nav-dropdown-btn">
+            ISO 시리즈 <i class="fa-solid fa-chevron-down" style="font-size: 11px; margin-left: 4px;"></i>
+          </a>
+          <div class="nav-dropdown-content">
+            <a href="detail.html?id=MAN-ISO-45001">
+              <i class="fa-solid fa-shield-heart" style="color: #0284c7;"></i> ISO 45001 (안전) 매뉴얼
+            </a>
+            <a href="detail.html?id=MAN-ISO-14001">
+              <i class="fa-solid fa-leaf" style="color: #16a34a;"></i> ISO 14001 (환경) 매뉴얼
+            </a>
+            <a href="detail.html?id=MAN-ISO-9001">
+              <i class="fa-solid fa-award" style="color: #ea580c;"></i> ISO 9001 (품질) 매뉴얼
+            </a>
+          </div>
+        </div>
         <a href="detail.html?id=PRC-KOSHA-01">절차서</a>
         <a href="detail.html?id=INS-KOSHA-01">지침서</a>
         <a href="#" onclick="alert('서식 및 양식 관리 페이지 준비 중입니다.')">서식·양식</a>
@@ -125,6 +142,53 @@
                       <span class="count-badge">ST-IN-001</span>
                     </div>
                   </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 1단계: ISO 국제표준 시리즈 매뉴얼 (기본 접힘) -->
+            <div class="foldable-group" style="margin-top: 6px;">
+              <div class="cat-row level-1">
+                <button type="button" class="btn-toggle" onclick="toggleFolder(this)" title="하위 규정 펼치기/접기">
+                  <i class="fa-solid fa-chevron-right"></i>
+                </button>
+                <a href="javascript:void(0)" class="cat-link" onclick="toggleFolder(this.previousElementSibling)">
+                  <i class="fa-solid fa-folder folder-icon"></i>
+                  <span class="cat-title">ISO 시리즈 매뉴얼</span>
+                </a>
+                <span class="count-badge">3건</span>
+              </div>
+
+              <!-- 하위 ISO 매뉴얼 목록 (기본 접힘: display:none) -->
+              <div class="sub-tree-container" style="display: none;">
+                <!-- ISO 45001 (안전) -->
+                <div class="cat-row level-2">
+                  <span class="tree-leaf-spacer"></span>
+                  <a href="detail.html?id=MAN-ISO-45001" class="cat-link">
+                    <i class="fa-solid fa-shield-heart" style="color: #0284c7;"></i>
+                    <span class="cat-title">ISO 45001 (안전보건) 매뉴얼</span>
+                  </a>
+                  <span class="count-badge">ST-ISO-45001</span>
+                </div>
+
+                <!-- ISO 14001 (환경) -->
+                <div class="cat-row level-2">
+                  <span class="tree-leaf-spacer"></span>
+                  <a href="detail.html?id=MAN-ISO-14001" class="cat-link">
+                    <i class="fa-solid fa-leaf" style="color: #16a34a;"></i>
+                    <span class="cat-title">ISO 14001 (환경경영) 매뉴얼</span>
+                  </a>
+                  <span class="count-badge">ST-ISO-14001</span>
+                </div>
+
+                <!-- ISO 9001 (품질) -->
+                <div class="cat-row level-2">
+                  <span class="tree-leaf-spacer"></span>
+                  <a href="detail.html?id=MAN-ISO-9001" class="cat-link">
+                    <i class="fa-solid fa-award" style="color: #ea580c;"></i>
+                    <span class="cat-title">ISO 9001 (품질경영) 매뉴얼</span>
+                  </a>
+                  <span class="count-badge">ST-ISO-9001</span>
                 </div>
               </div>
             </div>

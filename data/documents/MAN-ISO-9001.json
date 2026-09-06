@@ -1,0 +1,21 @@
+﻿{
+  "id": "MAN-ISO-9001",
+  "category": "MANUAL",
+  "parentId": null,
+  "title": "ISO 9001 품질경영시스템 매뉴얼",
+  "docNumber": "ST-ISO-9001",
+  "currentVersion": "Rev.1",
+  "effectiveDate": "2026-03-01",
+  "department": "품질안전보건실",
+  "childrenIds": [],
+  "revisions": [
+    {
+      "version": "Rev.1",
+      "date": "2026-03-01",
+      "author": "nschoi@sebangtec.com",
+      "summary": "ISO 9001:2015 국제 품질경영시스템 인증 기준에 따른 매뉴얼 제정",
+      "content": "<div class=\"doc-article\" id=\"art-1\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제1조</span> (목적 및 고객만족)</h3>\n  <p class=\"article-body\">본 매뉴얼은 (주)세방테크의 시공 품질과 서비스가 고객 요구사항 및 적용 법규를 일관되게 충족함을 입증하고, 체계적인 품질경영시스템을 통해 고객 만족을 증진함을 목적으로 한다.</p>\n  <p class=\"article-body\">② 회사는 시공 및 제품 품질의 무결점을 지향하며 지속적인 품질 혁신을 추진한다.</p>\n</div>\n\n<div class=\"doc-article\" id=\"art-2\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제2조</span> (품질기획 및 프로세스 관리)</h3>\n  <p class=\"article-body\">① 프로젝트 착수 전 품질관리계획서(QCP)를 작성하고, 공정별 검사 및 시험계획(ITP)을 수립하여 승인을 득하여야 한다.</p>\n  <p class=\"article-body\">② 자재 검수, 현장 시공, 시운전 및 최종 인수인계에 이르는 전 과정을 표준화하여 관리한다.</p>\n</div>\n\n<div class=\"doc-article\" id=\"art-3\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제3조</span> (부적합품 관리 및 시정조치)</h3>\n  <p class=\"article-body\">① 규정된 요구사항에 일치하지 않는 자재 및 시공 하자는 식별 표식을 부착하고 격리 조치하여야 한다.</p>\n  <p class=\"article-body\">② 부적합의 근본 원인을 분석하여 재발 방지를 위한 시정조치를 신속히 이행하고 결과를 검증한다.</p>\n</div>\n\n<div class=\"doc-article\" id=\"art-4\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제4조</span> (내부심사 및 경영검토)</h3>\n  <p class=\"article-body\">① 품질경영시스템이 계획된 프로세스 및 표준에 부합하는지 주기적인 사내 품질감사를 수행한다.</p>\n  <p class=\"article-body\">② 최고경영자는 정기적인 경영검토를 통해 시스템의 적절성과 유효성을 평가한다.</p>\n</div>"
+    }
+  ],
+  "currentContent": "<div class=\"doc-article\" id=\"art-1\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제1조</span> (목적 및 고객만족)</h3>\n  <p class=\"article-body\">본 매뉴얼은 (주)세방테크의 시공 품질과 서비스가 고객 요구사항 및 적용 법규를 일관되게 충족함을 입증하고, 체계적인 품질경영시스템을 통해 고객 만족을 증진함을 목적으로 한다.</p>\n  <p class=\"article-body\">② 회사는 시공 및 제품 품질의 무결점을 지향하며 지속적인 품질 혁신을 추진한다.</p>\n</div>\n\n<div class=\"doc-article\" id=\"art-2\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제2조</span> (품질기획 및 프로세스 관리)</h3>\n  <p class=\"article-body\">① 프로젝트 착수 전 품질관리계획서(QCP)를 작성하고, 공정별 검사 및 시험계획(ITP)을 수립하여 승인을 득하여야 한다.</p>\n  <p class=\"article-body\">② 자재 검수, 현장 시공, 시운전 및 최종 인수인계에 이르는 전 과정을 표준화하여 관리한다.</p>\n</div>\n\n<div class=\"doc-article\" id=\"art-3\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제3조</span> (부적합품 관리 및 시정조치)</h3>\n  <p class=\"article-body\">① 규정된 요구사항에 일치하지 않는 자재 및 시공 하자는 식별 표식을 부착하고 격리 조치하여야 한다.</p>\n  <p class=\"article-body\">② 부적합의 근본 원인을 분석하여 재발 방지를 위한 시정조치를 신속히 이행하고 결과를 검증한다.</p>\n</div>\n\n<div class=\"doc-article\" id=\"art-4\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제4조</span> (내부심사 및 경영검토)</h3>\n  <p class=\"article-body\">① 품질경영시스템이 계획된 프로세스 및 표준에 부합하는지 주기적인 사내 품질감사를 수행한다.</p>\n  <p class=\"article-body\">② 최고경영자는 정기적인 경영검토를 통해 시스템의 적절성과 유효성을 평가한다.</p>\n</div>"
+}

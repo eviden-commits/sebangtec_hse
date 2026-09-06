@@ -1,0 +1,21 @@
+﻿{
+  "id": "MAN-ISO-14001",
+  "category": "MANUAL",
+  "parentId": null,
+  "title": "ISO 14001 환경경영시스템 매뉴얼",
+  "docNumber": "ST-ISO-14001",
+  "currentVersion": "Rev.1",
+  "effectiveDate": "2026-03-01",
+  "department": "품질안전보건실",
+  "childrenIds": [],
+  "revisions": [
+    {
+      "version": "Rev.1",
+      "date": "2026-03-01",
+      "author": "nschoi@sebangtec.com",
+      "summary": "ISO 14001:2015 국제 환경경영시스템 인증 기준에 따른 매뉴얼 제정",
+      "content": "<div class=\"doc-article\" id=\"art-1\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제1조</span> (목적 및 환경방침)</h3>\n  <p class=\"article-body\">본 매뉴얼은 (주)세방테크의 사업 활동, 제품 및 서비스가 환경에 미치는 부정적인 영향을 최소화하고 지속 가능한 친환경 경영체계를 확립함을 목적으로 한다.</p>\n  <p class=\"article-body\">② 회사는 대기, 수질, 폐기물 및 에너지 소비 등 환경오염 예방을 위한 명확한 환경방침과 성과 목표를 수립한다.</p>\n</div>\n\n<div class=\"doc-article\" id=\"art-2\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제2조</span> (환경측면 파악 및 영향평가)</h3>\n  <p class=\"article-body\">① 각 부서 및 현장은 모든 공정 및 작업 활동에서 발생하는 환경측면(폐기물 배출, 소음·진동, 자원 소비 등)을 정기적으로 파악하고 중대한 환경영향을 평가하여야 한다.</p>\n  <p class=\"article-body\">② 법적 및 기타 요구사항의 준수 의무를 지속적으로 식별하고 모니터링한다.</p>\n</div>\n\n<div class=\"doc-article\" id=\"art-3\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제3조</span> (운영 통제 및 자원 순환)</h3>\n  <p class=\"article-body\">① 건설 및 시공 현장에서 발생하는 건설폐기물은 적법한 분리수거 및 적법 배출 절차를 준수하여야 한다.</p>\n  <p class=\"article-body\">② 유해화학물질 취급 시 누출 방지턱 설치 및 방제 장비를 상시 비치한다.</p>\n</div>\n\n<div class=\"doc-article\" id=\"art-4\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제4조</span> (환경 비상사태 대응)</h3>\n  <p class=\"article-body\">① 기름 유출, 화학물질 누출, 화재 등 환경사고 발생 가능성에 대비한 비상대응 절차를 수립하고 주기적인 방제 훈련을 실시한다.</p>\n</div>"
+    }
+  ],
+  "currentContent": "<div class=\"doc-article\" id=\"art-1\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제1조</span> (목적 및 환경방침)</h3>\n  <p class=\"article-body\">본 매뉴얼은 (주)세방테크의 사업 활동, 제품 및 서비스가 환경에 미치는 부정적인 영향을 최소화하고 지속 가능한 친환경 경영체계를 확립함을 목적으로 한다.</p>\n  <p class=\"article-body\">② 회사는 대기, 수질, 폐기물 및 에너지 소비 등 환경오염 예방을 위한 명확한 환경방침과 성과 목표를 수립한다.</p>\n</div>\n\n<div class=\"doc-article\" id=\"art-2\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제2조</span> (환경측면 파악 및 영향평가)</h3>\n  <p class=\"article-body\">① 각 부서 및 현장은 모든 공정 및 작업 활동에서 발생하는 환경측면(폐기물 배출, 소음·진동, 자원 소비 등)을 정기적으로 파악하고 중대한 환경영향을 평가하여야 한다.</p>\n  <p class=\"article-body\">② 법적 및 기타 요구사항의 준수 의무를 지속적으로 식별하고 모니터링한다.</p>\n</div>\n\n<div class=\"doc-article\" id=\"art-3\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제3조</span> (운영 통제 및 자원 순환)</h3>\n  <p class=\"article-body\">① 건설 및 시공 현장에서 발생하는 건설폐기물은 적법한 분리수거 및 적법 배출 절차를 준수하여야 한다.</p>\n  <p class=\"article-body\">② 유해화학물질 취급 시 누출 방지턱 설치 및 방제 장비를 상시 비치한다.</p>\n</div>\n\n<div class=\"doc-article\" id=\"art-4\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제4조</span> (환경 비상사태 대응)</h3>\n  <p class=\"article-body\">① 기름 유출, 화학물질 누출, 화재 등 환경사고 발생 가능성에 대비한 비상대응 절차를 수립하고 주기적인 방제 훈련을 실시한다.</p>\n</div>"
+}

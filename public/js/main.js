@@ -14,6 +14,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadDocuments();
 });
 
+async function loadDocuments() {
+  try {
+    allDocuments = await API.getDocuments();
+    renderRecentList('recent');
+  } catch (e) {
+    console.error('문서 목록 로드 오류:', e);
+  }
+}
+
 // 폴딩식 아코디언 트리 접기/펼치기 토글
 function toggleFolder(btn) {
   const group = btn.closest('.foldable-group');

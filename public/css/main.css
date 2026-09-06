@@ -104,6 +104,7 @@ body {
 }
 .main-nav {
   display: flex;
+  align-items: center;
   gap: 15px;
 }
 .main-nav a {
@@ -114,9 +115,56 @@ body {
   padding: 8px 14px;
   border-radius: 4px;
   transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
 }
 .main-nav a:hover, .main-nav a.active {
   background-color: var(--primary-light);
+  color: var(--primary);
+}
+
+/* 상단 ISO 시리즈 드롭다운 메뉴 */
+.nav-dropdown {
+  position: relative;
+  display: inline-block;
+}
+.nav-dropdown-btn {
+  cursor: pointer;
+}
+.nav-dropdown-content {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #ffffff;
+  min-width: 260px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px 0;
+  z-index: 1000;
+  animation: navDropFade 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes navDropFade {
+  0% { opacity: 0; transform: translateY(-6px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.nav-dropdown:hover .nav-dropdown-content {
+  display: block;
+}
+.nav-dropdown-content a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #334155;
+  border-radius: 0;
+  transition: background-color 0.15s, color 0.15s;
+}
+.nav-dropdown-content a:hover {
+  background-color: #f1f5f9;
   color: var(--primary);
 }
 

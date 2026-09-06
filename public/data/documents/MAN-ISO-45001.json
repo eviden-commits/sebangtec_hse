@@ -1,0 +1,21 @@
+﻿{
+  "id": "MAN-ISO-45001",
+  "category": "MANUAL",
+  "parentId": null,
+  "title": "ISO 45001 안전보건경영시스템 매뉴얼",
+  "docNumber": "ST-ISO-45001",
+  "currentVersion": "Rev.1",
+  "effectiveDate": "2026-03-01",
+  "department": "품질안전보건실",
+  "childrenIds": [],
+  "revisions": [
+    {
+      "version": "Rev.1",
+      "date": "2026-03-01",
+      "author": "nschoi@sebangtec.com",
+      "summary": "ISO 45001:2018 국제 안전보건경영시스템 인증 기준에 따른 매뉴얼 제정",
+      "content": "<div class=\"doc-article\" id=\"art-1\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제1조</span> (목적 및 적용범위)</h3>\n  <p class=\"article-body\">본 매뉴얼은 (주)세방테크의 안전보건경영시스템이 ISO 45001:2018 국제 표준 요구사항에 적합함을 보장하고, 사업장 내 근로자 및 이해관계자의 안전과 건강을 보호하며 지속적인 개선을 추구함을 목적으로 한다.</p>\n  <p class=\"article-body\">② 본 규정은 회사의 본사, 현장 및 전 사업장의 모든 생산 및 시공 프로세스에 적용한다.</p>\n</div>\n\n<div class=\"doc-article\" id=\"art-2\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제2조</span> (리더십 및 근로자 참여)</h3>\n  <p class=\"article-body\">① 최고경영자는 안전보건경영시스템에 대한 궁극적인 책임과 권한을 가지며, 안전보건 방침 및 목표 수립을 주도한다.</p>\n  <p class=\"article-body\">② 회사는 안전보건 의사결정 과정에서 근로자 및 근로자 대표와의 실질적인 협의 및 참여를 보장한다.</p>\n</div>\n\n<div class=\"doc-article\" id=\"art-3\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제3조</span> (위험요인 파악 및 리스크 평가)</h3>\n  <p class=\"article-body\">① 각 부서장은 상시 및 비상시 작업에 대한 유해·위험요인을 식별하고 체계적인 리스크 평가를 수행하여야 한다.</p>\n  <p class=\"article-body\">② 세부 위험성평가 기준 및 조치 절차는 사내 <a href=\"detail.html?id=PRC-KOSHA-01\" class=\"ref-link\">[위험성평가 관리 절차서]</a>를 준용한다.</p>\n</div>\n\n<div class=\"doc-article\" id=\"art-4\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제4조</span> (운영 기획 및 비상대응)</h3>\n  <p class=\"article-body\">① 회사는 식별된 리스크를 통제하기 위해 변경관리, 조달 및 외주업체 관리 통제 프로세스를 수립·유지한다.</p>\n  <p class=\"article-body\">② 잠재적 비상사태에 대비하여 비상대응 계획을 수립하고 정기적인 모의 훈련을 실시한다.</p>\n</div>"
+    }
+  ],
+  "currentContent": "<div class=\"doc-article\" id=\"art-1\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제1조</span> (목적 및 적용범위)</h3>\n  <p class=\"article-body\">본 매뉴얼은 (주)세방테크의 안전보건경영시스템이 ISO 45001:2018 국제 표준 요구사항에 적합함을 보장하고, 사업장 내 근로자 및 이해관계자의 안전과 건강을 보호하며 지속적인 개선을 추구함을 목적으로 한다.</p>\n  <p class=\"article-body\">② 본 규정은 회사의 본사, 현장 및 전 사업장의 모든 생산 및 시공 프로세스에 적용한다.</p>\n</div>\n\n<div class=\"doc-article\" id=\"art-2\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제2조</span> (리더십 및 근로자 참여)</h3>\n  <p class=\"article-body\">① 최고경영자는 안전보건경영시스템에 대한 궁극적인 책임과 권한을 가지며, 안전보건 방침 및 목표 수립을 주도한다.</p>\n  <p class=\"article-body\">② 회사는 안전보건 의사결정 과정에서 근로자 및 근로자 대표와의 실질적인 협의 및 참여를 보장한다.</p>\n</div>\n\n<div class=\"doc-article\" id=\"art-3\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제3조</span> (위험요인 파악 및 리스크 평가)</h3>\n  <p class=\"article-body\">① 각 부서장은 상시 및 비상시 작업에 대한 유해·위험요인을 식별하고 체계적인 리스크 평가를 수행하여야 한다.</p>\n  <p class=\"article-body\">② 세부 위험성평가 기준 및 조치 절차는 사내 <a href=\"detail.html?id=PRC-KOSHA-01\" class=\"ref-link\">[위험성평가 관리 절차서]</a>를 준용한다.</p>\n</div>\n\n<div class=\"doc-article\" id=\"art-4\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제4조</span> (운영 기획 및 비상대응)</h3>\n  <p class=\"article-body\">① 회사는 식별된 리스크를 통제하기 위해 변경관리, 조달 및 외주업체 관리 통제 프로세스를 수립·유지한다.</p>\n  <p class=\"article-body\">② 잠재적 비상사태에 대비하여 비상대응 계획을 수립하고 정기적인 모의 훈련을 실시한다.</p>\n</div>"
+}

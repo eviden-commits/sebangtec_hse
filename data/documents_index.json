@@ -3,12 +3,45 @@
     "id": "MAN-KOSHA-01",
     "category": "MANUAL",
     "parentId": null,
-    "title": "안전보건경영시스템 매뉴얼",
+    "title": "안전보건경영시스템 매뉴얼 (KOSHA-MS)",
     "docNumber": "ST-MN-001",
     "currentVersion": "Rev.3",
     "effectiveDate": "2026-03-01",
     "department": "품질안전보건실",
     "childrenIds": ["PRC-KOSHA-01"]
+  },
+  {
+    "id": "MAN-ISO-45001",
+    "category": "MANUAL",
+    "parentId": null,
+    "title": "ISO 45001 안전보건경영시스템 매뉴얼",
+    "docNumber": "ST-ISO-45001",
+    "currentVersion": "Rev.1",
+    "effectiveDate": "2026-03-01",
+    "department": "품질안전보건실",
+    "childrenIds": []
+  },
+  {
+    "id": "MAN-ISO-14001",
+    "category": "MANUAL",
+    "parentId": null,
+    "title": "ISO 14001 환경경영시스템 매뉴얼",
+    "docNumber": "ST-ISO-14001",
+    "currentVersion": "Rev.1",
+    "effectiveDate": "2026-03-01",
+    "department": "품질안전보건실",
+    "childrenIds": []
+  },
+  {
+    "id": "MAN-ISO-9001",
+    "category": "MANUAL",
+    "parentId": null,
+    "title": "ISO 9001 품질경영시스템 매뉴얼",
+    "docNumber": "ST-ISO-9001",
+    "currentVersion": "Rev.1",
+    "effectiveDate": "2026-03-01",
+    "department": "품질안전보건실",
+    "childrenIds": []
   },
   {
     "id": "PRC-KOSHA-01",
