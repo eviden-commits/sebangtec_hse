@@ -1,4 +1,4 @@
-{
+﻿{
   "id": "MAN-KOSHA-01",
   "category": "MANUAL",
   "parentId": null,
@@ -6,7 +6,7 @@
   "docNumber": "ST-MN-001",
   "currentVersion": "Rev.3",
   "effectiveDate": "2026-03-01",
-  "department": "안전보건팀",
+  "department": "품질안전보건실",
   "childrenIds": ["PRC-KOSHA-01"],
   "revisions": [
     {

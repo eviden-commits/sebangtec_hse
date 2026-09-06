@@ -1,4 +1,4 @@
-{
+﻿{
   "id": "INS-KOSHA-01",
   "category": "INSTRUCTION",
   "parentId": "PRC-KOSHA-01",
@@ -6,7 +6,7 @@
   "docNumber": "ST-IN-001",
   "currentVersion": "Rev.1",
   "effectiveDate": "2026-03-01",
-  "department": "안전보건팀",
+  "department": "품질안전보건실",
   "childrenIds": [],
   "revisions": [
     {

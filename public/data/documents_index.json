@@ -1,4 +1,4 @@
-[
+﻿[
   {
     "id": "MAN-KOSHA-01",
     "category": "MANUAL",
@@ -7,7 +7,7 @@
     "docNumber": "ST-MN-001",
     "currentVersion": "Rev.3",
     "effectiveDate": "2026-03-01",
-    "department": "안전보건팀",
+    "department": "품질안전보건실",
     "childrenIds": ["PRC-KOSHA-01"]
   },
   {
@@ -18,7 +18,7 @@
     "docNumber": "ST-PR-001",
     "currentVersion": "Rev.2",
     "effectiveDate": "2026-03-01",
-    "department": "안전보건팀",
+    "department": "품질안전보건실",
     "childrenIds": ["INS-KOSHA-01"]
   },
   {
@@ -29,7 +29,7 @@
     "docNumber": "ST-IN-001",
     "currentVersion": "Rev.1",
     "effectiveDate": "2026-03-01",
-    "department": "안전보건팀",
+    "department": "품질안전보건실",
     "childrenIds": []
   }
 ]
