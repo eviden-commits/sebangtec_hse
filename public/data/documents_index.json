@@ -1,0 +1,35 @@
+[
+  {
+    "id": "MAN-KOSHA-01",
+    "category": "MANUAL",
+    "parentId": null,
+    "title": "안전보건경영시스템 매뉴얼",
+    "docNumber": "ST-MN-001",
+    "currentVersion": "Rev.3",
+    "effectiveDate": "2026-03-01",
+    "department": "안전보건팀",
+    "childrenIds": ["PRC-KOSHA-01"]
+  },
+  {
+    "id": "PRC-KOSHA-01",
+    "category": "PROCEDURE",
+    "parentId": "MAN-KOSHA-01",
+    "title": "위험성평가 관리 절차서",
+    "docNumber": "ST-PR-001",
+    "currentVersion": "Rev.2",
+    "effectiveDate": "2026-03-01",
+    "department": "안전보건팀",
+    "childrenIds": ["INS-KOSHA-01"]
+  },
+  {
+    "id": "INS-KOSHA-01",
+    "category": "INSTRUCTION",
+    "parentId": "PRC-KOSHA-01",
+    "title": "위험성평가 실시 지침서",
+    "docNumber": "ST-IN-001",
+    "currentVersion": "Rev.1",
+    "effectiveDate": "2026-03-01",
+    "department": "안전보건팀",
+    "childrenIds": []
+  }
+]

@@ -1,0 +1,35 @@
+{
+  "id": "MAN-KOSHA-01",
+  "category": "MANUAL",
+  "parentId": null,
+  "title": "안전보건경영시스템 매뉴얼",
+  "docNumber": "ST-MN-001",
+  "currentVersion": "Rev.3",
+  "effectiveDate": "2026-03-01",
+  "department": "안전보건팀",
+  "childrenIds": ["PRC-KOSHA-01"],
+  "revisions": [
+    {
+      "version": "Rev.1",
+      "date": "2022-01-10",
+      "author": "sb06@sebangtec.com",
+      "summary": "KOSHA-MS 규격 인증에 따른 매뉴얼 최초 제정",
+      "content": "<h1>제1조 (목적)</h1><p>본 매뉴얼은 세방테크의 안전보건경영시스템을 수립하여 중대재해를 예방함을 목적으로 한다.</p>"
+    },
+    {
+      "version": "Rev.2",
+      "date": "2024-02-15",
+      "author": "sb06@sebangtec.com",
+      "summary": "중대재해처벌법 및 관계 법령 반영에 따른 경영책임자 의무 규정 보완",
+      "content": "<h1>제1조 (목적)</h1><p>본 매뉴얼은 (주)세방테크의 안전보건경영체계를 확립하고, 안전보건 관계 법령을 준수하며 쾌적하고 안전한 작업환경을 조성함을 목적으로 한다.</p>"
+    },
+    {
+      "version": "Rev.3",
+      "date": "2026-03-01",
+      "author": "nschoi@sebangtec.com",
+      "summary": "2026년 KOSHA-MS 정기 사후심사 지적사항 반영 및 위험성평가 상시화 체계 도입",
+      "content": "<div class=\"doc-article\" id=\"art-1\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제1조</span> (목적)</h3>\n  <p class=\"article-body\">본 매뉴얼은 (주)세방테크(이하 \"회사\"라 한다)의 모든 사업장 및 작업 공정에 적용되는 <strong>안전보건경영시스템(KOSHA-MS)</strong>의 기준과 절차를 규정함으로써 산업재해를 예방하고 근로자의 생명과 신체의 안전을 도모함을 목적으로 한다. <span class=\"rev-badge\">개정 2026. 3. 1.</span></p>\n</div>\n\n<div class=\"doc-article\" id=\"art-2\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제2조</span> (적용범위)</h3>\n  <p class=\"article-body\">본 매뉴얼은 회사의 본사, 현장, 연구소 및 협력업체가 수행하는 모든 업무 및 프로젝트에 적용한다.</p>\n  <p class=\"article-body\">② 협력업체 및 도급인은 회사의 안전보건 방침과 절차를 준수하여야 한다.</p>\n</div>\n\n<div class=\"doc-article\" id=\"art-3\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제3조</span> (안전보건방침 및 목표)</h3>\n  <p class=\"article-body\">① 대표이사는 매년 안전보건 경영목표 및 방침을 선언하고 전 임직원에게 공표하여야 한다.</p>\n  <p class=\"article-body\">② 안전보건 총괄책임자는 반기별 목표 달성 실적을 평가하고 이를 경영회의에 보고하여야 한다.</p>\n</div>\n\n<div class=\"doc-article\" id=\"art-4\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제4조</span> (위험성평가 및 개선활동)</h3>\n  <p class=\"article-body\">① 각 사업부서 및 현장 책임자는 유해·위험요인을 사전에 발굴하고 통제하기 위한 위험성평가를 상시 실시하여야 한다.</p>\n  <p class=\"article-body\">② 위험성평가의 세부 주기, 절차 및 평가 기준은 <a href=\"detail.html?id=PRC-KOSHA-01\" class=\"ref-link\">[위험성평가 관리 절차서 (ST-PR-001)]</a> 및 <a href=\"detail.html?id=INS-KOSHA-01\" class=\"ref-link\">[위험성평가 실시 지침서 (ST-IN-001)]</a>에 따른다.</p>\n</div>"
+    }
+  ],
+  "currentContent": "<div class=\"doc-article\" id=\"art-1\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제1조</span> (목적)</h3>\n  <p class=\"article-body\">본 매뉴얼은 (주)세방테크(이하 \"회사\"라 한다)의 모든 사업장 및 작업 공정에 적용되는 <strong>안전보건경영시스템(KOSHA-MS)</strong>의 기준과 절차를 규정함으로써 산업재해를 예방하고 근로자의 생명과 신체의 안전을 도모함을 목적으로 한다. <span class=\"rev-badge\">개정 2026. 3. 1.</span></p>\n</div>\n\n<div class=\"doc-article\" id=\"art-2\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제2조</span> (적용범위)</h3>\n  <p class=\"article-body\">본 매뉴얼은 회사의 본사, 현장, 연구소 및 협력업체가 수행하는 모든 업무 및 프로젝트에 적용한다.</p>\n  <p class=\"article-body\">② 협력업체 및 도급인은 회사의 안전보건 방침과 절차를 준수하여야 한다.</p>\n</div>\n\n<div class=\"doc-article\" id=\"art-3\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제3조</span> (안전보건방침 및 목표)</h3>\n  <p class=\"article-body\">① 대표이사는 매년 안전보건 경영목표 및 방침을 선언하고 전 임직원에게 공표하여야 한다.</p>\n  <p class=\"article-body\">② 안전보건 총괄책임자는 반기별 목표 달성 실적을 평가하고 이를 경영회의에 보고하여야 한다.</p>\n</div>\n\n<div class=\"doc-article\" id=\"art-4\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제4조</span> (위험성평가 및 개선활동)</h3>\n  <p class=\"article-body\">① 각 사업부서 및 현장 책임자는 유해·위험요인을 사전에 발굴하고 통제하기 위한 위험성평가를 상시 실시하여야 한다.</p>\n  <p class=\"article-body\">② 위험성평가의 세부 주기, 절차 및 평가 기준은 <a href=\"detail.html?id=PRC-KOSHA-01\" class=\"ref-link\">[위험성평가 관리 절차서 (ST-PR-001)]</a> 및 <a href=\"detail.html?id=INS-KOSHA-01\" class=\"ref-link\">[위험성평가 실시 지침서 (ST-IN-001)]</a>에 따른다.</p>\n</div>"
+}

@@ -1,0 +1,92 @@
+/* 인쇄 전용 보안 워터마크 스타일 (print.css) */
+@media print {
+  @page {
+    size: A4;
+    margin: 20mm 15mm 20mm 15mm;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    height: auto !important;
+    overflow: visible !important;
+    font-size: 11pt;
+  }
+
+  /* 화면 전용 요소 숨김 */
+  .no-print,
+  .detail-header,
+  .action-toolbar,
+  .sidebar-tree,
+  .modal-backdrop {
+    display: none !important;
+  }
+
+  /* 인쇄 전용 헤더 및 워터마크 노출 */
+  .print-only {
+    display: block !important;
+  }
+
+  .viewer-container {
+    display: block !important;
+    overflow: visible !important;
+  }
+
+  .content-pane {
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* 인쇄 헤더 상단 고정 표기 */
+  .print-header-box {
+    border-bottom: 2px solid #000;
+    padding-bottom: 8px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 10pt;
+    color: #333;
+  }
+  .print-corp-name {
+    font-weight: bold;
+    color: #000;
+  }
+
+  /* 대각선 보안 워터마크 레이어 (출력자 정보 포함) */
+  .watermark-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 99999;
+    pointer-events: none;
+    opacity: 0.12;
+    background-repeat: repeat;
+  }
+
+  /* 조항 스타일 */
+  .doc-article {
+    page-break-inside: avoid;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+  }
+
+  .article-title {
+    font-size: 13pt;
+    color: #000 !important;
+  }
+
+  .article-body {
+    font-size: 10.5pt;
+    line-height: 1.7;
+    color: #111 !important;
+  }
+
+  .rev-badge {
+    border: 1px solid #999;
+    background: none !important;
+    color: #333 !important;
+  }
+}

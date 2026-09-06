@@ -1,0 +1,21 @@
+{
+  "id": "INS-KOSHA-01",
+  "category": "INSTRUCTION",
+  "parentId": "PRC-KOSHA-01",
+  "title": "위험성평가 실시 지침서",
+  "docNumber": "ST-IN-001",
+  "currentVersion": "Rev.1",
+  "effectiveDate": "2026-03-01",
+  "department": "안전보건팀",
+  "childrenIds": [],
+  "revisions": [
+    {
+      "version": "Rev.1",
+      "date": "2026-03-01",
+      "author": "nschoi@sebangtec.com",
+      "summary": "3단계(상/중/하) 빈도·강도법 및 체크리스트 평가 지침 제정",
+      "content": "<div class=\"doc-article\" id=\"art-1\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제1조</span> (목적)</h3>\n  <p class=\"article-body\">본 지침서는 위험성평가 관리 절차서에 따라 사업장에서 실제로 위험성평가를 수행할 때 사용하는 평가 기법과 양식 작성 방법을 규정함을 목적으로 한다. <span class=\"rev-badge\">제정 2026. 3. 1.</span></p>\n</div>\n\n<div class=\"doc-article\" id=\"art-2\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제2조</span> (평가 방법)</h3>\n  <p class=\"article-body\">① 현장 작업의 특성에 따라 다음 각 호의 기법 중 적합한 방식을 선정한다.</p>\n  <p class=\"article-body\">1. <strong>빈도·강도법 (3x3 매트릭스)</strong>: 설비 가동 및 일반 제조 작업</p>\n  <p class=\"article-body\">2. <strong>체크리스트법</strong>: 일상 점검 및 정형화된 단순 반복 작업</p>\n  <p class=\"article-body\">3. <strong>위험성 수준 3단계 판단법 (상·중·하)</strong>: 소규모 공정 및 긴급 보수 작업</p>\n</div>\n\n<div class=\"doc-article\" id=\"art-3\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제3조</span> (첨부 양식)</h3>\n  <p class=\"article-body\">평가 완료 후 작성하는 위험성평가표는 [별지 제1호 서식: 위험성평가 실시 결과표]를 준용한다.</p>\n</div>"
+    }
+  ],
+  "currentContent": "<div class=\"doc-article\" id=\"art-1\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제1조</span> (목적)</h3>\n  <p class=\"article-body\">본 지침서는 위험성평가 관리 절차서에 따라 사업장에서 실제로 위험성평가를 수행할 때 사용하는 평가 기법과 양식 작성 방법을 규정함을 목적으로 한다. <span class=\"rev-badge\">제정 2026. 3. 1.</span></p>\n</div>\n\n<div class=\"doc-article\" id=\"art-2\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제2조</span> (평가 방법)</h3>\n  <p class=\"article-body\">① 현장 작업의 특성에 따라 다음 각 호의 기법 중 적합한 방식을 선정한다.</p>\n  <p class=\"article-body\">1. <strong>빈도·강도법 (3x3 매트릭스)</strong>: 설비 가동 및 일반 제조 작업</p>\n  <p class=\"article-body\">2. <strong>체크리스트법</strong>: 일상 점검 및 정형화된 단순 반복 작업</p>\n  <p class=\"article-body\">3. <strong>위험성 수준 3단계 판단법 (상·중·하)</strong>: 소규모 공정 및 긴급 보수 작업</p>\n</div>\n\n<div class=\"doc-article\" id=\"art-3\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제3조</span> (첨부 양식)</h3>\n  <p class=\"article-body\">평가 완료 후 작성하는 위험성평가표는 [별지 제1호 서식: 위험성평가 실시 결과표]를 준용한다.</p>\n</div>"
+}

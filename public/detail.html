@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>문서 상세 뷰어 - 세방테크 KOSHA-MS</title>
+  <link rel="stylesheet" href="css/detail.css">
+  <link rel="stylesheet" href="css/print.css" media="print">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <!-- 인쇄 전용 워터마크 컨테이너 (평소 숨김, 인쇄 시 활성화) -->
+  <div id="print-watermark-layer" class="print-only watermark-bg"></div>
+
+  <!-- 상단 네비게이션 헤더 -->
+  <header class="detail-header no-print">
+    <div class="nav-brand" onclick="location.href='index.html'">
+      <i class="fa-solid fa-arrow-left"></i>
+      <span class="portal-title">세방테크 KOSHA-MS 정보센터</span>
+    </div>
+    <div class="search-mini">
+      <input type="text" id="mini-search-input" placeholder="규정 내 검색..." onkeydown="if(event.key==='Enter') searchInDoc()">
+      <button onclick="searchInDoc()"><i class="fa-solid fa-magnifying-glass"></i></button>
+    </div>
+    <div class="user-profile" id="user-status-area">
+      <!-- auth.js에서 채움 -->
+    </div>
+  </header>
+
+  <!-- 상세 페이지 툴바 (법제처 스타일 액션바) -->
+  <div class="action-toolbar no-print">
+    <div class="toolbar-left">
+      <span class="badge-cat" id="doc-cat-badge">매뉴얼</span>
+      <h2 class="current-doc-title" id="doc-title-bar">문서 로딩 중...</h2>
+      <span class="version-tag" id="doc-ver-tag">Rev.3</span>
+    </div>
+    <div class="toolbar-right">
+      <button class="tool-btn" onclick="triggerSecurityPrint()"><i class="fa-solid fa-print"></i> 보안 인쇄</button>
+      <button class="tool-btn" onclick="copyShareUrl()"><i class="fa-solid fa-share-nodes"></i> URL 공유</button>
+      <button class="tool-btn" id="btn-bookmark" onclick="toggleBookmark()"><i class="fa-regular fa-star"></i> 즐겨찾기</button>
+      <button class="tool-btn" onclick="openRevisionHistoryModal()"><i class="fa-solid fa-clock-rotate-left"></i> 개정이력/신구대조</button>
+      <button class="tool-btn admin-only" id="btn-edit-doc" style="display:none;" onclick="openDraftEditorModal()"><i class="fa-solid fa-pen-to-square"></i> 규정 수정·개정</button>
+    </div>
+  </div>
+
+  <!-- 메인 2단 분할 레이아웃 -->
+  <div class="viewer-container">
+    <!-- 좌측 사이드바 (문서 계층 구조 및 조항 목차) -->
+    <aside class="sidebar-tree no-print">
+      <div class="tree-header">
+        <h4><i class="fa-solid fa-folder-tree"></i> 표준 체계 계층</h4>
+      </div>
+      <div class="tree-body" id="hierarchy-tree-area">
+        <!-- 계층 트리 JS 렌더링 -->
+      </div>
+
+      <div class="clause-index-header">
+        <h4><i class="fa-solid fa-list-ol"></i> 조항 바로가기</h4>
+      </div>
+      <ul class="clause-nav-list" id="clause-nav-list">
+        <!-- 조항 목록 JS 렌더링 -->
+      </ul>
+    </aside>
+
+    <!-- 우측 메인 본문 영역 -->
+    <main class="content-pane" id="printable-content">
+      <!-- 인쇄용 헤더 (인쇄 시에만 상단 노출) -->
+      <div class="print-only print-header-box">
+        <div class="print-corp-name">(주)세방테크 안전보건경영시스템 규정 [비제어본]</div>
+        <div class="print-meta-info" id="print-watermark-text">출력자: - | 출력일시: -</div>
+      </div>
+
+      <div class="doc-official-header">
+        <div class="doc-meta-row">
+          <span class="meta-item"><strong>문서번호:</strong> <span id="meta-doc-num">-</span></span>
+          <span class="meta-item"><strong>제·개정구분:</strong> <span id="meta-doc-rev">-</span></span>
+          <span class="meta-item"><strong>시행일자:</strong> <span id="meta-doc-date">-</span></span>
+          <span class="meta-item"><strong>주관부서:</strong> <span id="meta-doc-dept">-</span></span>
+        </div>
+        <h1 class="doc-main-title" id="doc-main-title">-</h1>
+      </div>
+
+      <!-- 본문 컨텐츠 (조항별 렌더링) -->
+      <div class="doc-body-content" id="doc-content-body">
+        <!-- JS로 채워짐 -->
+      </div>
+    </main>
+  </div>
+
+  <!-- [모달 1] 임시 메모리 기반 웹 에디터 (Sandbox Draft Modal - 오염 방지) -->
+  <div id="editor-modal" class="modal-backdrop no-print" style="display:none;">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-file-pen"></i> 표준문서 웹 에디터 (안전 편집 모드)</h3>
+        <button class="btn-close" onclick="closeDraftEditorModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="draft-notice">
+          <i class="fa-solid fa-shield-halved"></i> <strong>오염 방지 안내:</strong> 본 창에서 수행하는 편집은 임시 메모리(Draft Staging)에서 격리되어 처리되며, 하단의 [발행 및 적용] 버튼을 누르기 전까지는 실서버 문서에 영향을 주지 않습니다.
+        </div>
+        
+        <div class="editor-meta-grid">
+          <div class="form-group">
+            <label>문서 제목</label>
+            <input type="text" id="edit-doc-title">
+          </div>
+          <div class="form-group">
+            <label>문서 번호</label>
+            <input type="text" id="edit-doc-num">
+          </div>
+          <div class="form-group">
+            <label>개정 차수 (Version)</label>
+            <input type="text" id="edit-doc-ver" placeholder="예: Rev.4">
+          </div>
+          <div class="form-group">
+            <label>시행 일자</label>
+            <input type="date" id="edit-doc-date">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 10px;">
+          <label><strong>개정 사유 및 주요 변경 요약 (필수)</strong></label>
+          <input type="text" id="edit-doc-summary" placeholder="예: 2026년 정기 안전보건심사 조치사항 반영 및 법 개정 조항 보완">
+        </div>
+
+        <!-- 텍스트/HTML 편집 에디터 툴바 -->
+        <div class="editor-toolbar">
+          <button type="button" onclick="formatDoc('bold')"><i class="fa-solid fa-bold"></i></button>
+          <button type="button" onclick="formatDoc('italic')"><i class="fa-solid fa-italic"></i></button>
+          <button type="button" onclick="formatDoc('underline')"><i class="fa-solid fa-underline"></i></button>
+          <button type="button" onclick="insertArticleTemplate()"><i class="fa-solid fa-plus"></i> 조항 추가 (제n조)</button>
+          <button type="button" onclick="insertRefLink()"><i class="fa-solid fa-link"></i> 연계 절차서 링크 삽입</button>
+        </div>
+        <div id="draft-editor-area" contenteditable="true" class="draft-rich-editor">
+          <!-- 에디터 본문 -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeDraftEditorModal()">임시 변경 취소</button>
+        <button class="btn-primary" onclick="publishDraftChanges()"><i class="fa-solid fa-cloud-arrow-up"></i> 개정 발행 및 적용</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- [모달 2] 개정이력 및 신구대조 (Diff) 모달 -->
+  <div id="diff-modal" class="modal-backdrop no-print" style="display:none;">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-code-compare"></i> 개정 이력 및 신구조문 비교</h3>
+        <button class="btn-close" onclick="closeRevisionHistoryModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="rev-timeline-box" id="rev-timeline-list">
+          <!-- 개정 이력 목록 -->
+        </div>
+        <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;">
+        <h4><i class="fa-solid fa-arrows-split-up-and-left"></i> 직전 버전 대비 변경 사항 (신구조문대조)</h4>
+        <div class="diff-view-container">
+          <div class="diff-column">
+            <h5>이전 개정본 (<span id="diff-prev-version">Rev.2</span>)</h5>
+            <div class="diff-content" id="diff-prev-content"></div>
+          </div>
+          <div class="diff-column">
+            <h5>현재 개정본 (<span id="diff-curr-version">Rev.3</span>)</h5>
+            <div class="diff-content" id="diff-curr-content"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 로그인 모달 -->
+  <div id="login-modal" class="modal-backdrop no-print" style="display:none;">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-lock"></i> 사내 이메일 OTP 로그인</h3>
+        <button class="btn-close" onclick="closeLoginModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="login-desc">세방테크 사내 이메일(<strong>@sebangtec.com</strong>)로 일회용 인증번호를 발송합니다.</p>
+        <div class="form-group" id="group-email">
+          <label for="login-email">사내 이메일</label>
+          <div class="input-with-btn">
+            <input type="email" id="login-email" placeholder="hong@sebangtec.com" onkeydown="if(event.key==='Enter') sendOtp()">
+            <button class="btn-action" id="btn-send-otp" onclick="sendOtp()">OTP 발송</button>
+          </div>
+        </div>
+        <div class="form-group" id="group-otp" style="display:none; margin-top: 15px;">
+          <label for="login-otp">인증번호 (6자리)</label>
+          <div class="input-with-btn">
+            <input type="text" id="login-otp" maxlength="6" placeholder="인증번호 6자리 입력" onkeydown="if(event.key==='Enter') verifyOtp()">
+            <button class="btn-primary" id="btn-verify-otp" onclick="verifyOtp()">인증 완료</button>
+          </div>
+          <div id="otp-status-msg" class="otp-alert"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 사이트 초기 접속 비밀번호(Gatekeeper) 모달 (GAS 연동) -->
+  <div id="gate-modal" class="gate-overlay no-print" style="display:none;">
+    <div class="gate-card">
+      <div class="gate-icon">
+        <i class="fa-solid fa-shield-halved"></i>
+      </div>
+      <h2>세방테크 사내표준정보센터</h2>
+      <p class="gate-sub">KOSHA-MS 보안 포털 접속 인증</p>
+      <div class="gate-desc">
+        본 포털은 사내 임직원 전용 시스템입니다.<br>
+        보안 관리자에 의해 지정된 <strong>접속 비밀번호</strong>를 입력해 주십시오.
+      </div>
+      
+      <div class="gate-input-box">
+        <input type="password" id="gate-password" placeholder="접속 비밀번호 입력" onkeydown="if(event.key==='Enter') submitGatePassword()">
+        <button type="button" class="btn-gate-submit" onclick="submitGatePassword()">
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+      <div id="gate-error-msg" class="gate-error"></div>
+      
+      <div class="gate-footer">
+        <small><i class="fa-solid fa-lock"></i> Google Apps Script (sebangtec_hse) 연동 보안 시스템</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- 스크립트 로드 -->
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/detail.js"></script>
+</body>
+</html>

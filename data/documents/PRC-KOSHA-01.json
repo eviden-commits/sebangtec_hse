@@ -1,0 +1,28 @@
+{
+  "id": "PRC-KOSHA-01",
+  "category": "PROCEDURE",
+  "parentId": "MAN-KOSHA-01",
+  "title": "위험성평가 관리 절차서",
+  "docNumber": "ST-PR-001",
+  "currentVersion": "Rev.2",
+  "effectiveDate": "2026-03-01",
+  "department": "안전보건팀",
+  "childrenIds": ["INS-KOSHA-01"],
+  "revisions": [
+    {
+      "version": "Rev.1",
+      "date": "2023-05-10",
+      "author": "sb06@sebangtec.com",
+      "summary": "위험성평가 5단계 절차 제정",
+      "content": "<h1>제1조 (목적)</h1>..."
+    },
+    {
+      "version": "Rev.2",
+      "date": "2026-03-01",
+      "author": "nschoi@sebangtec.com",
+      "summary": "고용노동부 위험성평가 개편 고시 반영 (상시평가 및 TBM 연계 강화)",
+      "content": "<div class=\"doc-article\" id=\"art-1\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제1조</span> (목적)</h3>\n  <p class=\"article-body\">본 절차서는 사업장 내 유해·위험요인을 파악하고 위험성을 추정·결정하여 감소대책을 수립·이행하는 일련의 절차와 기준을 정함을 목적으로 한다. <span class=\"rev-badge\">개정 2026. 3. 1.</span></p>\n</div>\n\n<div class=\"doc-article\" id=\"art-2\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제2조</span> (평가 종류 및 주기)</h3>\n  <p class=\"article-body\">① 위험성평가는 최초평가, 수시평가, 정기평가 및 상시평가로 구분한다.</p>\n  <p class=\"article-body\">② <strong>상시평가</strong>는 매월 1회 이상 유해위험요인을 점검하고 매일 작업 전 안전점검회의(TBM)를 통해 근로자에게 주지시켜야 한다.</p>\n</div>\n\n<div class=\"doc-article\" id=\"art-3\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제3조</span> (근로자 참여)</h3>\n  <p class=\"article-body\">위험성평가의 전 과정(유해·위험요인 파악, 위험성 결정, 감소대책 수립 등)에는 해당 공정의 실무 근로자를 반드시 참여시켜야 한다.</p>\n</div>"
+    }
+  ],
+  "currentContent": "<div class=\"doc-article\" id=\"art-1\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제1조</span> (목적)</h3>\n  <p class=\"article-body\">본 절차서는 사업장 내 유해·위험요인을 파악하고 위험성을 추정·결정하여 감소대책을 수립·이행하는 일련의 절차와 기준을 정함을 목적으로 한다. <span class=\"rev-badge\">개정 2026. 3. 1.</span></p>\n</div>\n\n<div class=\"doc-article\" id=\"art-2\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제2조</span> (평가 종류 및 주기)</h3>\n  <p class=\"article-body\">① 위험성평가는 최초평가, 수시평가, 정기평가 및 상시평가로 구분한다.</p>\n  <p class=\"article-body\">② <strong>상시평가</strong>는 매월 1회 이상 유해위험요인을 점검하고 매일 작업 전 안전점검회의(TBM)를 통해 근로자에게 주지시켜야 한다.</p>\n</div>\n\n<div class=\"doc-article\" id=\"art-3\">\n  <h3 class=\"article-title\"><span class=\"art-num\">제3조</span> (근로자 참여)</h3>\n  <p class=\"article-body\">위험성평가의 전 과정(유해·위험요인 파악, 위험성 결정, 감소대책 수립 등)에는 해당 공정의 실무 근로자를 반드시 참여시켜야 한다.</p>\n</div>"
+}
