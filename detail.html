@@ -150,13 +150,79 @@
           <input type="text" id="edit-doc-summary" placeholder="예: 2026년 정기 안전보건심사 조치사항 반영 및 법 개정 조항 보완">
         </div>
 
-        <!-- 텍스트/HTML 편집 에디터 툴바 -->
+        <!-- 기능 강화 리치 텍스트 에디터 툴바 -->
         <div class="editor-toolbar">
-          <button type="button" onclick="formatDoc('bold')"><i class="fa-solid fa-bold"></i></button>
-          <button type="button" onclick="formatDoc('italic')"><i class="fa-solid fa-italic"></i></button>
-          <button type="button" onclick="formatDoc('underline')"><i class="fa-solid fa-underline"></i></button>
-          <button type="button" onclick="insertArticleTemplate()"><i class="fa-solid fa-plus"></i> 조항 추가 (제n조)</button>
-          <button type="button" onclick="insertRefLink()"><i class="fa-solid fa-link"></i> 연계 절차서 링크 삽입</button>
+          <!-- 글꼴 및 크기 -->
+          <div class="toolbar-group">
+            <select onchange="formatDoc('fontName', this.value)" title="글꼴 선택" class="editor-select">
+              <option value="Pretendard, -apple-system, sans-serif">기본 글꼴 (Pretendard)</option>
+              <option value="'맑은 고딕', 'Malgun Gothic', sans-serif">맑은 고딕</option>
+              <option value="'나눔고딕', 'Nanum Gothic', sans-serif">나눔고딕</option>
+              <option value="'돋움', Dotum, sans-serif">돋움</option>
+              <option value="'바탕', Batang, serif">바탕체 (공문서)</option>
+            </select>
+            <select onchange="formatDoc('fontSize', this.value)" title="글자 크기" class="editor-select" style="width: 75px;">
+              <option value="3" selected>보통(14pt)</option>
+              <option value="1">아주 작게</option>
+              <option value="2">작게</option>
+              <option value="4">조금 크게</option>
+              <option value="5">크게(소제목)</option>
+              <option value="6">아주 크게</option>
+            </select>
+          </div>
+
+          <div class="toolbar-separator"></div>
+
+          <!-- 텍스트 서식 -->
+          <div class="toolbar-group">
+            <button type="button" class="btn-tb" onclick="formatDoc('bold')" title="굵게 (Ctrl+B)"><i class="fa-solid fa-bold"></i></button>
+            <button type="button" class="btn-tb" onclick="formatDoc('italic')" title="기울임 (Ctrl+I)"><i class="fa-solid fa-italic"></i></button>
+            <button type="button" class="btn-tb" onclick="formatDoc('underline')" title="밑줄 (Ctrl+U)"><i class="fa-solid fa-underline"></i></button>
+            <button type="button" class="btn-tb" onclick="formatDoc('strikeThrough')" title="취소선"><i class="fa-solid fa-strikethrough"></i></button>
+          </div>
+
+          <div class="toolbar-separator"></div>
+
+          <!-- 색상 & 배경색 -->
+          <div class="toolbar-group">
+            <label class="color-picker-label" title="글자 색상">
+              <i class="fa-solid fa-font"></i>
+              <input type="color" onchange="formatDoc('foreColor', this.value)" value="#1e293b" style="opacity:0; width:0; height:0; position:absolute;">
+            </label>
+            <label class="color-picker-label" title="형광펜 / 배경색">
+              <i class="fa-solid fa-highlighter" style="color: #eab308;"></i>
+              <input type="color" onchange="formatDoc('hiliteColor', this.value)" value="#fef08a" style="opacity:0; width:0; height:0; position:absolute;">
+            </label>
+          </div>
+
+          <div class="toolbar-separator"></div>
+
+          <!-- 정렬 -->
+          <div class="toolbar-group">
+            <button type="button" class="btn-tb" onclick="formatDoc('justifyLeft')" title="왼쪽 정렬"><i class="fa-solid fa-align-left"></i></button>
+            <button type="button" class="btn-tb" onclick="formatDoc('justifyCenter')" title="가운데 정렬"><i class="fa-solid fa-align-center"></i></button>
+            <button type="button" class="btn-tb" onclick="formatDoc('justifyRight')" title="오른쪽 정렬"><i class="fa-solid fa-align-right"></i></button>
+          </div>
+
+          <div class="toolbar-separator"></div>
+
+          <!-- 목록 & 들여쓰기 -->
+          <div class="toolbar-group">
+            <button type="button" class="btn-tb" onclick="formatDoc('insertUnorderedList')" title="글머리 기호 목록"><i class="fa-solid fa-list-ul"></i></button>
+            <button type="button" class="btn-tb" onclick="formatDoc('insertOrderedList')" title="번호 매기기 목록"><i class="fa-solid fa-list-ol"></i></button>
+            <button type="button" class="btn-tb" onclick="formatDoc('outdent')" title="내어쓰기"><i class="fa-solid fa-outdent"></i></button>
+            <button type="button" class="btn-tb" onclick="formatDoc('indent')" title="들여쓰기"><i class="fa-solid fa-indent"></i></button>
+          </div>
+
+          <div class="toolbar-separator"></div>
+
+          <!-- 표(테이블), 링크, 조항 추가 -->
+          <div class="toolbar-group">
+            <button type="button" class="btn-tb" onclick="insertTableDialog()" title="표(Table) 삽입"><i class="fa-solid fa-table"></i> 표 삽입</button>
+            <button type="button" class="btn-tb" onclick="insertRefLink()" title="연계 규정 링크"><i class="fa-solid fa-link"></i> 연계 링크</button>
+            <button type="button" class="btn-tb btn-tb-primary" onclick="openArticleModal()" title="새로운 표준 조항(제n조)을 독립 줄로 추가"><i class="fa-solid fa-circle-plus"></i> <strong>+ 조항 추가 (새줄 입력)</strong></button>
+            <button type="button" class="btn-tb" onclick="formatDoc('removeFormat')" title="서식 지우기"><i class="fa-solid fa-eraser"></i></button>
+          </div>
         </div>
         <div id="draft-editor-area" contenteditable="true" class="draft-rich-editor">
           <!-- 에디터 본문 -->
@@ -248,6 +314,47 @@
       
       <div class="gate-footer">
         <small><i class="fa-solid fa-lock"></i> Google Apps Script (sebangtec_hse) 연동 보안 시스템</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- [모달 3] 신규 조항 추가 전용 모달 (제목 & 본문 분리 입력) -->
+  <div id="article-modal" class="modal-backdrop no-print" style="display:none; z-index: 10005;">
+    <div class="modal-dialog" style="max-width: 580px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-file-circle-plus"></i> 신규 조항 추가</h3>
+        <button class="btn-close" onclick="closeArticleModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+          <div style="width: 110px;">
+            <label style="display:block; font-size:13px; font-weight:600; margin-bottom:4px;">조항 번호</label>
+            <input type="text" id="modal-art-num" placeholder="제n조" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; font-weight:700; color:var(--primary);">
+          </div>
+          <div style="flex: 1;">
+            <label style="display:block; font-size:13px; font-weight:600; margin-bottom:4px;">조항 제목</label>
+            <input type="text" id="modal-art-title" placeholder="예: 위험성평가의 실시 주기" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;" onkeydown="if(event.key==='Enter') document.getElementById('modal-art-body').focus()">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 10px;">
+          <label style="display:block; font-size:13px; font-weight:600; margin-bottom:4px;">조문 내용 (원문 / 항·호 입력)</label>
+          <div class="editor-sub-toolbar">
+            <button type="button" class="btn-tool-mini" onclick="insertParagraphSymbol('① ')" title="1항 삽입">①</button>
+            <button type="button" class="btn-tool-mini" onclick="insertParagraphSymbol('② ')" title="2항 삽입">②</button>
+            <button type="button" class="btn-tool-mini" onclick="insertParagraphSymbol('③ ')" title="3항 삽입">③</button>
+            <button type="button" class="btn-tool-mini" onclick="insertParagraphSymbol('④ ')" title="4항 삽입">④</button>
+            <button type="button" class="btn-tool-mini" onclick="insertParagraphSymbol('⑤ ')" title="5항 삽입">⑤</button>
+            <button type="button" class="btn-tool-mini" onclick="insertParagraphSymbol('1. ')" title="1호 삽입">1.</button>
+            <button type="button" class="btn-tool-mini" onclick="insertParagraphSymbol('가. ')" title="목 삽입">가.</button>
+          </div>
+          <textarea id="modal-art-body" rows="6" placeholder="① 사업주는 매년 정기적으로 위험성평가를 실시하여야 한다.&#10;② 평가 결과는 3년간 보존하여야 한다." style="width:100%; padding:10px; border:1px solid #ccc; border-radius:0 0 4px 4px; font-size:13.5px; line-height:1.6; resize:vertical; outline:none; font-family:inherit;"></textarea>
+        </div>
+        <small class="text-muted" style="color:#64748b;"><i class="fa-solid fa-circle-info"></i> 확인 시 에디터 맨 아래에 새 줄로 독립된 표준 조항 블록이 삽입됩니다.</small>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeArticleModal()">취소</button>
+        <button class="btn-primary" onclick="confirmAddArticle()"><i class="fa-solid fa-plus"></i> 조항 본문 삽입</button>
       </div>
     </div>
   </div>

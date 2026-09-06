@@ -424,26 +424,139 @@ function closeDraftEditorModal() {
 
 // 리치 텍스트 서식 명령
 function formatDoc(cmd, val = null) {
+  document.getElementById('draft-editor-area').focus();
   document.execCommand(cmd, false, val);
 }
 
-// 조항 템플릿 추가
-function insertArticleTemplate() {
+// 조항 추가 모달 열기 (제목/본문 분리 입력, 다음 번호 자동 감지)
+function openArticleModal() {
   const editorArea = document.getElementById('draft-editor-area');
-  const nextNum = editorArea.querySelectorAll('.doc-article').length + 1;
-  const tpl = `
-<div class="doc-article" id="art-${nextNum}">
-  <h3 class="article-title"><span class="art-num">제${nextNum}조</span> (조항 제목 입력)</h3>
-  <p class="article-body">① 여기에 세부 절차 내용을 입력하십시오.</p>
-</div>`;
-  formatDoc('insertHTML', tpl);
+  const existingArticles = editorArea.querySelectorAll('.doc-article');
+  let maxNum = 0;
+  
+  existingArticles.forEach(art => {
+    const numEl = art.querySelector('.art-num');
+    if (numEl) {
+      const m = numEl.textContent.match(/제\s*(\d+)\s*조/);
+      if (m) {
+        const n = parseInt(m[1], 10);
+        if (n > maxNum) maxNum = n;
+      }
+    }
+  });
+
+  const nextNum = (maxNum > 0) ? maxNum + 1 : (existingArticles.length + 1);
+  document.getElementById('modal-art-num').value = `제${nextNum}조`;
+  document.getElementById('modal-art-title').value = '';
+  document.getElementById('modal-art-body').value = '';
+
+  document.getElementById('article-modal').style.display = 'flex';
+  setTimeout(() => {
+    document.getElementById('modal-art-title').focus();
+  }, 100);
+}
+
+function closeArticleModal() {
+  document.getElementById('article-modal').style.display = 'none';
+}
+
+// 모달 내 항(①, ②), 호(1., 가.) 기호 간편 삽입
+function insertParagraphSymbol(sym) {
+  const textarea = document.getElementById('modal-art-body');
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const val = textarea.value;
+
+  // 현재 커서가 줄의 시작이 아니면 줄바꿈 후 삽입
+  const prefix = (start > 0 && val[start - 1] !== '\n') ? '\n' : '';
+  textarea.value = val.substring(0, start) + prefix + sym + val.substring(end);
+  textarea.focus();
+  const nextPos = start + prefix.length + sym.length;
+  textarea.setSelectionRange(nextPos, nextPos);
+}
+
+// 신규 조항 확인 및 에디터 맨 아래에 '새 줄' 독립 블록으로 삽입
+function confirmAddArticle() {
+  const artNum = document.getElementById('modal-art-num').value.trim() || '제n조';
+  const artTitle = document.getElementById('modal-art-title').value.trim() || '조항 제목';
+  const rawBody = document.getElementById('modal-art-body').value.trim() || '① 여기에 세부 절차 내용을 입력하십시오.';
+
+  // 본문의 여러 줄(항, 호)을 HTML <p> 단위로 깔끔하게 변환
+  const bodyParagraphs = rawBody.split('\n')
+    .map(line => line.trim())
+    .filter(line => line.length > 0)
+    .map(line => `<p class="article-body">${escapeHtml(line)}</p>`)
+    .join('\n');
+
+  // 조항 번호 ID 추출 (예: 제5조 -> art-5)
+  const numMatch = artNum.match(/\d+/);
+  const idSuffix = numMatch ? numMatch[0] : Date.now();
+  const articleId = `art-${idSuffix}`;
+
+  const newArticleHtml = `
+<div class="doc-article" id="${articleId}">
+  <h3 class="article-title"><span class="art-num">${escapeHtml(artNum)}</span> (${escapeHtml(artTitle)})</h3>
+  ${bodyParagraphs}
+</div>
+<p><br></p>`;
+
+  const editorArea = document.getElementById('draft-editor-area');
+  
+  // 기존 본문 뒤에 독립된 새 줄로 안전하게 결합
+  editorArea.insertAdjacentHTML('beforeend', newArticleHtml);
+
+  // 추가된 새 조항 위치로 부드럽게 스크롤
+  const addedEl = document.getElementById(articleId);
+  if (addedEl) {
+    addedEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    addedEl.style.transition = 'background-color 0.8s';
+    addedEl.style.backgroundColor = '#fef9c3';
+    setTimeout(() => {
+      addedEl.style.backgroundColor = 'transparent';
+    }, 1200);
+  }
+
+  closeArticleModal();
+}
+
+// 하위 호환용 템플릿 추가 (단축키 또는 이전 호출 대비)
+function insertArticleTemplate() {
+  openArticleModal();
+}
+
+// 표(Table) 삽입 다이얼로그
+function insertTableDialog() {
+  const rows = parseInt(prompt('생성할 표의 행(Row) 개수 (기본: 3):', '3'), 10) || 3;
+  const cols = parseInt(prompt('생성할 표의 열(Column) 개수 (기본: 3):', '3'), 10) || 3;
+
+  if (rows <= 0 || cols <= 0 || rows > 20 || cols > 10) {
+    alert('행은 1~20개, 열은 1~10개 사이로 입력해 주십시오.');
+    return;
+  }
+
+  let tableHtml = '<table class="content-table" style="width:100%; border-collapse:collapse; margin:15px 0;"><thead><tr>';
+  for (let c = 1; c <= cols; c++) {
+    tableHtml += `<th style="border:1px solid #cbd5e1; background-color:#f8fafc; padding:8px 12px; font-weight:600;">구분 ${c}</th>`;
+  }
+  tableHtml += '</tr></thead><tbody>';
+
+  for (let r = 1; r <= rows; r++) {
+    tableHtml += '<tr>';
+    for (let c = 1; c <= cols; c++) {
+      tableHtml += `<td style="border:1px solid #cbd5e1; padding:8px 12px;">내용 (${r}, ${c})</td>`;
+    }
+    tableHtml += '</tr>';
+  }
+  tableHtml += '</tbody></table><p><br></p>';
+
+  formatDoc('insertHTML', tableHtml);
 }
 
 function insertRefLink() {
-  const url = prompt('연결할 절차서 문서 ID 또는 URL을 입력하세요:', 'detail.html?id=PRC-KOSHA-01');
-  const title = prompt('표시할 링크 텍스트:', '[위험성평가 관리 절차서]');
+  const url = prompt('연결할 절차서/지침서 문서 ID 또는 URL을 입력하세요:', 'detail.html?id=PRC-KOSHA-01');
+  const title = prompt('본문에 표시할 링크 텍스트:', '[위험성평가 관리 절차서]');
   if (url && title) {
-    formatDoc('insertHTML', `<a href="${url}" class="ref-link">${title}</a>`);
+    formatDoc('insertHTML', `<a href="${url}" class="ref-link" style="color:#1d4ed8; text-decoration:underline; font-weight:600;">${escapeHtml(title)}</a> `);
   }
 }
 
@@ -551,6 +664,16 @@ function stripHtml(html) {
   const tmp = document.createElement('DIV');
   tmp.innerHTML = html;
   return tmp.textContent || tmp.innerText || '';
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 // 간단한 신구대조 하이라이트
