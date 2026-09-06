@@ -38,6 +38,9 @@ public class Main {
         .followRedirects(HttpClient.Redirect.ALWAYS)
         .build();
 
+    // 불변 최고 관리자 명단 (Super Admins)
+    public static final Set<String> SUPER_ADMINS = Set.of("nschoi@sebangtec.com", "sb06@sebangtec.com");
+
     // 활성 OTP 임시 저장소 (이메일 -> OTP 코드)
     private static final Map<String, String> OTP_STORE = new ConcurrentHashMap<>();
     // 허용 도메인 정규식
@@ -284,13 +287,15 @@ public class Main {
             String expectedOtp = OTP_STORE.get(email.trim());
             if (expectedOtp != null && expectedOtp.equals(otp.trim())) {
                 OTP_STORE.remove(email.trim());
-                // 관리자 여부 확인
-                boolean isAdmin = checkAdmin(email.trim());
+                // 관리자 및 최고 관리자 여부 확인
+                boolean isSuperAdmin = SUPER_ADMINS.contains(email.trim().toLowerCase());
+                boolean isAdmin = isSuperAdmin || checkAdmin(email.trim());
+                String role = isSuperAdmin ? "SUPER_ADMIN" : (isAdmin ? "ADMIN" : "USER");
 
                 // 감사 로그 기록 (SUCCESS)
                 appendLoginLog(email.trim(), "SUCCESS", ip, userAgent);
 
-                sendJsonResponse(exchange, 200, "{\"success\":true,\"email\":\"" + email.trim() + "\",\"isAdmin\":" + isAdmin + ",\"token\":\"token_" + System.currentTimeMillis() + "\"}");
+                sendJsonResponse(exchange, 200, "{\"success\":true,\"email\":\"" + email.trim() + "\",\"isAdmin\":" + isAdmin + ",\"isSuperAdmin\":" + isSuperAdmin + ",\"role\":\"" + role + "\",\"token\":\"token_" + System.currentTimeMillis() + "\"}");
             } else {
                 appendLoginLog(email.trim(), "FAIL_INVALID_OTP", ip, userAgent);
                 sendJsonResponse(exchange, 401, "{\"success\":false,\"message\":\"인증번호가 일치하지 않습니다.\"}");
@@ -456,6 +461,8 @@ public class Main {
     }
 
     private static boolean checkAdmin(String email) {
+        if (email == null) return false;
+        if (SUPER_ADMINS.contains(email.trim().toLowerCase())) return true;
         try {
             Path adminFile = DATA_DIR.resolve("admins.json");
             if (Files.exists(adminFile)) {

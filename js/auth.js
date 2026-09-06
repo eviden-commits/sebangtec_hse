@@ -1,6 +1,6 @@
-/**
- * 사내 이메일 OTP 인증 및 권한 관리 모듈
- */
+// 불변 최고 관리자 명단 (Super Admins)
+const SUPER_ADMINS = ['nschoi@sebangtec.com', 'sb06@sebangtec.com'];
+
 const AUTH = {
   isGatePassed() {
     return sessionStorage.getItem('sebang_gate_passed') === 'true';
@@ -29,9 +29,16 @@ const AUTH = {
     location.reload();
   },
 
+  isSuperAdmin() {
+    const user = this.getUser();
+    if (!user || !user.email) return false;
+    return user.isSuperAdmin === true || SUPER_ADMINS.includes(user.email.trim().toLowerCase());
+  },
+
   isAdmin() {
     const user = this.getUser();
-    return user && user.isAdmin === true;
+    if (!user || !user.email) return false;
+    return this.isSuperAdmin() || user.isAdmin === true;
   }
 };
 
@@ -98,10 +105,15 @@ function renderUserStatus() {
   const user = AUTH.getUser();
   if (user) {
     let adminBtn = '';
-    if (user.isAdmin) {
+    let roleBadge = '';
+    if (AUTH.isSuperAdmin()) {
+      roleBadge = `<span style="background:#fff3bf;color:#d9480f;padding:2px 8px;border-radius:12px;font-size:12px;font-weight:700;border:1px solid #ffd43b;margin-right:6px;"><i class="fa-solid fa-crown"></i> 최고 관리자</span>`;
       adminBtn = `<button class="btn-text" style="color:#d9480f;font-weight:bold;" onclick="openAdminModal()"><i class="fa-solid fa-gear"></i> 관리자 설정</button>`;
+    } else if (AUTH.isAdmin()) {
+      roleBadge = `<span style="background:#e7f5ff;color:#1864ab;padding:2px 8px;border-radius:12px;font-size:12px;font-weight:600;border:1px solid #a5d8ff;margin-right:6px;"><i class="fa-solid fa-user-shield"></i> 관리자</span>`;
     }
     area.innerHTML = `
+      ${roleBadge}
       <span style="color:#2b8a3e;font-weight:600;"><i class="fa-solid fa-circle-check"></i> ${user.email}</span>
       ${adminBtn}
       <button class="btn-text" onclick="AUTH.logout()"><i class="fa-solid fa-right-from-bracket"></i> 로그아웃</button>
@@ -109,7 +121,7 @@ function renderUserStatus() {
 
     // 관리자 전용 버튼들 노출
     document.querySelectorAll('.admin-only').forEach(el => {
-      if (user.isAdmin) el.style.display = 'inline-flex';
+      if (AUTH.isAdmin()) el.style.display = 'inline-flex';
     });
   } else {
     area.innerHTML = `
@@ -227,10 +239,25 @@ async function loadAdminList() {
   try {
     const data = await API.getAdmins();
     listEl.innerHTML = '';
-    (data.admins || []).forEach(email => {
+
+    // 1. 최고 관리자 (Super Admins) 먼저 고정 렌더링
+    SUPER_ADMINS.forEach(email => {
+      const li = document.createElement('li');
+      li.style.backgroundColor = '#fff9db';
+      li.style.borderLeft = '3px solid #f59f00';
+      li.innerHTML = `
+        <span><i class="fa-solid fa-crown" style="color:#f59f00;"></i> <strong>${email}</strong> <small style="color:#d9480f;font-weight:700;margin-left:6px;">[최고 관리자]</small></span>
+        <span style="font-size:11px;color:#862e9c;padding:2px 8px;background:#f3d9fa;border-radius:3px;font-weight:bold;">고정 권한</span>
+      `;
+      listEl.appendChild(li);
+    });
+
+    // 2. 일반 관리자 목록
+    const otherAdmins = (data.admins || []).filter(e => !SUPER_ADMINS.includes(e.toLowerCase()));
+    otherAdmins.forEach(email => {
       const li = document.createElement('li');
       li.innerHTML = `
-        <span><i class="fa-solid fa-user-shield"></i> ${email}</span>
+        <span><i class="fa-solid fa-user-shield" style="color:#1971c2;"></i> ${email} <small style="color:#666;margin-left:6px;">[일반 관리자]</small></span>
         <button class="btn-delete-sm" onclick="removeAdminEmail('${email}')">삭제</button>
       `;
       listEl.appendChild(li);
@@ -241,8 +268,13 @@ async function loadAdminList() {
 }
 
 async function addAdminEmail() {
+  if (!AUTH.isSuperAdmin()) {
+    alert('새 관리자 추가는 최고 관리자(nschoi, sb06)만 가능합니다.');
+    return;
+  }
+
   const input = document.getElementById('new-admin-email');
-  const email = input.value.trim();
+  const email = input.value.trim().toLowerCase();
   if (!email || !email.endsWith('@sebangtec.com')) {
     alert('@sebangtec.com 사내 이메일을 정확히 입력하세요.');
     return;
@@ -250,7 +282,7 @@ async function addAdminEmail() {
 
   const data = await API.getAdmins();
   const admins = data.admins || [];
-  if (admins.includes(email)) {
+  if (SUPER_ADMINS.includes(email) || admins.map(a => a.toLowerCase()).includes(email)) {
     alert('이미 등록된 관리자입니다.');
     return;
   }
@@ -263,9 +295,19 @@ async function addAdminEmail() {
 }
 
 async function removeAdminEmail(email) {
+  if (SUPER_ADMINS.includes(email.toLowerCase())) {
+    alert('최고 관리자(nschoi@sebangtec.com, sb06@sebangtec.com)의 권한은 삭제할 수 없습니다.');
+    return;
+  }
+
+  if (!AUTH.isSuperAdmin()) {
+    alert('관리자 권한 삭제는 최고 관리자(nschoi, sb06)만 가능합니다.');
+    return;
+  }
+
   if (!confirm(`${email} 관리자 권한을 삭제하시겠습니까?`)) return;
   const data = await API.getAdmins();
-  const admins = (data.admins || []).filter(e => e !== email);
+  const admins = (data.admins || []).filter(e => e.toLowerCase() !== email.toLowerCase());
   await API.saveAdmins(admins);
   loadAdminList();
 }

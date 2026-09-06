@@ -1,6 +1,10 @@
 {
+  "superAdmins": [
+    "nschoi@sebangtec.com",
+    "sb06@sebangtec.com"
+  ],
   "admins": [
-    "sb06@sebangtec.com",
-    "nschoi@sebangtec.com"
+    "nschoi@sebangtec.com",
+    "sb06@sebangtec.com"
   ]
 }
