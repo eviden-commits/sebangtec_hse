@@ -93,27 +93,164 @@
     </aside>
 
     <!-- 우측 메인 본문 영역 -->
+    <!-- 우측 메인 본문 영역 (인쇄 시: [1] 표지 ➔ [2] 개정표 ➔ [3] 신구비교 ➔ [4] 본문 순서로 일괄 출력) -->
     <main class="content-pane" id="printable-content">
-      <!-- 인쇄용 헤더 (인쇄 시에만 상단 노출) -->
-      <div class="print-only print-header-box">
-        <div class="print-corp-name">(주)세방테크 안전보건경영시스템 규정 [비제어본]</div>
-        <div class="print-meta-info" id="print-watermark-text">출력자: - | 출력일시: -</div>
-      </div>
 
-      <div class="doc-official-header">
-        <div class="doc-meta-row">
-          <span class="meta-item"><strong>문서번호:</strong> <span id="meta-doc-num">-</span></span>
-          <span class="meta-item"><strong>제·개정구분:</strong> <span id="meta-doc-rev">-</span></span>
-          <span class="meta-item"><strong>시행일자:</strong> <span id="meta-doc-date">-</span></span>
-          <span class="meta-item"><strong>주관부서:</strong> <span id="meta-doc-dept">-</span></span>
+      <!-- ============================================== -->
+      <!-- [1] 인쇄 1페이지: 사내 표준 표지 (Cover Page) -->
+      <!-- ============================================== -->
+      <section class="print-page print-cover-page" id="print-cover-section">
+        <div class="cover-top-header">
+          <img src="misc/logo.png" alt="SEBANG" class="cover-logo">
+          <span class="cover-system-badge">안전보건경영시스템 (KOSHA-MS) 사내 표준 규정집</span>
         </div>
-        <h1 class="doc-main-title" id="doc-main-title">-</h1>
-      </div>
 
-      <!-- 본문 컨텐츠 (조항별 렌더링) -->
-      <div class="doc-body-content" id="doc-content-body">
-        <!-- JS로 채워짐 -->
-      </div>
+        <div class="cover-center-content">
+          <div class="cover-category-badge" id="print-cover-cat">매뉴얼</div>
+          <h1 class="cover-doc-title" id="print-cover-title">-</h1>
+          <div class="cover-doc-number" id="print-cover-docnum">-</div>
+        </div>
+
+        <div class="cover-bottom-meta">
+          <div class="cover-approval-box">
+            <table class="approval-table">
+              <tr>
+                <th rowspan="2" class="th-side">결<br>재</th>
+                <th>작 성</th>
+                <th>검 토</th>
+                <th>승 인</th>
+              </tr>
+              <tr>
+                <td class="sign-cell"><span id="print-cover-writer">안전보건실</span></td>
+                <td class="sign-cell"><span>품질안전보건실장</span></td>
+                <td class="sign-cell"><span>대표이사</span></td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="cover-info-table-box">
+            <table class="cover-info-table">
+              <tr>
+                <th>문서번호</th><td id="print-cover-meta-num">-</td>
+                <th>개정번호</th><td id="print-cover-meta-ver">-</td>
+              </tr>
+              <tr>
+                <th>제정일자</th><td id="print-cover-meta-initdate">-</td>
+                <th>시행일자</th><td id="print-cover-meta-effdate">-</td>
+              </tr>
+              <tr>
+                <th>주관부서</th><td colspan="3" id="print-cover-meta-dept">품질안전보건실</td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="cover-corp-footer">
+            <h2>(주)세방테크</h2>
+            <p>SEBANG TECH CO., LTD. SAFETY &amp; HEALTH MANAGEMENT SYSTEM</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================================================== -->
+      <!-- [2] 인쇄 2페이지: 제·개정 관리 이력표 (Revision History) -->
+      <!-- ==================================================== -->
+      <section class="print-page print-revision-page" id="print-revision-section">
+        <div class="print-doc-header">
+          <div class="print-header-top">
+            <span class="print-h-left">(주)세방테크 안전보건경영시스템 사내표준</span>
+            <span class="print-h-right" id="print-rev-docnum-header">-</span>
+          </div>
+          <h2 class="print-page-title"><i class="fa-solid fa-list-check"></i> 제·개정 관리 이력표 (Revision History)</h2>
+          <div class="print-doc-summary-bar">
+            <span><strong>규정명:</strong> <span id="print-rev-doc-title">-</span></span>
+            <span><strong>현재 버전:</strong> <span id="print-rev-curr-ver">-</span></span>
+            <span><strong>시행일자:</strong> <span id="print-rev-curr-date">-</span></span>
+          </div>
+        </div>
+
+        <div class="print-table-wrap">
+          <table class="print-standard-table">
+            <thead>
+              <tr>
+                <th style="width: 10%; text-align:center;">개정번호</th>
+                <th style="width: 14%; text-align:center;">개정일자</th>
+                <th style="width: 48%; text-align:left;">개정 사유 및 주요 개정 내용</th>
+                <th style="width: 14%; text-align:center;">작성/개정자</th>
+                <th style="width: 14%; text-align:center;">승인</th>
+              </tr>
+            </thead>
+            <tbody id="print-revision-tbody">
+              <!-- JS 렌더링 -->
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="print-page-note">
+          ※ 본 규정의 개정 이력은 사내 표준화 관리 지침에 의거하여 영구 보존 및 관리됩니다.
+        </div>
+      </section>
+
+      <!-- ==================================================== -->
+      <!-- [3] 인쇄 3페이지: 신·구 조문 대비표 (Diff / Comparison) -->
+      <!-- ==================================================== -->
+      <section class="print-page print-diff-page" id="print-diff-section">
+        <div class="print-doc-header">
+          <div class="print-header-top">
+            <span class="print-h-left">(주)세방테크 안전보건경영시스템 사내표준</span>
+            <span class="print-h-right" id="print-diff-docnum-header">-</span>
+          </div>
+          <h2 class="print-page-title"><i class="fa-solid fa-code-compare"></i> 신·구 조문 대비표 (Comparison Table)</h2>
+          <div class="print-doc-summary-bar">
+            <span><strong>규정명:</strong> <span id="print-diff-doc-title">-</span></span>
+            <span id="print-diff-version-info"><strong>개정 비교:</strong> 직전 개정본 대비 변경 조항</span>
+          </div>
+        </div>
+
+        <div class="print-table-wrap">
+          <table class="print-standard-table print-diff-table">
+            <thead>
+              <tr>
+                <th style="width: 16%; text-align:center;">조항/구분</th>
+                <th style="width: 42%; text-align:left;">개정 전 조문 (Previous)</th>
+                <th style="width: 42%; text-align:left;">개정 후 조문 (Current)</th>
+              </tr>
+            </thead>
+            <tbody id="print-diff-tbody">
+              <!-- JS 렌더링 -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="print-page-note">
+          ※ 개정 전·후 변경 내용은 변경 조항 단위로 정렬되어 대조 표시됩니다.
+        </div>
+      </section>
+
+      <!-- ==================================================== -->
+      <!-- [4] 인쇄 4페이지부터: 규정 본문 (Official Main Body) -->
+      <!-- ==================================================== -->
+      <section class="print-body-page" id="print-body-section">
+        <!-- 인쇄용 헤더 (인쇄 시에만 상단 노출) -->
+        <div class="print-only print-header-box">
+          <div class="print-corp-name">(주)세방테크 안전보건경영시스템 규정 <span id="print-doc-classification-tag">[비제어본]</span></div>
+          <div class="print-meta-info" id="print-watermark-text">출력자: - | 출력일시: -</div>
+        </div>
+
+        <div class="doc-official-header">
+          <div class="doc-meta-row">
+            <span class="meta-item"><strong>문서번호:</strong> <span id="meta-doc-num">-</span></span>
+            <span class="meta-item"><strong>제·개정구분:</strong> <span id="meta-doc-rev">-</span></span>
+            <span class="meta-item"><strong>시행일자:</strong> <span id="meta-doc-date">-</span></span>
+            <span class="meta-item"><strong>주관부서:</strong> <span id="meta-doc-dept">-</span></span>
+          </div>
+          <h1 class="doc-main-title" id="doc-main-title">-</h1>
+        </div>
+
+        <!-- 본문 컨텐츠 (조항별 렌더링) -->
+        <div class="doc-body-content" id="doc-content-body">
+          <!-- JS로 채워짐 -->
+        </div>
+      </section>
     </main>
   </div>
 
@@ -474,6 +611,73 @@
       <div class="modal-footer">
         <button class="btn-cancel" onclick="closeLinkPickerModal()">취소</button>
         <button class="btn-primary" id="btn-confirm-link" onclick="confirmInsertLink()" disabled><i class="fa-solid fa-check"></i> 링크 삽입</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 관리자 설정 종합 모달 (규정 제·개정 관리 & 계정 관리) -->
+  <div id="admin-modal" class="modal-backdrop no-print" style="display:none; z-index:10008;">
+    <div class="modal-dialog modal-lg" style="max-width: 780px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-sliders"></i> 관리자 종합 설정</h3>
+        <button class="btn-close" onclick="closeAdminModal()">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 16px 20px;">
+        
+        <!-- 관리자 탭 메뉴 -->
+        <div class="admin-tab-bar" style="display:flex; gap:8px; border-bottom:2px solid #e2e8f0; margin-bottom:15px;">
+          <button type="button" class="admin-tab-btn active" id="tab-btn-docs" onclick="switchAdminTab('docs')" style="padding:8px 16px; border:none; background:none; font-size:14px; font-weight:700; color:var(--primary, #194a9a); border-bottom:2px solid var(--primary, #194a9a); cursor:pointer; margin-bottom:-2px;">
+            <i class="fa-solid fa-book-bookmark"></i> 사내 표준 규정 제·개정 관리
+          </button>
+          <button type="button" class="admin-tab-btn" id="tab-btn-accounts" onclick="switchAdminTab('accounts')" style="padding:8px 16px; border:none; background:none; font-size:14px; font-weight:600; color:#64748b; cursor:pointer; margin-bottom:-2px;">
+            <i class="fa-solid fa-user-shield"></i> 관리자 계정 권한 관리
+          </button>
+        </div>
+
+        <!-- 탭 1: 표준 규정 제·개정 관리 (매뉴얼, 절차서, 지침서 선택 및 수정) -->
+        <div id="admin-tab-pane-docs">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <p class="admin-desc" style="margin:0;">제·개정 및 본문 편집을 진행할 사내 표준 규정을 선택해 주십시오.</p>
+            <div style="display:flex; gap:6px;">
+              <select id="admin-filter-category" onchange="renderAdminDocList()" style="height:32px; padding:2px 8px; border:1px solid #cbd5e1; border-radius:4px; font-size:12.5px;">
+                <option value="ALL">전체 규정</option>
+                <option value="MANUAL">매뉴얼</option>
+                <option value="PROCEDURE">절차서</option>
+                <option value="INSTRUCTION">지침서</option>
+              </select>
+            </div>
+          </div>
+          <div class="admin-doc-table-container" style="border:1px solid #e2e8f0; border-radius:6px; max-height:360px; overflow-y:auto;">
+            <table class="admin-doc-table" style="width:100%; border-collapse:collapse; font-size:13px;">
+              <thead style="background-color:#f8fafc; position:sticky; top:0; z-index:2; border-bottom:1px solid #cbd5e1;">
+                <tr>
+                  <th style="padding:9px 12px; text-align:left;">구분</th>
+                  <th style="padding:9px 12px; text-align:left;">문서번호</th>
+                  <th style="padding:9px 12px; text-align:left;">규정 명칭</th>
+                  <th style="padding:9px 12px; text-align:center;">현재 버전</th>
+                  <th style="padding:9px 12px; text-align:center;">시행일자</th>
+                  <th style="padding:9px 12px; text-align:center;">편집/개정</th>
+                </tr>
+              </thead>
+              <tbody id="admin-doc-list-tbody">
+                <!-- JS 렌더링 -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 탭 2: 관리자 권한 계정 관리 -->
+        <div id="admin-tab-pane-accounts" style="display:none;">
+          <p class="admin-desc">문서의 제·개정 및 웹 에디터 편집 권한을 가진 사내 이메일 목록입니다.</p>
+          <div class="input-with-btn" style="margin-bottom: 15px;">
+            <input type="email" id="new-admin-email" placeholder="추가할 관리자 이메일 (예: test@sebangtec.com)">
+            <button class="btn-primary" onclick="addAdminEmail()">추가</button>
+          </div>
+          <ul class="admin-list" id="admin-email-list">
+            <!-- JS 렌더링 -->
+          </ul>
+        </div>
+
       </div>
     </div>
   </div>

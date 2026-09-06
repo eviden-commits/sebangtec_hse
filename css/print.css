@@ -1,8 +1,14 @@
-/* 인쇄 전용 보안 워터마크 스타일 (print.css) */
+/* (�??�방?�크 KOSHA-MS ?�전보건경영?�스??공식 ?��? ?�쇄 ?��???(print.css) */
 @media print {
   @page {
-    size: A4;
-    margin: 20mm 15mm 20mm 15mm;
+    size: A4 portrait;
+    margin: 15mm 12mm 15mm 12mm;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
   }
 
   body {
@@ -10,19 +16,23 @@
     color: #000000 !important;
     height: auto !important;
     overflow: visible !important;
-    font-size: 11pt;
+    font-size: 10pt;
+    font-family: 'Pretendard', 'Malgun Gothic', sans-serif;
   }
 
-  /* 화면 전용 요소 숨김 */
+  /* ?�면 ?�용 UI ?�소 ?��? */
   .no-print,
   .detail-header,
   .action-toolbar,
   .sidebar-tree,
-  .modal-backdrop {
+  .modal-backdrop,
+  .btn-tb,
+  .btn-node-opt,
+  .btn-tree-add {
     display: none !important;
   }
 
-  /* 인쇄 전용 헤더 및 워터마크 노출 */
+  /* ?�쇄 ?�용 ?�소 ?�시 */
   .print-only {
     display: block !important;
   }
@@ -35,24 +45,10 @@
   .content-pane {
     padding: 0 !important;
     overflow: visible !important;
+    max-width: 100% !important;
   }
 
-  /* 인쇄 헤더 상단 고정 표기 */
-  .print-header-box {
-    border-bottom: 2px solid #000;
-    padding-bottom: 8px;
-    margin-bottom: 20px;
-    display: flex;
-    justify-content: space-between;
-    font-size: 10pt;
-    color: #333;
-  }
-  .print-corp-name {
-    font-weight: bold;
-    color: #000;
-  }
-
-  /* 대각선 보안 워터마크 레이어 (출력자 정보 포함) */
+  /* ?�각선 보안 ?�터마크 ?�이??(출력???�보 ?�함 - 비�?리본 ???�동) */
   .watermark-bg {
     position: fixed;
     top: 0;
@@ -61,32 +57,353 @@
     height: 100vh;
     z-index: 99999;
     pointer-events: none;
-    opacity: 0.12;
+    opacity: 0.13;
     background-repeat: repeat;
   }
 
-  /* 조항 스타일 */
+  /* ==================================================== */
+  /* [1] ?�쇄 1?�이지: ?�내 ?��? ?��? (Cover Page) */
+  /* ==================================================== */
+  .print-cover-page {
+    display: flex !important;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 258mm;
+    min-height: 258mm;
+    box-sizing: border-box;
+    border: 3px double #1e293b;
+    padding: 16mm 14mm;
+    page-break-before: auto;
+    page-break-after: always;
+    break-after: page;
+    position: relative;
+    background: #ffffff;
+  }
+
+  .cover-top-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #0f172a;
+    padding-bottom: 12px;
+  }
+
+  .cover-logo {
+    height: 40px;
+    object-fit: contain;
+  }
+
+  .cover-system-badge {
+    font-size: 11pt;
+    font-weight: 700;
+    color: #1e293b;
+    letter-spacing: -0.3px;
+  }
+
+  .cover-center-content {
+    text-align: center;
+    margin: auto 0;
+    padding: 20px 0;
+  }
+
+  .cover-category-badge {
+    display: inline-block;
+    padding: 6px 20px;
+    background-color: #f1f5f9;
+    border: 1.5px solid #64748b;
+    font-size: 13pt;
+    font-weight: 700;
+    color: #0f172a;
+    border-radius: 4px;
+    margin-bottom: 25px;
+    letter-spacing: 2px;
+  }
+
+  .cover-doc-title {
+    font-size: 25pt;
+    font-weight: 800;
+    line-height: 1.35;
+    color: #000000;
+    margin-bottom: 20px;
+    word-break: keep-all;
+  }
+
+  .cover-doc-number {
+    font-size: 14pt;
+    font-weight: 600;
+    color: #334155;
+    letter-spacing: 1px;
+  }
+
+  .cover-bottom-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* 결재?� (?�성 / 검??/ ?�인) */
+  .cover-approval-box {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .approval-table {
+    border-collapse: collapse;
+    border: 1.5px solid #000;
+    font-size: 9.5pt;
+    text-align: center;
+  }
+
+  .approval-table th,
+  .approval-table td {
+    border: 1px solid #000;
+  }
+
+  .approval-table .th-side {
+    width: 25px;
+    background-color: #f8fafc;
+    font-weight: 700;
+    padding: 4px 2px;
+    line-height: 1.3;
+  }
+
+  .approval-table th:not(.th-side) {
+    width: 65px;
+    background-color: #f8fafc;
+    padding: 4px;
+    font-weight: 600;
+  }
+
+  .approval-table .sign-cell {
+    height: 48px;
+    vertical-align: middle;
+    font-size: 9pt;
+    color: #334155;
+  }
+
+  /* 문서 메�? ?�보 ??*/
+  .cover-info-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1.5px solid #000;
+    font-size: 10pt;
+  }
+
+  .cover-info-table th {
+    background-color: #f1f5f9;
+    border: 1px solid #000;
+    padding: 8px 10px;
+    text-align: center;
+    width: 18%;
+    font-weight: 700;
+  }
+
+  .cover-info-table td {
+    border: 1px solid #000;
+    padding: 8px 12px;
+    font-weight: 600;
+    color: #0f172a;
+    width: 32%;
+  }
+
+  .cover-corp-footer {
+    text-align: center;
+    border-top: 1.5px solid #0f172a;
+    padding-top: 14px;
+    margin-top: 5px;
+  }
+
+  .cover-corp-footer h2 {
+    font-size: 16pt;
+    font-weight: 800;
+    margin: 0 0 4px 0;
+    letter-spacing: 2px;
+  }
+
+  .cover-corp-footer p {
+    font-size: 8pt;
+    color: #64748b;
+    margin: 0;
+    letter-spacing: 1px;
+  }
+
+  /* ==================================================== */
+  /* [2] ?�쇄 2?�이지: ?�·개??관�??�력??(Revision History) */
+  /* ==================================================== */
+  .print-revision-page {
+    display: block !important;
+    min-height: 250mm;
+    page-break-after: always;
+    break-after: page;
+    box-sizing: border-box;
+    padding-top: 5mm;
+  }
+
+  /* ==================================================== */
+  /* [3] ?�쇄 3?�이지: ?�·구 조문 ?�비표 (Diff / Comparison) */
+  /* ==================================================== */
+  .print-diff-page {
+    display: block !important;
+    min-height: 250mm;
+    page-break-after: always;
+    break-after: page;
+    box-sizing: border-box;
+    padding-top: 5mm;
+  }
+
+  /* 공통 ?�쇄 ?�이지 ?�더 */
+  .print-doc-header {
+    border-bottom: 2px solid #000;
+    padding-bottom: 10px;
+    margin-bottom: 16px;
+  }
+
+  .print-header-top {
+    display: flex;
+    justify-content: space-between;
+    font-size: 9pt;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 8px;
+  }
+
+  .print-page-title {
+    font-size: 16pt;
+    font-weight: 800;
+    color: #000;
+    margin: 0 0 8px 0;
+  }
+
+  .print-doc-summary-bar {
+    display: flex;
+    gap: 20px;
+    font-size: 9.5pt;
+    background-color: #f8fafc;
+    padding: 6px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+  }
+
+  /* ?��? ?�이�?(개정?? ?�구?�조표) */
+  .print-table-wrap {
+    margin-bottom: 15px;
+  }
+
+  .print-standard-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1.5px solid #000;
+    font-size: 9pt;
+  }
+
+  .print-standard-table th {
+    background-color: #f1f5f9;
+    border: 1px solid #000;
+    padding: 7px 8px;
+    font-weight: 700;
+    color: #000;
+  }
+
+  .print-standard-table td {
+    border: 1px solid #000;
+    padding: 7px 8px;
+    vertical-align: top;
+    line-height: 1.5;
+  }
+
+  .print-page-note {
+    font-size: 8.5pt;
+    color: #475569;
+    margin-top: 8px;
+  }
+
+  /* ==================================================== */
+  /* [4] ?�쇄 4?�이지부?? 본문 (Main Body Page) */
+  /* ==================================================== */
+  .print-body-page {
+    display: block !important;
+    page-break-before: auto;
+    break-before: auto;
+  }
+
+  /* 본문 ?�단 ?�쇄 ?�더 */
+  .print-header-box {
+    border-bottom: 2px solid #000;
+    padding-bottom: 6px;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 9pt;
+    color: #333;
+  }
+
+  .print-corp-name {
+    font-weight: bold;
+    color: #000;
+  }
+
+  .doc-official-header {
+    border-bottom: 1.5px solid #000;
+    padding-bottom: 12px;
+    margin-bottom: 18px;
+  }
+
+  .doc-meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    font-size: 9pt;
+    margin-bottom: 10px;
+  }
+
+  .doc-main-title {
+    font-size: 18pt;
+    font-weight: 800;
+    margin: 5px 0 0 0;
+    color: #000;
+  }
+
+  /* 조항 ?��???*/
   .doc-article {
     page-break-inside: avoid;
-    border-bottom: 1px solid #ccc;
-    margin-bottom: 15px;
+    break-inside: avoid;
+    border-bottom: 1px dashed #94a3b8;
+    margin-bottom: 14px;
     padding-bottom: 10px;
   }
 
   .article-title {
-    font-size: 13pt;
+    font-size: 11.5pt;
+    font-weight: 700;
     color: #000 !important;
+    margin-bottom: 6px;
   }
 
   .article-body {
-    font-size: 10.5pt;
-    line-height: 1.7;
+    font-size: 9.5pt;
+    line-height: 1.65;
     color: #111 !important;
+    margin-bottom: 4px;
   }
 
-  .rev-badge {
-    border: 1px solid #999;
-    background: none !important;
-    color: #333 !important;
+  /* 본문 ?????�쇄 최적??*/
+  .content-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    border: 1px solid #000 !important;
+    font-size: 8.5pt !important;
+    page-break-inside: avoid;
+  }
+
+  .content-table th,
+  .content-table td {
+    border: 1px solid #000 !important;
+    padding: 5px 8px !important;
+  }
+
+  .content-table th {
+    background-color: #f1f5f9 !important;
+    font-weight: 700;
   }
 }
+

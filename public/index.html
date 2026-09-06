@@ -271,22 +271,69 @@
     </div>
   </div>
 
-  <!-- 관리자 권한 관리 모달 -->
-  <div id="admin-modal" class="modal-backdrop" style="display:none;">
-    <div class="modal-dialog">
+  <!-- 관리자 설정 종합 모달 (규정 제·개정 관리 & 계정 관리) -->
+  <div id="admin-modal" class="modal-backdrop" style="display:none; z-index:10008;">
+    <div class="modal-dialog modal-lg" style="max-width: 780px;">
       <div class="modal-header">
-        <h3><i class="fa-solid fa-user-shield"></i> 관리자 권한 계정 관리</h3>
+        <h3><i class="fa-solid fa-sliders"></i> 관리자 종합 설정</h3>
         <button class="btn-close" onclick="closeAdminModal()">&times;</button>
       </div>
-      <div class="modal-body">
-        <p class="admin-desc">문서의 제·개정 및 웹 에디터 편집 권한을 가진 사내 이메일 목록입니다.</p>
-        <div class="input-with-btn" style="margin-bottom: 15px;">
-          <input type="email" id="new-admin-email" placeholder="추가할 관리자 이메일 (예: test@sebangtec.com)">
-          <button class="btn-primary" onclick="addAdminEmail()">추가</button>
+      <div class="modal-body" style="padding: 16px 20px;">
+        
+        <!-- 관리자 탭 메뉴 -->
+        <div class="admin-tab-bar" style="display:flex; gap:8px; border-bottom:2px solid #e2e8f0; margin-bottom:15px;">
+          <button type="button" class="admin-tab-btn active" id="tab-btn-docs" onclick="switchAdminTab('docs')" style="padding:8px 16px; border:none; background:none; font-size:14px; font-weight:700; color:var(--primary); border-bottom:2px solid var(--primary); cursor:pointer; margin-bottom:-2px;">
+            <i class="fa-solid fa-book-bookmark"></i> 사내 표준 규정 제·개정 관리
+          </button>
+          <button type="button" class="admin-tab-btn" id="tab-btn-accounts" onclick="switchAdminTab('accounts')" style="padding:8px 16px; border:none; background:none; font-size:14px; font-weight:600; color:#64748b; cursor:pointer; margin-bottom:-2px;">
+            <i class="fa-solid fa-user-shield"></i> 관리자 계정 권한 관리
+          </button>
         </div>
-        <ul class="admin-list" id="admin-email-list">
-          <!-- JS 렌더링 -->
-        </ul>
+
+        <!-- 탭 1: 표준 규정 제·개정 관리 (매뉴얼, 절차서, 지침서 선택 및 수정) -->
+        <div id="admin-tab-pane-docs">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <p class="admin-desc" style="margin:0;">제·개정 및 본문 편집을 진행할 사내 표준 규정을 선택해 주십시오.</p>
+            <div style="display:flex; gap:6px;">
+              <select id="admin-filter-category" onchange="renderAdminDocList()" style="height:32px; padding:2px 8px; border:1px solid #cbd5e1; border-radius:4px; font-size:12.5px;">
+                <option value="ALL">전체 규정</option>
+                <option value="MANUAL">매뉴얼</option>
+                <option value="PROCEDURE">절차서</option>
+                <option value="INSTRUCTION">지침서</option>
+              </select>
+            </div>
+          </div>
+          <div class="admin-doc-table-container" style="border:1px solid #e2e8f0; border-radius:6px; max-height:360px; overflow-y:auto;">
+            <table class="admin-doc-table" style="width:100%; border-collapse:collapse; font-size:13px;">
+              <thead style="background-color:#f8fafc; position:sticky; top:0; z-index:2; border-bottom:1px solid #cbd5e1;">
+                <tr>
+                  <th style="padding:9px 12px; text-align:left;">구분</th>
+                  <th style="padding:9px 12px; text-align:left;">문서번호</th>
+                  <th style="padding:9px 12px; text-align:left;">규정 명칭</th>
+                  <th style="padding:9px 12px; text-align:center;">현재 버전</th>
+                  <th style="padding:9px 12px; text-align:center;">시행일자</th>
+                  <th style="padding:9px 12px; text-align:center;">편집/개정</th>
+                </tr>
+              </thead>
+              <tbody id="admin-doc-list-tbody">
+                <!-- JS 렌더링 -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 탭 2: 관리자 권한 계정 관리 -->
+        <div id="admin-tab-pane-accounts" style="display:none;">
+          <p class="admin-desc">문서의 제·개정 및 웹 에디터 편집 권한을 가진 사내 이메일 목록입니다.</p>
+          <div class="input-with-btn" style="margin-bottom: 15px;">
+            <input type="email" id="new-admin-email" placeholder="추가할 관리자 이메일 (예: test@sebangtec.com)">
+            <button class="btn-primary" onclick="addAdminEmail()">추가</button>
+          </div>
+          <ul class="admin-list" id="admin-email-list">
+            <!-- JS 렌더링 -->
+          </ul>
+        </div>
+
       </div>
     </div>
   </div>

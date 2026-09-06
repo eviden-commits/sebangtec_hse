@@ -224,13 +224,130 @@ async function openAdminModal() {
   const modal = document.getElementById('admin-modal');
   if (modal) {
     modal.style.display = 'flex';
-    loadAdminList();
+    // 기본으로 표준 규정 탭 활성화
+    switchAdminTab('docs');
   }
 }
 
 function closeAdminModal() {
   const modal = document.getElementById('admin-modal');
   if (modal) modal.style.display = 'none';
+}
+
+// 관리자 모달 탭 전환 ('docs': 규정 제·개정 관리, 'accounts': 계정 권한 관리)
+function switchAdminTab(tabName) {
+  const tabDocs = document.getElementById('admin-tab-pane-docs');
+  const tabAccounts = document.getElementById('admin-tab-pane-accounts');
+  const btnDocs = document.getElementById('tab-btn-docs');
+  const btnAccounts = document.getElementById('tab-btn-accounts');
+
+  if (tabName === 'docs') {
+    if (tabDocs) tabDocs.style.display = 'block';
+    if (tabAccounts) tabAccounts.style.display = 'none';
+    if (btnDocs) {
+      btnDocs.style.fontWeight = '700';
+      btnDocs.style.color = 'var(--primary, #194a9a)';
+      btnDocs.style.borderBottom = '2px solid var(--primary, #194a9a)';
+    }
+    if (btnAccounts) {
+      btnAccounts.style.fontWeight = '600';
+      btnAccounts.style.color = '#64748b';
+      btnAccounts.style.borderBottom = 'none';
+    }
+    renderAdminDocList();
+  } else {
+    if (tabDocs) tabDocs.style.display = 'none';
+    if (tabAccounts) tabAccounts.style.display = 'block';
+    if (btnDocs) {
+      btnDocs.style.fontWeight = '600';
+      btnDocs.style.color = '#64748b';
+      btnDocs.style.borderBottom = 'none';
+    }
+    if (btnAccounts) {
+      btnAccounts.style.fontWeight = '700';
+      btnAccounts.style.color = 'var(--primary, #194a9a)';
+      btnAccounts.style.borderBottom = '2px solid var(--primary, #194a9a)';
+    }
+    loadAdminList();
+  }
+}
+
+// 관리자 모달 내 규정 목록 렌더링 (매뉴얼, 절차서, 지침서)
+async function renderAdminDocList() {
+  const tbody = document.getElementById('admin-doc-list-tbody');
+  if (!tbody) return;
+
+  const filterSelect = document.getElementById('admin-filter-category');
+  const selectedCat = filterSelect ? filterSelect.value : 'ALL';
+
+  tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:#64748b;"><i class="fa-solid fa-spinner fa-spin"></i> 규정 목록 불러오는 중...</td></tr>`;
+
+  try {
+    const docs = await API.getDocuments();
+    let filtered = docs;
+    if (selectedCat !== 'ALL') {
+      filtered = docs.filter(d => d.category === selectedCat);
+    }
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:#64748b;">해당 카테고리의 규정이 없습니다.</td></tr>`;
+      return;
+    }
+
+    let rowsHtml = '';
+    filtered.forEach(doc => {
+      let catBadge = '';
+      if (doc.category === 'MANUAL') {
+        catBadge = '<span style="background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:4px; font-weight:700; font-size:11px;">매뉴얼</span>';
+      } else if (doc.category === 'PROCEDURE') {
+        catBadge = '<span style="background:#fef3c7; color:#b45309; padding:2px 8px; border-radius:4px; font-weight:700; font-size:11px;">절차서</span>';
+      } else if (doc.category === 'INSTRUCTION') {
+        catBadge = '<span style="background:#ecfdf5; color:#047857; padding:2px 8px; border-radius:4px; font-weight:700; font-size:11px;">지침서</span>';
+      } else {
+        catBadge = '<span style="background:#f1f5f9; color:#475569; padding:2px 8px; border-radius:4px; font-weight:600; font-size:11px;">표준</span>';
+      }
+
+      rowsHtml += `
+        <tr style="border-bottom:1px solid #f1f5f9; transition:background-color 0.2s;" onmouseover="this.style.backgroundColor='#f8fafc'" onmouseout="this.style.backgroundColor='transparent'">
+          <td style="padding:10px 12px; vertical-align:middle;">${catBadge}</td>
+          <td style="padding:10px 12px; font-weight:600; color:#1e293b; vertical-align:middle;">${escapeHtml(doc.docNumber || '-')}</td>
+          <td style="padding:10px 12px; vertical-align:middle;">
+            <a href="detail.html?id=${encodeURIComponent(doc.id)}" style="color:#1d4ed8; text-decoration:none; font-weight:600;" title="문서 보기">
+              ${escapeHtml(doc.title)}
+            </a>
+          </td>
+          <td style="padding:10px 12px; text-align:center; vertical-align:middle;">
+            <span style="background:#f1f5f9; border:1px solid #cbd5e1; padding:2px 6px; border-radius:4px; font-size:11.5px; font-weight:600;">${escapeHtml(doc.currentVersion || 'Rev.1')}</span>
+          </td>
+          <td style="padding:10px 12px; text-align:center; color:#64748b; font-size:12px; vertical-align:middle;">
+            ${escapeHtml(doc.effectiveDate || '-')}
+          </td>
+          <td style="padding:10px 12px; text-align:center; vertical-align:middle;">
+            <button type="button" class="btn-primary" onclick="openAdminDocEdit('${escapeHtml(doc.id)}')" style="padding:4px 10px; font-size:12px; display:inline-flex; align-items:center; gap:4px; cursor:pointer;">
+              <i class="fa-solid fa-file-pen"></i> 개정/편집
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+
+    tbody.innerHTML = rowsHtml;
+  } catch (err) {
+    console.error(err);
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:#ef4444;">규정 목록을 불러오지 못했습니다.</td></tr>`;
+  }
+}
+
+// 관리자 모달에서 개정/편집 버튼 클릭 시 동작
+function openAdminDocEdit(docId) {
+  closeAdminModal();
+  // 현재 상세 페이지이고 현재 보고 있는 문서인 경우 즉시 에디터 모달 실행
+  if (typeof currentDoc !== 'undefined' && currentDoc && currentDoc.id === docId && typeof openDraftEditorModal === 'function') {
+    openDraftEditorModal();
+  } else {
+    // 다른 문서이거나 index.html인 경우 detail.html?id=...&action=edit 로 이동
+    window.location.href = `detail.html?id=${encodeURIComponent(docId)}&action=edit`;
+  }
 }
 
 async function loadAdminList() {
@@ -310,6 +427,16 @@ async function removeAdminEmail(email) {
   const admins = (data.admins || []).filter(e => e.toLowerCase() !== email.toLowerCase());
   await API.saveAdmins(admins);
   loadAdminList();
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 // 초기 로딩 시 게이트 확인 및 상태 바 렌더링

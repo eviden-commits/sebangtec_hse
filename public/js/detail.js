@@ -13,9 +13,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   const docId = params.get('id') || 'MAN-KOSHA-01';
   const clauseParam = params.get('clause') || window.location.hash.replace('#', '');
   const searchKeyword = params.get('q');
+  const actionParam = params.get('action');
 
   await loadAllDocuments();
   await loadDocument(docId, clauseParam, searchKeyword);
+
+  // 관리자 설정 모달 등에서 ?action=edit 로 진입한 경우 즉시 에디터 오픈
+  if (actionParam === 'edit') {
+    setTimeout(() => {
+      if (AUTH.isAdmin()) {
+        openDraftEditorModal();
+      } else {
+        alert('규정 제·개정을 위해서는 관리자 로그인이 필요합니다.');
+        openLoginModal();
+      }
+    }, 350);
+  }
 });
 
 // 전체 문서 로드 (트리 구성용)
@@ -90,6 +103,9 @@ function renderDocument(doc) {
       activeClauseId = art.id;
     });
   });
+
+  // 공식 4단계 인쇄 페이지 데이터(표지 ➔ 개정표 ➔ 신구비교 ➔ 본문) 준비
+  preparePrintPages(doc);
 }
 
 function getCategoryName(cat) {
@@ -276,6 +292,14 @@ async function triggerOfficialControlledPrint() {
     headerMeta.innerHTML = `<strong style="color:#d9480f;font-size:11pt;">[관리본 - CONTROLLED COPY]</strong> | 출력자: ${userEmail} | 출력일시: ${timeStr} | (주)세방테크 KOSHA-MS`;
   }
 
+  const classTag = document.getElementById('print-doc-classification-tag');
+  if (classTag) {
+    classTag.innerHTML = '<strong style="color:#d9480f;">[관리본 - CONTROLLED COPY]</strong>';
+  }
+
+  // 4단계 인쇄 데이터 최신화
+  if (currentDoc) preparePrintPages(currentDoc);
+
   // 감사 로그 전송
   await API.logPrint(currentDoc.id, currentDoc.title, `${userEmail} [관리본 출력 / 워터마크 제외]`);
 
@@ -298,6 +322,14 @@ async function triggerSecurityPrint() {
   if (headerMeta) {
     headerMeta.innerText = `출력자: ${userEmail} | 출력일시: ${timeStr} | 문서보안: 비관리본 (UNCONTROLLED COPY)`;
   }
+
+  const classTag = document.getElementById('print-doc-classification-tag');
+  if (classTag) {
+    classTag.innerText = '[비관리본 - UNCONTROLLED COPY]';
+  }
+
+  // 4단계 인쇄 데이터 최신화
+  if (currentDoc) preparePrintPages(currentDoc);
 
   // 2. 대각선 45도 반투명 워터마크 캔버스 생성 및 배경 이미지 강제 적용
   const canvas = document.createElement('canvas');
@@ -760,6 +792,255 @@ function highlightChanges(oldText, newText) {
   if (oldText === newText) return newText;
   return `<span class="diff-add">${newText}</span>`;
 }
+
+// ================================================================
+// [공식 인쇄 체계] 표지 ➔ 개정표 ➔ 신구비교 ➔ 본문 데이터 준비
+// ================================================================
+function preparePrintPages(doc) {
+  if (!doc) return;
+
+  // [1] 표지 (Cover Page) 주입
+  const coverCat = document.getElementById('print-cover-cat');
+  if (coverCat) coverCat.innerText = getCategoryName(doc.category);
+
+  const coverTitle = document.getElementById('print-cover-title');
+  if (coverTitle) coverTitle.innerText = doc.title || '-';
+
+  const coverDocNum = document.getElementById('print-cover-docnum');
+  if (coverDocNum) coverDocNum.innerText = `문서번호: ${doc.docNumber || '-'}`;
+
+  const metaNum = document.getElementById('print-cover-meta-num');
+  if (metaNum) metaNum.innerText = doc.docNumber || '-';
+
+  const metaVer = document.getElementById('print-cover-meta-ver');
+  if (metaVer) metaVer.innerText = doc.currentVersion || 'Rev.1';
+
+  const firstDate = (doc.revisions && doc.revisions.length > 0 && doc.revisions[0].date) 
+    ? doc.revisions[0].date 
+    : (doc.effectiveDate || '-');
+  const metaInitDate = document.getElementById('print-cover-meta-initdate');
+  if (metaInitDate) metaInitDate.innerText = firstDate;
+
+  const metaEffDate = document.getElementById('print-cover-meta-effdate');
+  if (metaEffDate) metaEffDate.innerText = doc.effectiveDate || '-';
+
+  const metaDept = document.getElementById('print-cover-meta-dept');
+  if (metaDept) metaDept.innerText = doc.department || '품질안전보건실';
+
+  // [2] 제·개정 관리 이력표 (Revision History) 주입
+  const revDocNumHeader = document.getElementById('print-rev-docnum-header');
+  if (revDocNumHeader) revDocNumHeader.innerText = doc.docNumber || '-';
+
+  const revDocTitle = document.getElementById('print-rev-doc-title');
+  if (revDocTitle) revDocTitle.innerText = doc.title || '-';
+
+  const revCurrVer = document.getElementById('print-rev-curr-ver');
+  if (revCurrVer) revCurrVer.innerText = doc.currentVersion || 'Rev.1';
+
+  const revCurrDate = document.getElementById('print-rev-curr-date');
+  if (revCurrDate) revCurrDate.innerText = doc.effectiveDate || '-';
+
+  const revTbody = document.getElementById('print-revision-tbody');
+  if (revTbody) {
+    const revs = doc.revisions || [];
+    if (revs.length === 0) {
+      revTbody.innerHTML = `
+        <tr>
+          <td style="text-align:center; font-weight:600;">${escapeHtml(doc.currentVersion || 'Rev.0')}</td>
+          <td style="text-align:center;">${escapeHtml(doc.effectiveDate || '-')}</td>
+          <td>최초 제정 및 KOSHA-MS 표준 등록</td>
+          <td style="text-align:center;">품질안전보건실</td>
+          <td style="text-align:center; color:#15803d; font-weight:600;">승인 완료</td>
+        </tr>
+      `;
+    } else {
+      let revHtml = '';
+      revs.forEach((r, idx) => {
+        const defaultSummary = idx === 0 ? '최초 제정 및 시행' : '정기 개정 및 법규 검토 보완';
+        revHtml += `
+          <tr>
+            <td style="text-align:center; font-weight:600;">${escapeHtml(r.version || `Rev.${idx}`)}</td>
+            <td style="text-align:center;">${escapeHtml(r.date || '-')}</td>
+            <td>${escapeHtml(r.summary || defaultSummary)}</td>
+            <td style="text-align:center;">${escapeHtml(r.author || '안전보건실')}</td>
+            <td style="text-align:center; color:#15803d; font-weight:600;">승인 완료</td>
+          </tr>
+        `;
+      });
+      revTbody.innerHTML = revHtml;
+    }
+  }
+
+  // [3] 신·구 조문 대비표 (Comparison Table) 주입
+  const diffDocNumHeader = document.getElementById('print-diff-docnum-header');
+  if (diffDocNumHeader) diffDocNumHeader.innerText = doc.docNumber || '-';
+
+  const diffDocTitle = document.getElementById('print-diff-doc-title');
+  if (diffDocTitle) diffDocTitle.innerText = doc.title || '-';
+
+  const diffVersionInfo = document.getElementById('print-diff-version-info');
+  const diffTbody = document.getElementById('print-diff-tbody');
+
+  if (diffTbody) {
+    const revs = doc.revisions || [];
+    if (revs.length >= 2) {
+      const prevRev = revs[revs.length - 2];
+      const currRev = revs[revs.length - 1];
+
+      if (diffVersionInfo) {
+        diffVersionInfo.innerHTML = `<strong>개정 비교:</strong> 직전 <u>${escapeHtml(prevRev.version)}</u> 대비 현행 <u>${escapeHtml(currRev.version)}</u> (${escapeHtml(currRev.date)})`;
+      }
+
+      diffTbody.innerHTML = renderPrintDiffRows(prevRev.content || '', currRev.content || doc.currentContent || '');
+    } else {
+      if (diffVersionInfo) {
+        diffVersionInfo.innerHTML = `<strong>개정 비교:</strong> 최초 제정본 (${escapeHtml(doc.currentVersion || 'Rev.0')})`;
+      }
+      diffTbody.innerHTML = `
+        <tr style="height: 120px;">
+          <td colspan="3" style="text-align:center; vertical-align:middle; color:#64748b; font-size:10pt; line-height:1.6;">
+            ※ 본 규정은 최초 제정본(또는 직전 개정 이력 없음)으로 신·구 조문 대조 대상이 없습니다.<br>
+            <span style="font-size:9pt; color:#94a3b8;">(현행 규정 본문은 다음 페이지의 본문 장을 참조하십시오)</span>
+          </td>
+        </tr>
+      `;
+    }
+  }
+}
+
+// 조항 단위 신구조문대조표 생성 헬퍼
+function renderPrintDiffRows(prevHtml, currHtml) {
+  const prevArticles = parseArticlesFromHtml(prevHtml);
+  const currArticles = parseArticlesFromHtml(currHtml);
+
+  // 조항 키(번호 및 제목) 모음
+  const allKeys = [];
+  const keySet = new Set();
+
+  currArticles.forEach(a => {
+    if (!keySet.has(a.key)) {
+      keySet.add(a.key);
+      allKeys.push(a.key);
+    }
+  });
+
+  prevArticles.forEach(a => {
+    if (!keySet.has(a.key)) {
+      keySet.add(a.key);
+      allKeys.push(a.key);
+    }
+  });
+
+  const prevMap = new Map(prevArticles.map(a => [a.key, a]));
+  const currMap = new Map(currArticles.map(a => [a.key, a]));
+
+  let diffRowsHtml = '';
+  let changedCount = 0;
+
+  allKeys.forEach(key => {
+    const p = prevMap.get(key);
+    const c = currMap.get(key);
+
+    const pText = p ? p.bodyText.trim() : '';
+    const cText = c ? c.bodyText.trim() : '';
+    const title = (c ? c.title : (p ? p.title : key)) || key;
+
+    // 내용이 다르거나 신설/삭제된 경우 대조표에 반영
+    if (pText !== cText || !p || !c) {
+      changedCount++;
+      let prevCell = '';
+      let currCell = '';
+
+      if (!p) {
+        prevCell = '<span style="color:#94a3b8; font-style:italic;">[신설 - 이전 조항 없음]</span>';
+        currCell = `<strong style="color:#0f172a;">${escapeHtml(cText)}</strong>`;
+      } else if (!c) {
+        prevCell = `<span style="text-decoration:line-through; color:#dc2626;">${escapeHtml(pText)}</span>`;
+        currCell = '<span style="color:#dc2626; font-style:italic;">[삭제 폐지됨]</span>';
+      } else {
+        prevCell = escapeHtml(pText);
+        currCell = `<mark style="background:#fef08a; padding:1px 3px; font-weight:600;">${escapeHtml(cText)}</mark>`;
+      }
+
+      diffRowsHtml += `
+        <tr>
+          <td style="text-align:center; font-weight:700; vertical-align:top; background:#fcfcfc;">${escapeHtml(title)}</td>
+          <td style="vertical-align:top;">${prevCell}</td>
+          <td style="vertical-align:top;">${currCell}</td>
+        </tr>
+      `;
+    }
+  });
+
+  // 만약 조항 파싱 결과 변경점이 없거나 비구조화 HTML인 경우
+  if (changedCount === 0) {
+    const pPlain = stripHtml(prevHtml).trim();
+    const cPlain = stripHtml(currHtml).trim();
+
+    if (pPlain !== cPlain) {
+      return `
+        <tr>
+          <td style="text-align:center; font-weight:700; vertical-align:top;">본문 전면 개정</td>
+          <td style="vertical-align:top;">${escapeHtml(pPlain.substring(0, 500))}${pPlain.length > 500 ? '...' : ''}</td>
+          <td style="vertical-align:top;"><mark style="background:#fef08a;">${escapeHtml(cPlain.substring(0, 500))}${cPlain.length > 500 ? '...' : ''}</mark></td>
+        </tr>
+      `;
+    }
+
+    return `
+      <tr>
+        <td colspan="3" style="text-align:center; padding:25px; color:#64748b;">
+          ※ 본 개정본은 조항의 추가/삭제/문구 변경 없이 오탈자 정비 또는 체계 유지 목적으로 개정되었습니다.
+        </td>
+      </tr>
+    `;
+  }
+
+  return diffRowsHtml;
+}
+
+// HTML에서 조항 파싱 유틸리티
+function parseArticlesFromHtml(html) {
+  if (!html) return [];
+  const container = document.createElement('div');
+  container.innerHTML = html;
+
+  const articles = container.querySelectorAll('.doc-article');
+  if (articles.length === 0) return [];
+
+  const results = [];
+  articles.forEach((art, idx) => {
+    const titleEl = art.querySelector('.article-title');
+    const numEl = art.querySelector('.art-num');
+    const titleText = titleEl ? titleEl.innerText.trim() : `제${idx+1}조`;
+    const key = numEl ? numEl.innerText.trim() : (titleText.split(' ')[0] || `art-${idx}`);
+
+    // 본문 내용 텍스트 추출
+    const bodyEls = art.querySelectorAll('.article-body');
+    let bodyText = '';
+    if (bodyEls.length > 0) {
+      bodyText = Array.from(bodyEls).map(el => el.innerText.trim()).join('\n');
+    } else {
+      bodyText = art.innerText.replace(titleText, '').trim();
+    }
+
+    results.push({
+      key: key,
+      title: titleText,
+      bodyText: bodyText
+    });
+  });
+
+  return results;
+}
+
+// 브라우저 기본 인쇄(Ctrl+P) 호출 전에도 인쇄 데이터 자동 최신화
+window.addEventListener('beforeprint', () => {
+  if (currentDoc) {
+    preparePrintPages(currentDoc);
+  }
+});
+
 
 // ----------------------------------------------------------------
 // [모달 4] 신규 절차서 / 지침서 추가 & 폐지 관리 로직

@@ -972,3 +972,10 @@ body {
 .link-text-input-box input:focus {
   border-color: var(--primary);
 }
+
+/* 화면 모드에서는 인쇄 전용 페이지(표지, 개정표, 신구대조표) 숨김 */
+@media screen {
+  .print-page {
+    display: none !important;
+  }
+}

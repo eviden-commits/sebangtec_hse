@@ -3,135 +3,272 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>문서 상세 뷰어 - 세방테크 KOSHA-MS</title>
+  <title>문서 ?�세 뷰어 - ?�방?�크 KOSHA-MS</title>
   <link rel="stylesheet" href="css/detail.css">
   <link rel="stylesheet" href="css/print.css" media="print">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-  <!-- 인쇄 전용 워터마크 컨테이너 (평소 숨김, 인쇄 시 활성화) -->
+  <!-- ?�쇄 ?�용 ?�터마크 컨테?�너 (?�소 ?��?, ?�쇄 ???�성?? -->
   <div id="print-watermark-layer" class="print-only watermark-bg"></div>
 
-  <!-- 상단 네비게이션 헤더 -->
+  <!-- ?�단 ?�비게이???�더 -->
   <header class="detail-header no-print">
     <div class="nav-brand" onclick="location.href='index.html'">
       <i class="fa-solid fa-arrow-left"></i>
       <img src="misc/logo.png" alt="SEBANG" class="nav-corp-logo">
-      <span class="portal-title">세방테크 KOSHA-MS 정보센터</span>
+      <span class="portal-title">?�방?�크 KOSHA-MS ?�보?�터</span>
     </div>
     <div class="search-mini">
-      <input type="text" id="mini-search-input" placeholder="규정 내 검색..." onkeydown="if(event.key==='Enter') searchInDoc()">
+      <input type="text" id="mini-search-input" placeholder="규정 ??검??.." onkeydown="if(event.key==='Enter') searchInDoc()">
       <button onclick="searchInDoc()"><i class="fa-solid fa-magnifying-glass"></i></button>
     </div>
     <div class="user-profile" id="user-status-area">
-      <!-- auth.js에서 채움 -->
+      <!-- auth.js?�서 채�? -->
     </div>
   </header>
 
-  <!-- 상세 페이지 툴바 (법제처 스타일 액션바) -->
+  <!-- ?�세 ?�이지 ?�바 (법제�??��????�션�? -->
   <div class="action-toolbar no-print">
     <div class="toolbar-left">
-      <span class="badge-cat" id="doc-cat-badge">매뉴얼</span>
-      <h2 class="current-doc-title" id="doc-title-bar">문서 로딩 중...</h2>
+      <span class="badge-cat" id="doc-cat-badge">매뉴??/span>
+      <h2 class="current-doc-title" id="doc-title-bar">문서 로딩 �?..</h2>
       <span class="version-tag" id="doc-ver-tag">Rev.3</span>
     </div>
     <div class="toolbar-right">
-      <!-- 일반 사용자: 비관리본 보안 인쇄 (워터마크 강제) -->
-      <button class="tool-btn" id="btn-user-print" onclick="triggerSecurityPrint()" title="워터마크가 강제 합성되는 비관리본으로 인쇄합니다.">
-        <i class="fa-solid fa-print"></i> 보안 인쇄 (비관리본)
+      <!-- ?�반 ?�용?? 비�?리본 보안 ?�쇄 (?�터마크 강제) -->
+      <button class="tool-btn" id="btn-user-print" onclick="triggerSecurityPrint()" title="?�터마크가 강제 ?�성?�는 비�?리본?�로 ?�쇄?�니??">
+        <i class="fa-solid fa-print"></i> 보안 ?�쇄 (비�?리본)
       </button>
 
-      <!-- Super Admin 전용 도구 (워터마크 삭제/관리본 인쇄, DOCX/PDF 다운로드) -->
+      <!-- Super Admin ?�용 ?�구 (?�터마크 ??��/관리본 ?�쇄, DOCX/PDF ?�운로드) -->
       <div class="dropdown super-admin-only" id="super-admin-dropdown" style="display:none;">
-        <button type="button" class="tool-btn super-btn" onclick="toggleSuperAdminMenu()" title="최고 관리자 전용 문서 제어 기능">
-          <i class="fa-solid fa-crown"></i> 관리자 문서 제어 <i class="fa-solid fa-caret-down"></i>
+        <button type="button" class="tool-btn super-btn" onclick="toggleSuperAdminMenu()" title="최고 관리자 ?�용 문서 ?�어 기능">
+          <i class="fa-solid fa-crown"></i> 관리자 문서 ?�어 <i class="fa-solid fa-caret-down"></i>
         </button>
         <div class="dropdown-menu" id="menu-superadmin" style="display:none;">
           <a href="javascript:void(0)" onclick="triggerOfficialControlledPrint()">
-            <i class="fa-solid fa-stamp" style="color:#d9480f;"></i> <strong>관리본 인쇄 (워터마크 삭제)</strong>
+            <i class="fa-solid fa-stamp" style="color:#d9480f;"></i> <strong>관리본 ?�쇄 (?�터마크 ??��)</strong>
           </a>
           <a href="javascript:void(0)" onclick="downloadAsDocx()">
-            <i class="fa-solid fa-file-word" style="color:#1864ab;"></i> Word (DOCX) 다운로드
+            <i class="fa-solid fa-file-word" style="color:#1864ab;"></i> Word (DOCX) ?�운로드
           </a>
           <a href="javascript:void(0)" onclick="downloadAsPdf()">
-            <i class="fa-solid fa-file-pdf" style="color:#e03131;"></i> PDF 다운로드 (클린 문서)
+            <i class="fa-solid fa-file-pdf" style="color:#e03131;"></i> PDF ?�운로드 (?�린 문서)
           </a>
         </div>
       </div>
 
       <button class="tool-btn" onclick="copyShareUrl()"><i class="fa-solid fa-share-nodes"></i> URL 공유</button>
       <button class="tool-btn" id="btn-bookmark" onclick="toggleBookmark()"><i class="fa-regular fa-star"></i> 즐겨찾기</button>
-      <button class="tool-btn" onclick="openRevisionHistoryModal()"><i class="fa-solid fa-clock-rotate-left"></i> 개정이력/신구대조</button>
+      <button class="tool-btn" onclick="openRevisionHistoryModal()"><i class="fa-solid fa-clock-rotate-left"></i> 개정?�력/?�구?��?/button>
       
-      <!-- Super Admin & Admin 전용 규정 제/개정 (쓰기 모드) -->
+      <!-- Super Admin & Admin ?�용 규정 ??개정 (?�기 모드) -->
       <button class="tool-btn admin-only btn-write-mode" id="btn-edit-doc" style="display:none;" onclick="openDraftEditorModal()">
-        <i class="fa-solid fa-file-pen"></i> 규정 제·개정 (쓰기 모드)
+        <i class="fa-solid fa-file-pen"></i> 규정 ?�·개??(?�기 모드)
       </button>
     </div>
   </div>
 
-  <!-- 메인 2단 분할 레이아웃 -->
+  <!-- 메인 2??분할 ?�이?�웃 -->
   <div class="viewer-container">
-    <!-- 좌측 사이드바 (문서 계층 구조 및 조항 목차) -->
+    <!-- 좌측 ?�이?�바 (문서 계층 구조 �?조항 목차) -->
     <aside class="sidebar-tree no-print">
       <div class="tree-header">
-        <h4><i class="fa-solid fa-folder-tree"></i> 표준 체계 계층</h4>
-        <button class="btn-tree-add admin-only" onclick="openNewDocModal()" title="신규 절차서/지침서 규정 추가" style="display:none;">
-          <i class="fa-solid fa-plus"></i> 추가
+        <h4><i class="fa-solid fa-folder-tree"></i> ?��? 체계 계층</h4>
+        <button class="btn-tree-add admin-only" onclick="openNewDocModal()" title="?�규 ?�차??지침서 규정 추�?" style="display:none;">
+          <i class="fa-solid fa-plus"></i> 추�?
         </button>
       </div>
       <div class="tree-body" id="hierarchy-tree-area">
-        <!-- 계층 트리 JS 렌더링 -->
+        <!-- 계층 ?�리 JS ?�더�?-->
       </div>
 
       <div class="clause-index-header">
-        <h4><i class="fa-solid fa-list-ol"></i> 조항 바로가기</h4>
+        <h4><i class="fa-solid fa-list-ol"></i> 조항 바로가�?/h4>
       </div>
       <ul class="clause-nav-list" id="clause-nav-list">
-        <!-- 조항 목록 JS 렌더링 -->
+        <!-- 조항 목록 JS ?�더�?-->
       </ul>
     </aside>
 
-    <!-- 우측 메인 본문 영역 -->
+    <!-- ?�측 메인 본문 ?�역 -->
+    <!-- ?�측 메인 본문 ?�역 (?�쇄 ?? [1] ?��? ??[2] 개정????[3] ?�구비교 ??[4] 본문 ?�서�??�괄 출력) -->
     <main class="content-pane" id="printable-content">
-      <!-- 인쇄용 헤더 (인쇄 시에만 상단 노출) -->
-      <div class="print-only print-header-box">
-        <div class="print-corp-name">(주)세방테크 안전보건경영시스템 규정 [비제어본]</div>
-        <div class="print-meta-info" id="print-watermark-text">출력자: - | 출력일시: -</div>
-      </div>
 
-      <div class="doc-official-header">
-        <div class="doc-meta-row">
-          <span class="meta-item"><strong>문서번호:</strong> <span id="meta-doc-num">-</span></span>
-          <span class="meta-item"><strong>제·개정구분:</strong> <span id="meta-doc-rev">-</span></span>
-          <span class="meta-item"><strong>시행일자:</strong> <span id="meta-doc-date">-</span></span>
-          <span class="meta-item"><strong>주관부서:</strong> <span id="meta-doc-dept">-</span></span>
+      <!-- ============================================== -->
+      <!-- [1] ?�쇄 1?�이지: ?�내 ?��? ?��? (Cover Page) -->
+      <!-- ============================================== -->
+      <section class="print-page print-cover-page" id="print-cover-section">
+        <div class="cover-top-header">
+          <img src="misc/logo.png" alt="SEBANG" class="cover-logo">
+          <span class="cover-system-badge">?�전보건경영?�스??(KOSHA-MS) ?�내 ?��? 규정�?/span>
         </div>
-        <h1 class="doc-main-title" id="doc-main-title">-</h1>
-      </div>
 
-      <!-- 본문 컨텐츠 (조항별 렌더링) -->
-      <div class="doc-body-content" id="doc-content-body">
-        <!-- JS로 채워짐 -->
-      </div>
+        <div class="cover-center-content">
+          <div class="cover-category-badge" id="print-cover-cat">매뉴??/div>
+          <h1 class="cover-doc-title" id="print-cover-title">-</h1>
+          <div class="cover-doc-number" id="print-cover-docnum">-</div>
+        </div>
+
+        <div class="cover-bottom-meta">
+          <div class="cover-approval-box">
+            <table class="approval-table">
+              <tr>
+                <th rowspan="2" class="th-side">�?br>??/th>
+                <th>????/th>
+                <th>검 ??/th>
+                <th>????/th>
+              </tr>
+              <tr>
+                <td class="sign-cell"><span id="print-cover-writer">?�전보건??/span></td>
+                <td class="sign-cell"><span>?�질?�전보건?�장</span></td>
+                <td class="sign-cell"><span>?�?�이??/span></td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="cover-info-table-box">
+            <table class="cover-info-table">
+              <tr>
+                <th>문서번호</th><td id="print-cover-meta-num">-</td>
+                <th>개정번호</th><td id="print-cover-meta-ver">-</td>
+              </tr>
+              <tr>
+                <th>?�정?�자</th><td id="print-cover-meta-initdate">-</td>
+                <th>?�행?�자</th><td id="print-cover-meta-effdate">-</td>
+              </tr>
+              <tr>
+                <th>주�?부??/th><td colspan="3" id="print-cover-meta-dept">?�질?�전보건??/td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="cover-corp-footer">
+            <h2>(�??�방?�크</h2>
+            <p>SEBANG TECH CO., LTD. SAFETY &amp; HEALTH MANAGEMENT SYSTEM</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================================================== -->
+      <!-- [2] ?�쇄 2?�이지: ?�·개??관�??�력??(Revision History) -->
+      <!-- ==================================================== -->
+      <section class="print-page print-revision-page" id="print-revision-section">
+        <div class="print-doc-header">
+          <div class="print-header-top">
+            <span class="print-h-left">(�??�방?�크 ?�전보건경영?�스???�내?��?</span>
+            <span class="print-h-right" id="print-rev-docnum-header">-</span>
+          </div>
+          <h2 class="print-page-title"><i class="fa-solid fa-list-check"></i> ?�·개??관�??�력??(Revision History)</h2>
+          <div class="print-doc-summary-bar">
+            <span><strong>규정�?</strong> <span id="print-rev-doc-title">-</span></span>
+            <span><strong>?�재 버전:</strong> <span id="print-rev-curr-ver">-</span></span>
+            <span><strong>?�행?�자:</strong> <span id="print-rev-curr-date">-</span></span>
+          </div>
+        </div>
+
+        <div class="print-table-wrap">
+          <table class="print-standard-table">
+            <thead>
+              <tr>
+                <th style="width: 10%; text-align:center;">개정번호</th>
+                <th style="width: 14%; text-align:center;">개정?�자</th>
+                <th style="width: 48%; text-align:left;">개정 ?�유 �?주요 개정 ?�용</th>
+                <th style="width: 14%; text-align:center;">?�성/개정??/th>
+                <th style="width: 14%; text-align:center;">?�인</th>
+              </tr>
+            </thead>
+            <tbody id="print-revision-tbody">
+              <!-- JS ?�더�?-->
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="print-page-note">
+          ??�?규정??개정 ?�력?� ?�내 ?��???관�?지침에 ?�거?�여 ?�구 보존 �?관리됩?�다.
+        </div>
+      </section>
+
+      <!-- ==================================================== -->
+      <!-- [3] ?�쇄 3?�이지: ?�·구 조문 ?�비표 (Diff / Comparison) -->
+      <!-- ==================================================== -->
+      <section class="print-page print-diff-page" id="print-diff-section">
+        <div class="print-doc-header">
+          <div class="print-header-top">
+            <span class="print-h-left">(�??�방?�크 ?�전보건경영?�스???�내?��?</span>
+            <span class="print-h-right" id="print-diff-docnum-header">-</span>
+          </div>
+          <h2 class="print-page-title"><i class="fa-solid fa-code-compare"></i> ?�·구 조문 ?�비표 (Comparison Table)</h2>
+          <div class="print-doc-summary-bar">
+            <span><strong>규정�?</strong> <span id="print-diff-doc-title">-</span></span>
+            <span id="print-diff-version-info"><strong>개정 비교:</strong> 직전 개정�??��?변�?조항</span>
+          </div>
+        </div>
+
+        <div class="print-table-wrap">
+          <table class="print-standard-table print-diff-table">
+            <thead>
+              <tr>
+                <th style="width: 16%; text-align:center;">조항/구분</th>
+                <th style="width: 42%; text-align:left;">개정 ??조문 (Previous)</th>
+                <th style="width: 42%; text-align:left;">개정 ??조문 (Current)</th>
+              </tr>
+            </thead>
+            <tbody id="print-diff-tbody">
+              <!-- JS ?�더�?-->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="print-page-note">
+          ??개정 ?�·후 변�??�용?� 변�?조항 ?�위�??�렬?�어 ?��??�시?�니??
+        </div>
+      </section>
+
+      <!-- ==================================================== -->
+      <!-- [4] ?�쇄 4?�이지부?? 규정 본문 (Official Main Body) -->
+      <!-- ==================================================== -->
+      <section class="print-body-page" id="print-body-section">
+        <!-- ?�쇄???�더 (?�쇄 ?�에�??�단 ?�출) -->
+        <div class="print-only print-header-box">
+          <div class="print-corp-name">(�??�방?�크 ?�전보건경영?�스??규정 <span id="print-doc-classification-tag">[비제?�본]</span></div>
+          <div class="print-meta-info" id="print-watermark-text">출력?? - | 출력?�시: -</div>
+        </div>
+
+        <div class="doc-official-header">
+          <div class="doc-meta-row">
+            <span class="meta-item"><strong>문서번호:</strong> <span id="meta-doc-num">-</span></span>
+            <span class="meta-item"><strong>?�·개?�구�?</strong> <span id="meta-doc-rev">-</span></span>
+            <span class="meta-item"><strong>?�행?�자:</strong> <span id="meta-doc-date">-</span></span>
+            <span class="meta-item"><strong>주�?부??</strong> <span id="meta-doc-dept">-</span></span>
+          </div>
+          <h1 class="doc-main-title" id="doc-main-title">-</h1>
+        </div>
+
+        <!-- 본문 컨텐�?(조항�??�더�? -->
+        <div class="doc-body-content" id="doc-content-body">
+          <!-- JS�?채워�?-->
+        </div>
+      </section>
     </main>
   </div>
 
-  <!-- [모달 1] 임시 메모리 기반 웹 에디터 (Sandbox Draft Modal - 오염 방지) -->
+  <!-- [모달 1] ?�시 메모�?기반 ???�디??(Sandbox Draft Modal - ?�염 방�?) -->
   <div id="editor-modal" class="modal-backdrop no-print" style="display:none;">
     <div class="modal-dialog modal-xl">
       <div class="modal-header">
-        <h3><i class="fa-solid fa-file-pen"></i> 표준문서 웹 에디터 (안전 편집 모드)</h3>
+        <h3><i class="fa-solid fa-file-pen"></i> ?��?문서 ???�디??(?�전 ?�집 모드)</h3>
         <button class="btn-close" onclick="closeDraftEditorModal()">&times;</button>
       </div>
       <div class="modal-body">
         <div class="draft-notice">
-          <i class="fa-solid fa-shield-halved"></i> <strong>오염 방지 안내:</strong> 본 창에서 수행하는 편집은 임시 메모리(Draft Staging)에서 격리되어 처리되며, 하단의 [발행 및 적용] 버튼을 누르기 전까지는 실서버 문서에 영향을 주지 않습니다.
+          <i class="fa-solid fa-shield-halved"></i> <strong>?�염 방�? ?�내:</strong> �?창에???�행?�는 ?�집?� ?�시 메모�?Draft Staging)?�서 격리?�어 처리?�며, ?�단??[발행 �??�용] 버튼???�르�??�까지???�서�?문서???�향??주�? ?�습?�다.
         </div>
         
         <div class="editor-meta-grid">
           <div class="form-group">
-            <label>문서 제목</label>
+            <label>문서 ?�목</label>
             <input type="text" id="edit-doc-title">
           </div>
           <div class="form-group">
@@ -140,59 +277,59 @@
           </div>
           <div class="form-group">
             <label>개정 차수 (Version)</label>
-            <input type="text" id="edit-doc-ver" placeholder="예: Rev.4">
+            <input type="text" id="edit-doc-ver" placeholder="?? Rev.4">
           </div>
           <div class="form-group">
-            <label>시행 일자</label>
+            <label>?�행 ?�자</label>
             <input type="date" id="edit-doc-date">
           </div>
         </div>
 
         <div class="form-group" style="margin-top: 10px;">
-          <label><strong>개정 사유 및 주요 변경 요약 (필수)</strong></label>
-          <input type="text" id="edit-doc-summary" placeholder="예: 2026년 정기 안전보건심사 조치사항 반영 및 법 개정 조항 보완">
+          <label><strong>개정 ?�유 �?주요 변�??�약 (?�수)</strong></label>
+          <input type="text" id="edit-doc-summary" placeholder="?? 2026???�기 ?�전보건?�사 조치?�항 반영 �?�?개정 조항 보완">
         </div>
 
-        <!-- 기능 강화 리치 텍스트 에디터 툴바 -->
+        <!-- 기능 강화 리치 ?�스???�디???�바 -->
         <div class="editor-toolbar">
-          <!-- 글꼴 및 크기 -->
+          <!-- 글�?�??�기 -->
           <div class="toolbar-group">
-            <select onchange="formatDoc('fontName', this.value)" title="글꼴 선택" class="editor-select">
-              <option value="Pretendard, -apple-system, sans-serif">기본 글꼴 (Pretendard)</option>
-              <option value="'맑은 고딕', 'Malgun Gothic', sans-serif">맑은 고딕</option>
-              <option value="'나눔고딕', 'Nanum Gothic', sans-serif">나눔고딕</option>
-              <option value="'돋움', Dotum, sans-serif">돋움</option>
-              <option value="'바탕', Batang, serif">바탕체 (공문서)</option>
+            <select onchange="formatDoc('fontName', this.value)" title="글�??�택" class="editor-select">
+              <option value="Pretendard, -apple-system, sans-serif">기본 글�?(Pretendard)</option>
+              <option value="'맑�? 고딕', 'Malgun Gothic', sans-serif">맑�? 고딕</option>
+              <option value="'?�눔고딕', 'Nanum Gothic', sans-serif">?�눔고딕</option>
+              <option value="'?��?', Dotum, sans-serif">?��?</option>
+              <option value="'바탕', Batang, serif">바탕�?(공문??</option>
             </select>
-            <select onchange="formatDoc('fontSize', this.value)" title="글자 크기" class="editor-select" style="width: 75px;">
+            <select onchange="formatDoc('fontSize', this.value)" title="글???�기" class="editor-select" style="width: 75px;">
               <option value="3" selected>보통(14pt)</option>
-              <option value="1">아주 작게</option>
-              <option value="2">작게</option>
-              <option value="4">조금 크게</option>
-              <option value="5">크게(소제목)</option>
-              <option value="6">아주 크게</option>
+              <option value="1">?�주 ?�게</option>
+              <option value="2">?�게</option>
+              <option value="4">조금 ?�게</option>
+              <option value="5">?�게(?�제�?</option>
+              <option value="6">?�주 ?�게</option>
             </select>
           </div>
 
           <div class="toolbar-separator"></div>
 
-          <!-- 텍스트 서식 -->
+          <!-- ?�스???�식 -->
           <div class="toolbar-group">
             <button type="button" class="btn-tb" onclick="formatDoc('bold')" title="굵게 (Ctrl+B)"><i class="fa-solid fa-bold"></i></button>
-            <button type="button" class="btn-tb" onclick="formatDoc('italic')" title="기울임 (Ctrl+I)"><i class="fa-solid fa-italic"></i></button>
+            <button type="button" class="btn-tb" onclick="formatDoc('italic')" title="기울??(Ctrl+I)"><i class="fa-solid fa-italic"></i></button>
             <button type="button" class="btn-tb" onclick="formatDoc('underline')" title="밑줄 (Ctrl+U)"><i class="fa-solid fa-underline"></i></button>
-            <button type="button" class="btn-tb" onclick="formatDoc('strikeThrough')" title="취소선"><i class="fa-solid fa-strikethrough"></i></button>
+            <button type="button" class="btn-tb" onclick="formatDoc('strikeThrough')" title="취소??><i class="fa-solid fa-strikethrough"></i></button>
           </div>
 
           <div class="toolbar-separator"></div>
 
-          <!-- 색상 & 배경색 -->
+          <!-- ?�상 & 배경??-->
           <div class="toolbar-group">
-            <label class="color-picker-label" title="글자 색상">
+            <label class="color-picker-label" title="글???�상">
               <i class="fa-solid fa-font"></i>
               <input type="color" onchange="formatDoc('foreColor', this.value)" value="#1e293b" style="opacity:0; width:0; height:0; position:absolute;">
             </label>
-            <label class="color-picker-label" title="형광펜 / 배경색">
+            <label class="color-picker-label" title="?�광??/ 배경??>
               <i class="fa-solid fa-highlighter" style="color: #eab308;"></i>
               <input type="color" onchange="formatDoc('hiliteColor', this.value)" value="#fef08a" style="opacity:0; width:0; height:0; position:absolute;">
             </label>
@@ -200,64 +337,64 @@
 
           <div class="toolbar-separator"></div>
 
-          <!-- 정렬 -->
+          <!-- ?�렬 -->
           <div class="toolbar-group">
-            <button type="button" class="btn-tb" onclick="formatDoc('justifyLeft')" title="왼쪽 정렬"><i class="fa-solid fa-align-left"></i></button>
-            <button type="button" class="btn-tb" onclick="formatDoc('justifyCenter')" title="가운데 정렬"><i class="fa-solid fa-align-center"></i></button>
-            <button type="button" class="btn-tb" onclick="formatDoc('justifyRight')" title="오른쪽 정렬"><i class="fa-solid fa-align-right"></i></button>
+            <button type="button" class="btn-tb" onclick="formatDoc('justifyLeft')" title="?�쪽 ?�렬"><i class="fa-solid fa-align-left"></i></button>
+            <button type="button" class="btn-tb" onclick="formatDoc('justifyCenter')" title="가?�데 ?�렬"><i class="fa-solid fa-align-center"></i></button>
+            <button type="button" class="btn-tb" onclick="formatDoc('justifyRight')" title="?�른�??�렬"><i class="fa-solid fa-align-right"></i></button>
           </div>
 
           <div class="toolbar-separator"></div>
 
-          <!-- 목록 & 들여쓰기 -->
+          <!-- 목록 & ?�여?�기 -->
           <div class="toolbar-group">
             <button type="button" class="btn-tb" onclick="formatDoc('insertUnorderedList')" title="글머리 기호 목록"><i class="fa-solid fa-list-ul"></i></button>
-            <button type="button" class="btn-tb" onclick="formatDoc('insertOrderedList')" title="번호 매기기 목록"><i class="fa-solid fa-list-ol"></i></button>
-            <button type="button" class="btn-tb" onclick="formatDoc('outdent')" title="내어쓰기"><i class="fa-solid fa-outdent"></i></button>
-            <button type="button" class="btn-tb" onclick="formatDoc('indent')" title="들여쓰기"><i class="fa-solid fa-indent"></i></button>
+            <button type="button" class="btn-tb" onclick="formatDoc('insertOrderedList')" title="번호 매기�?목록"><i class="fa-solid fa-list-ol"></i></button>
+            <button type="button" class="btn-tb" onclick="formatDoc('outdent')" title="?�어?�기"><i class="fa-solid fa-outdent"></i></button>
+            <button type="button" class="btn-tb" onclick="formatDoc('indent')" title="?�여?�기"><i class="fa-solid fa-indent"></i></button>
           </div>
 
           <div class="toolbar-separator"></div>
 
-          <!-- 표(테이블), 링크, 조항 추가 -->
+          <!-- ???�이�?, 링크, 조항 추�? -->
           <div class="toolbar-group">
-            <button type="button" class="btn-tb" onclick="insertTableDialog()" title="표(Table) 삽입"><i class="fa-solid fa-table"></i> 표 삽입</button>
-            <button type="button" class="btn-tb" onclick="openLinkPickerModal()" title="연계 규정/조항 탐색 트리맵"><i class="fa-solid fa-link"></i> 연계 링크 (트리맵)</button>
-            <button type="button" class="btn-tb btn-tb-primary" onclick="openArticleModal()" title="새로운 표준 조항(제n조)을 독립 줄로 추가"><i class="fa-solid fa-circle-plus"></i> <strong>+ 조항 추가 (새줄 입력)</strong></button>
-            <button type="button" class="btn-tb" onclick="formatDoc('removeFormat')" title="서식 지우기"><i class="fa-solid fa-eraser"></i></button>
+            <button type="button" class="btn-tb" onclick="insertTableDialog()" title="??Table) ?�입"><i class="fa-solid fa-table"></i> ???�입</button>
+            <button type="button" class="btn-tb" onclick="openLinkPickerModal()" title="?�계 규정/조항 ?�색 ?�리�?><i class="fa-solid fa-link"></i> ?�계 링크 (?�리�?</button>
+            <button type="button" class="btn-tb btn-tb-primary" onclick="openArticleModal()" title="?�로???��? 조항(?�n�????�립 줄로 추�?"><i class="fa-solid fa-circle-plus"></i> <strong>+ 조항 추�? (?�줄 ?�력)</strong></button>
+            <button type="button" class="btn-tb" onclick="formatDoc('removeFormat')" title="?�식 지?�기"><i class="fa-solid fa-eraser"></i></button>
           </div>
         </div>
         <div id="draft-editor-area" contenteditable="true" class="draft-rich-editor">
-          <!-- 에디터 본문 -->
+          <!-- ?�디??본문 -->
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn-cancel" onclick="closeDraftEditorModal()">임시 변경 취소</button>
-        <button class="btn-primary" onclick="publishDraftChanges()"><i class="fa-solid fa-cloud-arrow-up"></i> 개정 발행 및 적용</button>
+        <button class="btn-cancel" onclick="closeDraftEditorModal()">?�시 변�?취소</button>
+        <button class="btn-primary" onclick="publishDraftChanges()"><i class="fa-solid fa-cloud-arrow-up"></i> 개정 발행 �??�용</button>
       </div>
     </div>
   </div>
 
-  <!-- [모달 2] 개정이력 및 신구대조 (Diff) 모달 -->
+  <!-- [모달 2] 개정?�력 �??�구?��?(Diff) 모달 -->
   <div id="diff-modal" class="modal-backdrop no-print" style="display:none;">
     <div class="modal-dialog modal-lg">
       <div class="modal-header">
-        <h3><i class="fa-solid fa-code-compare"></i> 개정 이력 및 신구조문 비교</h3>
+        <h3><i class="fa-solid fa-code-compare"></i> 개정 ?�력 �??�구조문 비교</h3>
         <button class="btn-close" onclick="closeRevisionHistoryModal()">&times;</button>
       </div>
       <div class="modal-body">
         <div class="rev-timeline-box" id="rev-timeline-list">
-          <!-- 개정 이력 목록 -->
+          <!-- 개정 ?�력 목록 -->
         </div>
         <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;">
-        <h4><i class="fa-solid fa-arrows-split-up-and-left"></i> 직전 버전 대비 변경 사항 (신구조문대조)</h4>
+        <h4><i class="fa-solid fa-arrows-split-up-and-left"></i> 직전 버전 ?��?변�??�항 (?�구조문?��?</h4>
         <div class="diff-view-container">
           <div class="diff-column">
-            <h5>이전 개정본 (<span id="diff-prev-version">Rev.2</span>)</h5>
+            <h5>?�전 개정�?(<span id="diff-prev-version">Rev.2</span>)</h5>
             <div class="diff-content" id="diff-prev-content"></div>
           </div>
           <div class="diff-column">
-            <h5>현재 개정본 (<span id="diff-curr-version">Rev.3</span>)</h5>
+            <h5>?�재 개정�?(<span id="diff-curr-version">Rev.3</span>)</h5>
             <div class="diff-content" id="diff-curr-content"></div>
           </div>
         </div>
@@ -265,27 +402,27 @@
     </div>
   </div>
 
-  <!-- 로그인 모달 -->
+  <!-- 로그??모달 -->
   <div id="login-modal" class="modal-backdrop no-print" style="display:none;">
     <div class="modal-dialog">
       <div class="modal-header">
-        <h3><i class="fa-solid fa-lock"></i> 사내 이메일 OTP 로그인</h3>
+        <h3><i class="fa-solid fa-lock"></i> ?�내 ?�메??OTP 로그??/h3>
         <button class="btn-close" onclick="closeLoginModal()">&times;</button>
       </div>
       <div class="modal-body">
-        <p class="login-desc">세방테크 사내 이메일(<strong>@sebangtec.com</strong>)로 일회용 인증번호를 발송합니다.</p>
+        <p class="login-desc">?�방?�크 ?�내 ?�메??<strong>@sebangtec.com</strong>)�??�회???�증번호�?발송?�니??</p>
         <div class="form-group" id="group-email">
-          <label for="login-email">사내 이메일</label>
+          <label for="login-email">?�내 ?�메??/label>
           <div class="input-with-btn">
             <input type="email" id="login-email" placeholder="hong@sebangtec.com" onkeydown="if(event.key==='Enter') sendOtp()">
             <button class="btn-action" id="btn-send-otp" onclick="sendOtp()">OTP 발송</button>
           </div>
         </div>
         <div class="form-group" id="group-otp" style="display:none; margin-top: 15px;">
-          <label for="login-otp">인증번호 (6자리)</label>
+          <label for="login-otp">?�증번호 (6?�리)</label>
           <div class="input-with-btn">
-            <input type="text" id="login-otp" maxlength="6" placeholder="인증번호 6자리 입력" onkeydown="if(event.key==='Enter') verifyOtp()">
-            <button class="btn-primary" id="btn-verify-otp" onclick="verifyOtp()">인증 완료</button>
+            <input type="text" id="login-otp" maxlength="6" placeholder="?�증번호 6?�리 ?�력" onkeydown="if(event.key==='Enter') verifyOtp()">
+            <button class="btn-primary" id="btn-verify-otp" onclick="verifyOtp()">?�증 ?�료</button>
           </div>
           <div id="otp-status-msg" class="otp-alert"></div>
         </div>
@@ -293,22 +430,22 @@
     </div>
   </div>
 
-  <!-- 사이트 초기 접속 비밀번호(Gatekeeper) 모달 (GAS 연동) -->
+  <!-- ?�이??초기 ?�속 비�?번호(Gatekeeper) 모달 (GAS ?�동) -->
   <div id="gate-modal" class="gate-overlay no-print" style="display:none;">
     <div class="gate-card">
       <img src="misc/logo.png" alt="SEBANG" class="gate-corp-logo">
       <div class="gate-icon">
         <i class="fa-solid fa-shield-halved"></i>
       </div>
-      <h2>세방테크 사내표준정보센터</h2>
-      <p class="gate-sub">KOSHA-MS 보안 포털 접속 인증</p>
+      <h2>?�방?�크 ?�내?��??�보?�터</h2>
+      <p class="gate-sub">KOSHA-MS 보안 ?�털 ?�속 ?�증</p>
       <div class="gate-desc">
-        본 포털은 사내 임직원 전용 시스템입니다.<br>
-        보안 관리자에 의해 지정된 <strong>접속 비밀번호</strong>를 입력해 주십시오.
+        �??�털?� ?�내 ?�직???�용 ?�스?�입?�다.<br>
+        보안 관리자???�해 지?�된 <strong>?�속 비�?번호</strong>�??�력??주십?�오.
       </div>
       
       <div class="gate-input-box">
-        <input type="password" id="gate-password" placeholder="접속 비밀번호 입력" onkeydown="if(event.key==='Enter') submitGatePassword()">
+        <input type="password" id="gate-password" placeholder="?�속 비�?번호 ?�력" onkeydown="if(event.key==='Enter') submitGatePassword()">
         <button type="button" class="btn-gate-submit" onclick="submitGatePassword()">
           <i class="fa-solid fa-arrow-right"></i>
         </button>
@@ -316,59 +453,59 @@
       <div id="gate-error-msg" class="gate-error"></div>
       
       <div class="gate-footer">
-        <small><i class="fa-solid fa-lock"></i> Google Apps Script (sebangtec_hse) 연동 보안 시스템</small>
+        <small><i class="fa-solid fa-lock"></i> Google Apps Script (sebangtec_hse) ?�동 보안 ?�스??/small>
       </div>
     </div>
   </div>
 
-  <!-- [모달 3] 신규 조항 추가 전용 모달 (제목 & 본문 분리 입력) -->
+  <!-- [모달 3] ?�규 조항 추�? ?�용 모달 (?�목 & 본문 분리 ?�력) -->
   <div id="article-modal" class="modal-backdrop no-print" style="display:none; z-index: 10005;">
     <div class="modal-dialog" style="max-width: 580px;">
       <div class="modal-header">
-        <h3><i class="fa-solid fa-file-circle-plus"></i> 신규 조항 추가</h3>
+        <h3><i class="fa-solid fa-file-circle-plus"></i> ?�규 조항 추�?</h3>
         <button class="btn-close" onclick="closeArticleModal()">&times;</button>
       </div>
       <div class="modal-body">
         <div style="display: flex; gap: 10px; margin-bottom: 12px;">
           <div style="width: 110px;">
             <label style="display:block; font-size:13px; font-weight:600; margin-bottom:4px;">조항 번호</label>
-            <input type="text" id="modal-art-num" placeholder="제n조" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; font-weight:700; color:var(--primary);">
+            <input type="text" id="modal-art-num" placeholder="?�n�? style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; font-weight:700; color:var(--primary);">
           </div>
           <div style="flex: 1;">
-            <label style="display:block; font-size:13px; font-weight:600; margin-bottom:4px;">조항 제목</label>
-            <input type="text" id="modal-art-title" placeholder="예: 위험성평가의 실시 주기" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;" onkeydown="if(event.key==='Enter') document.getElementById('modal-art-body').focus()">
+            <label style="display:block; font-size:13px; font-weight:600; margin-bottom:4px;">조항 ?�목</label>
+            <input type="text" id="modal-art-title" placeholder="?? ?�험?�평가???�시 주기" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;" onkeydown="if(event.key==='Enter') document.getElementById('modal-art-body').focus()">
           </div>
         </div>
 
         <div class="form-group" style="margin-bottom: 10px;">
-          <label style="display:block; font-size:13px; font-weight:600; margin-bottom:4px;">조문 내용 (원문 / 항·호 입력)</label>
+          <label style="display:block; font-size:13px; font-weight:600; margin-bottom:4px;">조문 ?�용 (?�문 / ??�호 ?�력)</label>
           <div class="editor-sub-toolbar">
-            <button type="button" class="btn-tool-mini" onclick="insertParagraphSymbol('① ')" title="1항 삽입">①</button>
-            <button type="button" class="btn-tool-mini" onclick="insertParagraphSymbol('② ')" title="2항 삽입">②</button>
-            <button type="button" class="btn-tool-mini" onclick="insertParagraphSymbol('③ ')" title="3항 삽입">③</button>
-            <button type="button" class="btn-tool-mini" onclick="insertParagraphSymbol('④ ')" title="4항 삽입">④</button>
-            <button type="button" class="btn-tool-mini" onclick="insertParagraphSymbol('⑤ ')" title="5항 삽입">⑤</button>
-            <button type="button" class="btn-tool-mini" onclick="insertParagraphSymbol('1. ')" title="1호 삽입">1.</button>
-            <button type="button" class="btn-tool-mini" onclick="insertParagraphSymbol('가. ')" title="목 삽입">가.</button>
+            <button type="button" class="btn-tool-mini" onclick="insertParagraphSymbol('??')" title="1???�입">??/button>
+            <button type="button" class="btn-tool-mini" onclick="insertParagraphSymbol('??')" title="2???�입">??/button>
+            <button type="button" class="btn-tool-mini" onclick="insertParagraphSymbol('??')" title="3???�입">??/button>
+            <button type="button" class="btn-tool-mini" onclick="insertParagraphSymbol('??')" title="4???�입">??/button>
+            <button type="button" class="btn-tool-mini" onclick="insertParagraphSymbol('??')" title="5???�입">??/button>
+            <button type="button" class="btn-tool-mini" onclick="insertParagraphSymbol('1. ')" title="1???�입">1.</button>
+            <button type="button" class="btn-tool-mini" onclick="insertParagraphSymbol('가. ')" title="�??�입">가.</button>
             <span style="width:1px; height:18px; background:#cbd5e1; margin:0 4px; display:inline-block;"></span>
-            <button type="button" class="btn-tool-mini" onclick="openLinkPickerModal('modal-art-body')" style="color:#1d4ed8; font-weight:700;" title="연계 규정/조항 바로가기 삽입"><i class="fa-solid fa-link"></i> 연계 규정 링크 삽입</button>
+            <button type="button" class="btn-tool-mini" onclick="openLinkPickerModal('modal-art-body')" style="color:#1d4ed8; font-weight:700;" title="?�계 규정/조항 바로가�??�입"><i class="fa-solid fa-link"></i> ?�계 규정 링크 ?�입</button>
           </div>
-          <textarea id="modal-art-body" rows="6" placeholder="① 사업주는 매년 정기적으로 위험성평가를 실시하여야 한다.&#10;② 평가 결과는 3년간 보존하여야 한다." style="width:100%; padding:10px; border:1px solid #ccc; border-radius:0 0 4px 4px; font-size:13.5px; line-height:1.6; resize:vertical; outline:none; font-family:inherit;"></textarea>
+          <textarea id="modal-art-body" rows="6" placeholder="???�업주는 매년 ?�기?�으�??�험?�평가�??�시?�여???�다.&#10;???��? 결과??3?�간 보존?�여???�다." style="width:100%; padding:10px; border:1px solid #ccc; border-radius:0 0 4px 4px; font-size:13.5px; line-height:1.6; resize:vertical; outline:none; font-family:inherit;"></textarea>
         </div>
-        <small class="text-muted" style="color:#64748b;"><i class="fa-solid fa-circle-info"></i> 확인 시 에디터 맨 아래에 새 줄로 독립된 표준 조항 블록이 삽입됩니다.</small>
+        <small class="text-muted" style="color:#64748b;"><i class="fa-solid fa-circle-info"></i> ?�인 ???�디??�??�래????줄로 ?�립???��? 조항 블록???�입?�니??</small>
       </div>
       <div class="modal-footer">
         <button class="btn-cancel" onclick="closeArticleModal()">취소</button>
-        <button class="btn-primary" onclick="confirmAddArticle()"><i class="fa-solid fa-plus"></i> 조항 본문 삽입</button>
+        <button class="btn-primary" onclick="confirmAddArticle()"><i class="fa-solid fa-plus"></i> 조항 본문 ?�입</button>
       </div>
     </div>
   </div>
 
-  <!-- [모달 4] 신규 절차서/지침서 규정 생성 모달 (트리 계층 연계) -->
+  <!-- [모달 4] ?�규 ?�차??지침서 규정 ?�성 모달 (?�리 계층 ?�계) -->
   <div id="new-doc-modal" class="modal-backdrop no-print" style="display:none; z-index: 10006;">
     <div class="modal-dialog" style="max-width: 620px;">
       <div class="modal-header">
-        <h3><i class="fa-solid fa-folder-plus"></i> 신규 절차서 / 지침서 규정 제정</h3>
+        <h3><i class="fa-solid fa-folder-plus"></i> ?�규 ?�차??/ 지침서 규정 ?�정</h3>
         <button class="btn-close" onclick="closeNewDocModal()">&times;</button>
       </div>
       <div class="modal-body">
@@ -376,109 +513,174 @@
           <div class="form-group">
             <label style="display:block; font-size:13px; font-weight:600; margin-bottom:4px;">규정 분류 (구분)</label>
             <select id="new-doc-category" class="editor-select" style="width:100%; height:38px;" onchange="onNewDocCategoryChange()">
-              <option value="PROCEDURE">절차서 (Procedure)</option>
+              <option value="PROCEDURE">?�차??(Procedure)</option>
               <option value="INSTRUCTION">지침서 (Instruction)</option>
-              <option value="MANUAL">매뉴얼 (Manual)</option>
+              <option value="MANUAL">매뉴??(Manual)</option>
             </select>
           </div>
           <div class="form-group">
-            <label style="display:block; font-size:13px; font-weight:600; margin-bottom:4px;">상위 규정 (연계 계층)</label>
+            <label style="display:block; font-size:13px; font-weight:600; margin-bottom:4px;">?�위 규정 (?�계 계층)</label>
             <select id="new-doc-parent" class="editor-select" style="width:100%; height:38px;">
-              <!-- JS로 동적 옵션 채움 -->
+              <!-- JS�??�적 ?�션 채�? -->
             </select>
           </div>
         </div>
 
         <div style="display:grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 12px;">
           <div class="form-group">
-            <label style="display:block; font-size:13px; font-weight:600; margin-bottom:4px;">규정 명칭 (제목)</label>
-            <input type="text" id="new-doc-title" placeholder="예: 작업중지권 행사 관리 절차서" style="width:100%; padding:8px 10px; border:1px solid #ccc; border-radius:4px; font-size:13.5px;">
+            <label style="display:block; font-size:13px; font-weight:600; margin-bottom:4px;">규정 명칭 (?�목)</label>
+            <input type="text" id="new-doc-title" placeholder="?? ?�업중�?�??�사 관�??�차?? style="width:100%; padding:8px 10px; border:1px solid #ccc; border-radius:4px; font-size:13.5px;">
           </div>
           <div class="form-group">
             <label style="display:block; font-size:13px; font-weight:600; margin-bottom:4px;">문서 번호 (Code)</label>
-            <input type="text" id="new-doc-num" placeholder="예: ST-PR-002" style="width:100%; padding:8px 10px; border:1px solid #ccc; border-radius:4px; font-size:13.5px; font-weight:600;">
+            <input type="text" id="new-doc-num" placeholder="?? ST-PR-002" style="width:100%; padding:8px 10px; border:1px solid #ccc; border-radius:4px; font-size:13.5px; font-weight:600;">
           </div>
         </div>
 
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
           <div class="form-group">
-            <label style="display:block; font-size:13px; font-weight:600; margin-bottom:4px;">시행 일자</label>
+            <label style="display:block; font-size:13px; font-weight:600; margin-bottom:4px;">?�행 ?�자</label>
             <input type="date" id="new-doc-date" style="width:100%; padding:8px 10px; border:1px solid #ccc; border-radius:4px; font-size:13px;">
           </div>
           <div class="form-group">
-            <label style="display:block; font-size:13px; font-weight:600; margin-bottom:4px;">주관 부서</label>
-            <input type="text" id="new-doc-dept" value="품질안전보건실" style="width:100%; padding:8px 10px; border:1px solid #ccc; border-radius:4px; font-size:13px;">
+            <label style="display:block; font-size:13px; font-weight:600; margin-bottom:4px;">주�? 부??/label>
+            <input type="text" id="new-doc-dept" value="?�질?�전보건?? style="width:100%; padding:8px 10px; border:1px solid #ccc; border-radius:4px; font-size:13px;">
           </div>
         </div>
 
         <div class="form-group" style="margin-bottom: 12px;">
-          <label style="display:block; font-size:13px; font-weight:600; margin-bottom:4px;">제정 사유 (최초 제정 내역)</label>
-          <input type="text" id="new-doc-summary" value="KOSHA-MS 안전보건경영체계 고도화에 따른 신규 규정 제정" style="width:100%; padding:8px 10px; border:1px solid #ccc; border-radius:4px; font-size:13px;">
+          <label style="display:block; font-size:13px; font-weight:600; margin-bottom:4px;">?�정 ?�유 (최초 ?�정 ?�역)</label>
+          <input type="text" id="new-doc-summary" value="KOSHA-MS ?�전보건경영체계 고도?�에 ?�른 ?�규 규정 ?�정" style="width:100%; padding:8px 10px; border:1px solid #ccc; border-radius:4px; font-size:13px;">
         </div>
 
         <div style="background-color:#f0f9ff; border:1px solid #bae6fd; border-radius:6px; padding:10px 12px; font-size:12.5px; color:#0369a1;">
-          <i class="fa-solid fa-lightbulb"></i> 생성 완료 시 기본 조항 템플릿(목적, 적용범위 등)이 탑재된 신규 문서가 등록되며, 즉시 해당 문서로 이동하여 편집할 수 있습니다.
+          <i class="fa-solid fa-lightbulb"></i> ?�성 ?�료 ??기본 조항 ?�플�?목적, ?�용범위 ?????�재???�규 문서가 ?�록?�며, 즉시 ?�당 문서�??�동?�여 ?�집?????�습?�다.
         </div>
       </div>
       <div class="modal-footer">
         <button class="btn-cancel" onclick="closeNewDocModal()">취소</button>
-        <button class="btn-primary" onclick="confirmCreateNewDoc()"><i class="fa-solid fa-check"></i> 규정 등록 및 이동</button>
+        <button class="btn-primary" onclick="confirmCreateNewDoc()"><i class="fa-solid fa-check"></i> 규정 ?�록 �??�동</button>
       </div>
     </div>
   </div>
 
-  <!-- [모달 5] 연계 규정 및 조항 딥링크 검색/선택 모달 (트리맵 브라우저) -->
+  <!-- [모달 5] ?�계 규정 �?조항 ?�링??검???�택 모달 (?�리�?브라?��?) -->
   <div id="link-picker-modal" class="modal-backdrop no-print" style="display:none; z-index: 10007;">
     <div class="modal-dialog modal-lg" style="max-width: 860px; height: 85vh; display:flex; flex-direction:column;">
       <div class="modal-header">
-        <h3><i class="fa-solid fa-link"></i> 연계 규정 및 조항 선택</h3>
+        <h3><i class="fa-solid fa-link"></i> ?�계 규정 �?조항 ?�택</h3>
         <button class="btn-close" onclick="closeLinkPickerModal()">&times;</button>
       </div>
       <div class="modal-body" style="display:flex; flex-direction:column; gap:12px; overflow:hidden; padding:16px;">
         
-        <!-- 검색 바 -->
+        <!-- 검??�?-->
         <div class="link-search-bar">
           <i class="fa-solid fa-magnifying-glass"></i>
-          <input type="text" id="link-picker-search" placeholder="규정명 또는 조항 검색 (예: 위험성평가, 제2조, 긴급대응)" oninput="filterLinkPicker()">
+          <input type="text" id="link-picker-search" placeholder="규정�??�는 조항 검??(?? ?�험?�평가, ??�? 긴급?�??" oninput="filterLinkPicker()">
         </div>
 
-        <!-- 2단 브라우징 영역 (좌: 규정 계층 트리, 우: 해당 규정의 조항 목록) -->
+        <!-- 2??브라?�징 ?�역 (�? 규정 계층 ?�리, ?? ?�당 규정??조항 목록) -->
         <div class="link-picker-container">
           <div class="link-picker-sidebar">
-            <div class="picker-panel-title"><i class="fa-solid fa-folder-tree"></i> 규정 계층 트리</div>
+            <div class="picker-panel-title"><i class="fa-solid fa-folder-tree"></i> 규정 계층 ?�리</div>
             <div class="picker-tree-list" id="picker-tree-list">
-              <!-- 규정 목록 트리 렌더링 -->
+              <!-- 규정 목록 ?�리 ?�더�?-->
             </div>
           </div>
           <div class="link-picker-content">
-            <div class="picker-panel-title" id="picker-clauses-title"><i class="fa-solid fa-list-ol"></i> 조항 선택 (규정을 먼저 선택하세요)</div>
+            <div class="picker-panel-title" id="picker-clauses-title"><i class="fa-solid fa-list-ol"></i> 조항 ?�택 (규정??먼�? ?�택?�세??</div>
             <div class="picker-clause-list" id="picker-clause-list">
-              <div class="picker-empty-guide">좌측에서 규정을 선택하면 세부 조항 목록이 표시됩니다.</div>
+              <div class="picker-empty-guide">좌측?�서 규정???�택?�면 ?��? 조항 목록???�시?�니??</div>
             </div>
           </div>
         </div>
 
-        <!-- 선택 요약 및 표시 텍스트 커스텀 -->
+        <!-- ?�택 ?�약 �??�시 ?�스??커스?� -->
         <div class="link-selected-bar">
           <div class="link-preview-box">
-            <span class="label">선택 대상:</span>
-            <span id="link-target-display" class="target-name">선택되지 않음</span>
+            <span class="label">?�택 ?�??</span>
+            <span id="link-target-display" class="target-name">?�택?��? ?�음</span>
           </div>
           <div class="link-text-input-box">
-            <label for="link-custom-text">본문 표시 텍스트:</label>
-            <input type="text" id="link-custom-text" placeholder="예: [위험성평가 관리 절차서 제4조]">
+            <label for="link-custom-text">본문 ?�시 ?�스??</label>
+            <input type="text" id="link-custom-text" placeholder="?? [?�험?�평가 관�??�차????�?">
           </div>
         </div>
 
       </div>
       <div class="modal-footer">
         <button class="btn-cancel" onclick="closeLinkPickerModal()">취소</button>
-        <button class="btn-primary" id="btn-confirm-link" onclick="confirmInsertLink()" disabled><i class="fa-solid fa-check"></i> 링크 삽입</button>
+        <button class="btn-primary" id="btn-confirm-link" onclick="confirmInsertLink()" disabled><i class="fa-solid fa-check"></i> 링크 ?�입</button>
       </div>
     </div>
   </div>
 
-  <!-- 스크립트 로드 -->
+  <!-- 관리자 ?�정 종합 모달 (규정 ?�·개??관�?& 계정 관�? -->
+  <div id="admin-modal" class="modal-backdrop no-print" style="display:none; z-index:10008;">
+    <div class="modal-dialog modal-lg" style="max-width: 780px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-sliders"></i> 관리자 종합 ?�정</h3>
+        <button class="btn-close" onclick="closeAdminModal()">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 16px 20px;">
+        
+        <!-- 관리자 ??메뉴 -->
+        <div class="admin-tab-bar" style="display:flex; gap:8px; border-bottom:2px solid #e2e8f0; margin-bottom:15px;">
+          <button type="button" class="admin-tab-btn active" id="tab-btn-docs" onclick="switchAdminTab('docs')" style="padding:8px 16px; border:none; background:none; font-size:14px; font-weight:700; color:var(--primary, #194a9a); border-bottom:2px solid var(--primary, #194a9a); cursor:pointer; margin-bottom:-2px;">
+            <i class="fa-solid fa-book-bookmark"></i> ?�내 ?��? 규정 ?�·개??관�?          </button>
+          <button type="button" class="admin-tab-btn" id="tab-btn-accounts" onclick="switchAdminTab('accounts')" style="padding:8px 16px; border:none; background:none; font-size:14px; font-weight:600; color:#64748b; cursor:pointer; margin-bottom:-2px;">
+            <i class="fa-solid fa-user-shield"></i> 관리자 계정 권한 관�?          </button>
+        </div>
+
+        <!-- ??1: ?��? 규정 ?�·개??관�?(매뉴?? ?�차?? 지침서 ?�택 �??�정) -->
+        <div id="admin-tab-pane-docs">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <p class="admin-desc" style="margin:0;">?�·개??�?본문 ?�집??진행???�내 ?��? 규정???�택??주십?�오.</p>
+            <div style="display:flex; gap:6px;">
+              <select id="admin-filter-category" onchange="renderAdminDocList()" style="height:32px; padding:2px 8px; border:1px solid #cbd5e1; border-radius:4px; font-size:12.5px;">
+                <option value="ALL">?�체 규정</option>
+                <option value="MANUAL">매뉴??/option>
+                <option value="PROCEDURE">?�차??/option>
+                <option value="INSTRUCTION">지침서</option>
+              </select>
+            </div>
+          </div>
+          <div class="admin-doc-table-container" style="border:1px solid #e2e8f0; border-radius:6px; max-height:360px; overflow-y:auto;">
+            <table class="admin-doc-table" style="width:100%; border-collapse:collapse; font-size:13px;">
+              <thead style="background-color:#f8fafc; position:sticky; top:0; z-index:2; border-bottom:1px solid #cbd5e1;">
+                <tr>
+                  <th style="padding:9px 12px; text-align:left;">구분</th>
+                  <th style="padding:9px 12px; text-align:left;">문서번호</th>
+                  <th style="padding:9px 12px; text-align:left;">규정 명칭</th>
+                  <th style="padding:9px 12px; text-align:center;">?�재 버전</th>
+                  <th style="padding:9px 12px; text-align:center;">?�행?�자</th>
+                  <th style="padding:9px 12px; text-align:center;">?�집/개정</th>
+                </tr>
+              </thead>
+              <tbody id="admin-doc-list-tbody">
+                <!-- JS ?�더�?-->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ??2: 관리자 권한 계정 관�?-->
+        <div id="admin-tab-pane-accounts" style="display:none;">
+          <p class="admin-desc">문서???�·개??�????�디???�집 권한??가�??�내 ?�메??목록?�니??</p>
+          <div class="input-with-btn" style="margin-bottom: 15px;">
+            <input type="email" id="new-admin-email" placeholder="추�???관리자 ?�메??(?? test@sebangtec.com)">
+            <button class="btn-primary" onclick="addAdminEmail()">추�?</button>
+          </div>
+          <ul class="admin-list" id="admin-email-list">
+            <!-- JS ?�더�?-->
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ?�크립트 로드 -->
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/detail.js"></script>

@@ -1,4 +1,4 @@
-/* 국가법령정보센터 상세 뷰어 스타일 - detail.css */
+/* �??법령?�보?�터 ?�세 뷰어 ?��???- detail.css */
 :root {
   --primary: #194a9a;
   --primary-dark: #0f326f;
@@ -15,7 +15,7 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Malgun Gothic", "맑은 고딕", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Malgun Gothic", "맑�? 고딕", sans-serif;
   color: #222;
   background-color: var(--white);
   height: 100vh;
@@ -24,7 +24,7 @@ body {
   overflow: hidden;
 }
 
-/* 상단 헤더 */
+/* ?�단 ?�더 */
 .detail-header {
   background-color: var(--primary-dark);
   color: var(--white);
@@ -74,7 +74,7 @@ body {
   cursor: pointer;
 }
 
-/* 법제처 스타일 액션 툴바 */
+/* 법제�??��????�션 ?�바 */
 .action-toolbar {
   background-color: #f8fafc;
   border-bottom: 2px solid var(--primary);
@@ -156,7 +156,7 @@ body {
   background-color: var(--primary-dark);
 }
 
-/* 드롭다운 메뉴 */
+/* ?�롭?�운 메뉴 */
 .dropdown {
   position: relative;
   display: inline-block;
@@ -193,14 +193,14 @@ body {
   border-bottom: none;
 }
 
-/* 2단 분할 레이아웃 */
+/* 2??분할 ?�이?�웃 */
 .viewer-container {
   display: flex;
   flex: 1;
   overflow: hidden;
 }
 
-/* 좌측 사이드바 트리 */
+/* 좌측 ?�이?�바 ?�리 */
 .sidebar-tree {
   width: 320px;
   background-color: #fbfcfd;
@@ -331,7 +331,7 @@ body {
   color: var(--primary);
 }
 
-/* 우측 본문 뷰어 */
+/* ?�측 본문 뷰어 */
 .content-pane {
   flex: 1;
   padding: 30px 45px;
@@ -357,7 +357,7 @@ body {
   letter-spacing: -0.5px;
 }
 
-/* 조항별 본문 스타일 (국가법령센터 시각적 일치) */
+/* 조항�?본문 ?��???(�??법령?�터 ?�각???�치) */
 .doc-article {
   margin-bottom: 24px;
   padding-bottom: 18px;
@@ -402,7 +402,7 @@ body {
   color: #0b3a75;
 }
 
-/* 모달 및 에디터 */
+/* 모달 �??�디??*/
 .modal-backdrop {
   position: fixed;
   top: 0; left: 0; width: 100vw; height: 100vh;
@@ -477,7 +477,7 @@ body {
   cursor: pointer;
 }
 
-/* 임시 격리 에디터 */
+/* ?�시 격리 ?�디??*/
 .draft-notice {
   background-color: #e6f7ff;
   border: 1px solid #91d5ff;
@@ -638,7 +638,7 @@ body {
   color: var(--primary);
 }
 
-/* 신구대조 (Diff) 뷰 */
+/* ?�구?��?(Diff) �?*/
 .diff-view-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -684,7 +684,7 @@ body {
   border-bottom: 1px dashed #e2e8f0;
 }
 
-/* 사이트 초기 접속 비밀번호 (Gatekeeper) 스타일 */
+/* ?�이??초기 ?�속 비�?번호 (Gatekeeper) ?��???*/
 .gate-overlay {
   position: fixed;
   top: 0;
@@ -804,7 +804,7 @@ body {
   font-size: 11.5px;
 }
 
-/* [모달 5] 연계 규정 및 조항 딥링크 검색/선택기 스타일 */
+/* [모달 5] ?�계 규정 �?조항 ?�링??검???�택�??��???*/
 .link-search-bar {
   display: flex;
   align-items: center;
@@ -971,4 +971,11 @@ body {
 }
 .link-text-input-box input:focus {
   border-color: var(--primary);
+}
+
+/* ?�면 모드?�서???�쇄 ?�용 ?�이지(?��?, 개정?? ?�구?�조표) ?��? */
+@media screen {
+  .print-page {
+    display: none !important;
+  }
 }
