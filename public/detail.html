@@ -629,6 +629,9 @@
           <button type="button" class="admin-tab-btn active" id="tab-btn-docs" onclick="switchAdminTab('docs')" style="padding:8px 16px; border:none; background:none; font-size:14px; font-weight:700; color:var(--primary, #194a9a); border-bottom:2px solid var(--primary, #194a9a); cursor:pointer; margin-bottom:-2px;">
             <i class="fa-solid fa-book-bookmark"></i> 사내 표준 규정 제·개정 관리
           </button>
+          <button type="button" class="admin-tab-btn" id="tab-btn-sites" onclick="switchAdminTab('sites')" style="padding:8px 16px; border:none; background:none; font-size:14px; font-weight:600; color:#64748b; cursor:pointer; margin-bottom:-2px;">
+            <i class="fa-solid fa-helmet-safety"></i> 현장 및 현장소장 관리 (2026)
+          </button>
           <button type="button" class="admin-tab-btn" id="tab-btn-accounts" onclick="switchAdminTab('accounts')" style="padding:8px 16px; border:none; background:none; font-size:14px; font-weight:600; color:#64748b; cursor:pointer; margin-bottom:-2px;">
             <i class="fa-solid fa-user-shield"></i> 관리자 계정 권한 관리
           </button>
@@ -666,7 +669,38 @@
           </div>
         </div>
 
-        <!-- 탭 2: 관리자 권한 계정 관리 -->
+        <!-- 탭 2: 현장 및 현장소장 관리 (2026 현장목록 기반) -->
+        <div id="admin-tab-pane-sites" style="display:none;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:10px;">
+            <p class="admin-desc" style="margin:0;">사내 2026년도 현장 목록 및 각 현장별 <strong>현장소장(안전책임자)</strong> 배치 현황입니다. 소장을 추가하거나 삭제할 수 있습니다.</p>
+            <span id="site-count-badge" style="background:#e0f2fe; color:#0369a1; font-size:12px; font-weight:700; padding:3px 10px; border-radius:12px; white-space:nowrap;">현장 로딩 중...</span>
+          </div>
+          
+          <div style="margin-bottom: 12px; display:flex; gap:8px;">
+            <div style="position:relative; flex:1;">
+              <i class="fa-solid fa-magnifying-glass" style="position:absolute; left:10px; top:10px; color:#94a3b8; font-size:12px;"></i>
+              <input type="text" id="admin-site-search" placeholder="현장명, 현장코드, 또는 현장소장 이름 검색..." oninput="filterAdminSites()" style="width:100%; padding:7px 10px 7px 32px; border:1px solid #cbd5e1; border-radius:4px; font-size:13px; outline:none; box-sizing:border-box;">
+            </div>
+          </div>
+
+          <div class="admin-site-table-container" style="border:1px solid #e2e8f0; border-radius:6px; max-height:360px; overflow-y:auto;">
+            <table class="admin-site-table" style="width:100%; border-collapse:collapse; font-size:13px;">
+              <thead style="background-color:#f8fafc; position:sticky; top:0; z-index:2; border-bottom:1px solid #cbd5e1;">
+                <tr>
+                  <th style="padding:9px 12px; text-align:center; width:15%;">현장코드</th>
+                  <th style="padding:9px 12px; text-align:left; width:45%;">현장명 (공사명)</th>
+                  <th style="padding:9px 12px; text-align:left; width:22%;">배치된 현장소장</th>
+                  <th style="padding:9px 12px; text-align:center; width:18%;">현장소장 추가</th>
+                </tr>
+              </thead>
+              <tbody id="admin-site-list-tbody">
+                <!-- JS 렌더링 -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 탭 3: 관리자 권한 계정 관리 -->
         <div id="admin-tab-pane-accounts" style="display:none;">
           <p class="admin-desc">문서의 제·개정 및 웹 에디터 편집 권한을 가진 사내 이메일 목록입니다.</p>
           <div class="input-with-btn" style="margin-bottom: 15px;">

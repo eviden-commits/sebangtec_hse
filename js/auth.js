@@ -231,41 +231,210 @@ function closeAdminModal() {
   if (modal) modal.style.display = 'none';
 }
 
-// ê´€ë¦¬ì ëª¨ë‹¬ ???„í™˜ ('docs': ê·œì • ?œÂ·ê°œ??ê´€ë¦? 'accounts': ê³„ì • ê¶Œí•œ ê´€ë¦?
+// ê´€ë¦¬ì ëª¨ë‹¬ ???„í™˜ ('docs': ê·œì • ?œÂ·ê°œ??ê´€ë¦? 'sites': ?„ì¥ ë°??„ì¥?Œì¥ ê´€ë¦? 'accounts': ê³„ì • ê¶Œí•œ ê´€ë¦?
 function switchAdminTab(tabName) {
   const tabDocs = document.getElementById('admin-tab-pane-docs');
+  const tabSites = document.getElementById('admin-tab-pane-sites');
   const tabAccounts = document.getElementById('admin-tab-pane-accounts');
   const btnDocs = document.getElementById('tab-btn-docs');
+  const btnSites = document.getElementById('tab-btn-sites');
   const btnAccounts = document.getElementById('tab-btn-accounts');
+
+  // ?„ì²´ ?¨ë„ ?¨ê?
+  if (tabDocs) tabDocs.style.display = 'none';
+  if (tabSites) tabSites.style.display = 'none';
+  if (tabAccounts) tabAccounts.style.display = 'none';
+
+  // ??ë²„íŠ¼ ?¤í???ì´ˆê¸°??  [btnDocs, btnSites, btnAccounts].forEach(btn => {
+    if (btn) {
+      btn.style.fontWeight = '600';
+      btn.style.color = '#64748b';
+      btn.style.borderBottom = 'none';
+    }
+  });
 
   if (tabName === 'docs') {
     if (tabDocs) tabDocs.style.display = 'block';
-    if (tabAccounts) tabAccounts.style.display = 'none';
     if (btnDocs) {
       btnDocs.style.fontWeight = '700';
       btnDocs.style.color = 'var(--primary, #194a9a)';
       btnDocs.style.borderBottom = '2px solid var(--primary, #194a9a)';
     }
-    if (btnAccounts) {
-      btnAccounts.style.fontWeight = '600';
-      btnAccounts.style.color = '#64748b';
-      btnAccounts.style.borderBottom = 'none';
-    }
     renderAdminDocList();
-  } else {
-    if (tabDocs) tabDocs.style.display = 'none';
-    if (tabAccounts) tabAccounts.style.display = 'block';
-    if (btnDocs) {
-      btnDocs.style.fontWeight = '600';
-      btnDocs.style.color = '#64748b';
-      btnDocs.style.borderBottom = 'none';
+  } else if (tabName === 'sites') {
+    if (tabSites) tabSites.style.display = 'block';
+    if (btnSites) {
+      btnSites.style.fontWeight = '700';
+      btnSites.style.color = 'var(--primary, #194a9a)';
+      btnSites.style.borderBottom = '2px solid var(--primary, #194a9a)';
     }
+    renderAdminSiteList(true);
+  } else {
+    if (tabAccounts) tabAccounts.style.display = 'block';
     if (btnAccounts) {
       btnAccounts.style.fontWeight = '700';
       btnAccounts.style.color = 'var(--primary, #194a9a)';
       btnAccounts.style.borderBottom = '2px solid var(--primary, #194a9a)';
     }
     loadAdminList();
+  }
+}
+
+// -------------------------------------------------------------
+// [?„ì¥ ë°??„ì¥?Œì¥ ê´€ë¦?ë¡œì§ (2026 ?„ì¥ëª©ë¡ ?Œì‹± ?°ë™)]
+// -------------------------------------------------------------
+let cachedAdminSites = [];
+
+// ?„ì¥ ëª©ë¡ ?Œë”ë§?async function renderAdminSiteList(fetchFromApi = true) {
+  const tbody = document.getElementById('admin-site-list-tbody');
+  const badge = document.getElementById('site-count-badge');
+  if (!tbody) return;
+
+  if (fetchFromApi || cachedAdminSites.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:25px; color:#64748b;"><i class="fa-solid fa-spinner fa-spin"></i> ?„ì¥ ë°??„ì¥?Œì¥ ëª©ë¡??ë¶ˆëŸ¬?¤ëŠ” ì¤?..</td></tr>`;
+    try {
+      cachedAdminSites = await API.getSites();
+    } catch (e) {
+      console.error(e);
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:25px; color:#ef4444;">?„ì¥ ëª©ë¡??ë¶ˆëŸ¬?¤ì? ëª»í–ˆ?µë‹ˆ??</td></tr>`;
+      return;
+    }
+  }
+
+  // ê²€?‰ì–´ ?„í„°ë§?  const searchInput = document.getElementById('admin-site-search');
+  const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
+
+  let filtered = cachedAdminSites;
+  if (query) {
+    filtered = cachedAdminSites.filter(s => {
+      const code = (s.code || '').toLowerCase();
+      const name = (s.name || '').toLowerCase();
+      const mgrStr = (s.managers || []).join(' ').toLowerCase();
+      return code.includes(query) || name.includes(query) || mgrStr.includes(query);
+    });
+  }
+
+  // ?µê³„ ë±ƒì? ?…ë°?´íŠ¸
+  if (badge) {
+    const assignedCount = cachedAdminSites.filter(s => s.managers && s.managers.length > 0).length;
+    badge.innerText = `ì´?${cachedAdminSites.length}ê°??„ì¥ (ë°°ì¹˜: ${assignedCount}ê°?/ ë¯¸ë°°ì¹? ${cachedAdminSites.length - assignedCount}ê°?`;
+  }
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:25px; color:#64748b;">?¼ì¹˜?˜ëŠ” ?„ì¥???†ìŠµ?ˆë‹¤.</td></tr>`;
+    return;
+  }
+
+  let html = '';
+  filtered.forEach(site => {
+    const managers = site.managers || [];
+    let mgrBadgesHtml = '';
+
+    if (managers.length === 0) {
+      mgrBadgesHtml = '<span style="color:#ef4444; font-size:12px; font-weight:600;"><i class="fa-solid fa-triangle-exclamation"></i> ë¯¸ì???/span>';
+    } else {
+      managers.forEach(m => {
+        mgrBadgesHtml += `
+          <span style="background:#f1f5f9; border:1px solid #cbd5e1; padding:2px 8px; border-radius:12px; font-size:12px; display:inline-flex; align-items:center; gap:4px; margin:2px;">
+            <i class="fa-solid fa-user-tie" style="color:#0284c7; font-size:11px;"></i>
+            <strong>${escapeHtml(m)}</strong>
+            <button type="button" onclick="removeSiteManager('${escapeHtml(site.id)}', '${escapeHtml(m)}')" title="?„ì¥?Œì¥ ?? œ" style="border:none; background:none; color:#ef4444; font-size:14px; cursor:pointer; padding:0 2px; line-height:1; font-weight:bold;">&times;</button>
+          </span>
+        `;
+      });
+    }
+
+    html += `
+      <tr style="border-bottom:1px solid #f1f5f9; transition:background-color 0.15s;" onmouseover="this.style.backgroundColor='#f8fafc'" onmouseout="this.style.backgroundColor='transparent'">
+        <td style="padding:9px 12px; text-align:center; font-family:monospace; font-weight:700; color:#475569; vertical-align:middle;">
+          ${escapeHtml(site.code || '-')}
+        </td>
+        <td style="padding:9px 12px; vertical-align:middle; font-weight:600; color:#1e293b;">
+          ${escapeHtml(site.name)}
+        </td>
+        <td style="padding:9px 12px; vertical-align:middle;">
+          <div style="display:flex; flex-wrap:wrap; align-items:center;">
+            ${mgrBadgesHtml}
+          </div>
+        </td>
+        <td style="padding:9px 12px; text-align:center; vertical-align:middle;">
+          <div style="display:flex; gap:4px; justify-content:center; align-items:center;">
+            <input type="text" id="add-mgr-input-${escapeHtml(site.id)}" placeholder="?Œì¥ ?±ëª…" style="width:75px; padding:4px 6px; font-size:12px; border:1px solid #cbd5e1; border-radius:4px; outline:none;" onkeydown="if(event.key==='Enter') addSiteManager('${escapeHtml(site.id)}')">
+            <button type="button" class="btn-primary" onclick="addSiteManager('${escapeHtml(site.id)}')" style="padding:4px 8px; font-size:11.5px; border-radius:4px; cursor:pointer; white-space:nowrap;">
+              <i class="fa-solid fa-plus"></i> ì¶”ê?
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  });
+
+  tbody.innerHTML = html;
+}
+
+// ?„ì¥ ëª©ë¡ ê²€???„í„°ë§?(ìºì‹œ ê¸°ë°˜ ë¹ ë¥¸ ?Œë”ë§?
+function filterAdminSites() {
+  renderAdminSiteList(false);
+}
+
+// ?¹ì • ?„ì¥???„ì¥?Œì¥ ì¶”ê?
+async function addSiteManager(siteId) {
+  const input = document.getElementById(`add-mgr-input-${siteId}`);
+  if (!input) return;
+  const newName = input.value.trim();
+
+  if (!newName) {
+    alert('ì¶”ê????„ì¥?Œì¥???±ëª…???…ë ¥??ì£¼ì‹­?œì˜¤.');
+    input.focus();
+    return;
+  }
+
+  const site = cachedAdminSites.find(s => s.id === siteId);
+  if (!site) {
+    alert('?„ì¥ ?•ë³´ë¥?ì°¾ì„ ???†ìŠµ?ˆë‹¤.');
+    return;
+  }
+
+  if (!site.managers) site.managers = [];
+
+  if (site.managers.includes(newName)) {
+    alert(`'${newName}' ?˜ì? ?´ë? ë³??„ì¥???„ì¥?Œì¥?¼ë¡œ ?±ë¡?˜ì–´ ?ˆìŠµ?ˆë‹¤.`);
+    return;
+  }
+
+  // ?„ì¥?Œì¥ ë°°ì—´??ì¶”ê?
+  site.managers.push(newName);
+  site.manager = site.managers.join(', ');
+
+  try {
+    input.disabled = true;
+    await API.saveSites(cachedAdminSites);
+    input.value = '';
+    renderAdminSiteList(false);
+  } catch (err) {
+    alert('?„ì¥?Œì¥ ì¶”ê? ?€??ì¤??¤ë¥˜ê°€ ë°œìƒ?ˆìŠµ?ˆë‹¤.');
+  } finally {
+    input.disabled = false;
+  }
+}
+
+// ?¹ì • ?„ì¥???„ì¥?Œì¥ ?œê±°
+async function removeSiteManager(siteId, managerName) {
+  const site = cachedAdminSites.find(s => s.id === siteId);
+  if (!site) return;
+
+  if (!confirm(`[${site.name}]\n'${managerName}' ?„ì¥?Œì¥???? œ(?´ì œ)?˜ì‹œê² ìŠµ?ˆê¹Œ?`)) {
+    return;
+  }
+
+  site.managers = (site.managers || []).filter(m => m !== managerName);
+  site.manager = site.managers.join(', ');
+
+  try {
+    await API.saveSites(cachedAdminSites);
+    renderAdminSiteList(false);
+  } catch (err) {
+    alert('?„ì¥?Œì¥ ?? œ ?€??ì¤??¤ë¥˜ê°€ ë°œìƒ?ˆìŠµ?ˆë‹¤.');
   }
 }
 

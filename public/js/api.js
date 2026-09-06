@@ -226,5 +226,52 @@ const API = {
 
     // GAS로도 직접 전송
     callGasDirect({ action: 'LOG_PRINT', docId, docTitle, userEmail });
+  },
+
+  // 현장 목록 조회 (GET /api/sites, 정적 파일 및 로컬스토리지 폴백 지원)
+  async getSites() {
+    let sites = null;
+    try {
+      const res = await fetch('/api/sites');
+      if (res.ok) sites = await res.json();
+    } catch (ignored) {}
+
+    if (!sites || sites.length === 0) {
+      try {
+        const res = await fetch('data/sites.json');
+        if (res.ok) sites = await res.json();
+      } catch (ignored) {}
+    }
+
+    // 로컬스토리지에 저장된 현장 목록 변경사항이 있는 경우 오버라이드
+    const localSites = localStorage.getItem('sebang_sites');
+    if (localSites) {
+      try {
+        const parsed = JSON.parse(localSites);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      } catch (e) {}
+    }
+
+    return sites || [];
+  },
+
+  // 현장 목록 및 현장소장 정보 저장 (POST /api/sites)
+  async saveSites(sitesArray) {
+    // 항상 로컬스토리지에 즉시 동기화 보존
+    localStorage.setItem('sebang_sites', JSON.stringify(sitesArray));
+
+    try {
+      const res = await fetch('/api/sites', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(sitesArray)
+      });
+      if (res.ok) return await res.json();
+    } catch (ignored) {}
+
+    return { success: true, message: '현장소장 및 현장 정보가 저장되었습니다.' };
   }
 };
+

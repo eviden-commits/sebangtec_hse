@@ -63,6 +63,7 @@ public class Main {
         server.createContext("/api/auth/otp/request", new OtpRequestHandler());
         server.createContext("/api/auth/otp/verify", new OtpVerifyHandler());
         server.createContext("/api/admins", new AdminHandler());
+        server.createContext("/api/sites", new SiteHandler());
         server.createContext("/api/logs/print", new PrintLogHandler());
         server.createContext("/api/logs/login", new LoginLogHandler());
 
@@ -337,6 +338,49 @@ public class Main {
                 String body = readBody(exchange);
                 Files.writeString(adminFile, body, StandardCharsets.UTF_8);
                 sendJsonResponse(exchange, 200, "{\"success\":true,\"message\":\"관리자 목록이 갱신되었습니다.\"}");
+                return;
+            }
+
+            sendJsonResponse(exchange, 405, "{\"error\":\"Method Not Allowed\"}");
+        }
+    }
+
+    /** 현장 및 현장소장 관리 핸들러 (/api/sites) */
+    static class SiteHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            addCorsHeaders(exchange);
+            Path sitesFile = DATA_DIR.resolve("sites.json");
+            Path publicSitesFile = PUBLIC_DIR.resolve("data").resolve("sites.json");
+            String method = exchange.getRequestMethod();
+
+            if ("OPTIONS".equalsIgnoreCase(method)) {
+                exchange.sendResponseHeaders(204, -1);
+                return;
+            }
+
+            if ("GET".equalsIgnoreCase(method)) {
+                if (Files.exists(sitesFile)) {
+                    sendJsonResponse(exchange, 200, Files.readString(sitesFile, StandardCharsets.UTF_8));
+                } else if (Files.exists(publicSitesFile)) {
+                    sendJsonResponse(exchange, 200, Files.readString(publicSitesFile, StandardCharsets.UTF_8));
+                } else {
+                    sendJsonResponse(exchange, 200, "[]");
+                }
+                return;
+            }
+
+            if ("POST".equalsIgnoreCase(method)) {
+                String body = readBody(exchange);
+                if (body != null && !body.isBlank()) {
+                    Files.createDirectories(DATA_DIR);
+                    Files.createDirectories(PUBLIC_DIR.resolve("data"));
+                    Files.writeString(sitesFile, body, StandardCharsets.UTF_8);
+                    Files.writeString(publicSitesFile, body, StandardCharsets.UTF_8);
+                    sendJsonResponse(exchange, 200, "{\"success\":true,\"message\":\"현장 목록 및 현장소장 정보가 저장되었습니다.\"}");
+                } else {
+                    sendJsonResponse(exchange, 400, "{\"success\":false,\"message\":\"요청 본문이 비어 있습니다.\"}");
+                }
                 return;
             }
 
