@@ -1,0 +1,54 @@
+{
+  "id": "FORM-SAFE-01",
+  "title": "일일 안전보건 순회점검표",
+  "docNumber": "ST-FR-SAFE-001",
+  "version": "Rev.2",
+  "effectiveDate": "2026-03-01",
+  "department": "품질안전보건실",
+  "defaultData": {
+    "siteName": "{{SITE_NAME}}",
+    "siteCode": "{{SITE_CODE}}",
+    "siteManager": "{{SITE_MANAGER}}",
+    "docDate": "{{DATE}}",
+    "writer": "{{WRITER}}",
+    "weather": "맑음",
+    "checkRows": [
+      {
+        "area": "지하 1층 배관구간",
+        "item": "고소작업대(AWP) 안전난간 및 안전대 체결 상태",
+        "status": "적합",
+        "risk": "중",
+        "action": "현장 점검 완료 및 작업자 교육"
+      },
+      {
+        "area": "지상 2층 덕트설치구간",
+        "item": "개구부 덮개 및 추락방지망 설치 상태",
+        "status": "보통",
+        "risk": "중",
+        "action": "안전난간대 보강 및 위험표지 부착 완료"
+      },
+      {
+        "area": "야외 자재적치장",
+        "item": "양중작업 시 하부 통제구역 설정 및 신호수 배치",
+        "status": "적합",
+        "risk": "하",
+        "action": "신호수 상주 확인 및 유도봉 지참"
+      },
+      {
+        "area": "가설 분전함 A-03",
+        "item": "누전차단기 정상 작동 및 접지선 연결 상태",
+        "status": "적합",
+        "risk": "중",
+        "action": "월간 누전시험 양호 스티커 부착"
+      },
+      {
+        "area": "현장 전 구역",
+        "item": "작업자 안전모 턱끈 체결 및 안전화 착용 실태",
+        "status": "적합",
+        "risk": "하",
+        "action": "TBM 시 지속적인 착용 지도"
+      }
+    ],
+    "generalOpinion": "금일 전반적인 현장 안전수칙 준수 상태 양호함. 고소작업 및 개구부 주변 추락재해 예방 집중 관리 요망."
+  }
+}

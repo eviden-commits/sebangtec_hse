@@ -3,137 +3,190 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>?�방?�크 KOSHA-MS ?�내 ?��?문서 ?�터</title>
+  <title>세방테크 KOSHA-MS 사내 표준문서 센터</title>
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-  <!-- ?�단 ?�틸리티 �?-->
+  <!-- 상단 유틸리티 바 -->
   <header class="top-util-bar">
     <div class="util-container">
       <div class="util-left">
       </div>
       <div class="util-right" id="user-status-area">
-        <!-- JS�?로그???�태 ?�더�?-->
-        <button class="btn-text" onclick="openLoginModal()"><i class="fa-solid fa-user"></i> 로그??/button>
+        <!-- JS로 로그인 상태 렌더링 -->
+        <button class="btn-text" onclick="openLoginModal()"><i class="fa-solid fa-user"></i> 로그인</button>
       </div>
     </div>
   </header>
 
-  <!-- 메인 ?�더 & 로고 -->
+  <!-- 메인 헤더 & 로고 -->
   <div class="main-header">
     <div class="header-container">
       <div class="brand-area" onclick="location.href='index.html'">
         <img src="misc/logo.png" alt="SEBANG" class="brand-corp-logo">
         <div class="brand-divider"></div>
         <div class="brand-text">
-          <h1>?�방?�크 ?�내?��??�보?�터</h1>
+          <h1>세방테크 사내표준정보센터</h1>
           <span>KOSHA-MS Safety & Health Standard Portal</span>
         </div>
       </div>
       <nav class="main-nav">
-        <a href="index.html" class="active">?�털 ??/a>
-        <a href="detail.html?id=MAN-KOSHA-01">KOSHA 매뉴??/a>
-        <!-- ISO ?�리�??�롭?�운 메뉴 -->
+        <a href="index.html" class="active">포털 홈</a>
+        <a href="detail.html?id=MAN-KOSHA-01">KOSHA 매뉴얼</a>
+        <!-- ISO 시리즈 드롭다운 메뉴 -->
         <div class="nav-dropdown">
           <a href="javascript:void(0)" class="nav-dropdown-btn">
-            ISO ?�리�?<i class="fa-solid fa-chevron-down" style="font-size: 11px; margin-left: 4px;"></i>
+            ISO 시리즈 <i class="fa-solid fa-chevron-down" style="font-size: 11px; margin-left: 4px;"></i>
           </a>
           <div class="nav-dropdown-content">
             <a href="detail.html?id=MAN-ISO-45001">
-              <i class="fa-solid fa-shield-heart" style="color: #0284c7;"></i> ISO 45001 (?�전) 매뉴??            </a>
+              <i class="fa-solid fa-shield-heart" style="color: #0284c7;"></i> ISO 45001 (안전) 매뉴얼
+            </a>
             <a href="detail.html?id=MAN-ISO-14001">
-              <i class="fa-solid fa-leaf" style="color: #16a34a;"></i> ISO 14001 (?�경) 매뉴??            </a>
+              <i class="fa-solid fa-leaf" style="color: #16a34a;"></i> ISO 14001 (환경) 매뉴얼
+            </a>
             <a href="detail.html?id=MAN-ISO-9001">
-              <i class="fa-solid fa-award" style="color: #ea580c;"></i> ISO 9001 (?�질) 매뉴??            </a>
+              <i class="fa-solid fa-award" style="color: #ea580c;"></i> ISO 9001 (품질) 매뉴얼
+            </a>
           </div>
         </div>
-        <a href="detail.html?id=PRC-KOSHA-01">?�차??/a>
+        <a href="detail.html?id=PRC-KOSHA-01">절차서</a>
         <a href="detail.html?id=INS-KOSHA-01">지침서</a>
-        <a href="#" onclick="alert('?�식 �??�식 관�??�이지 준�?중입?�다.')">?�식·?�식</a>
+        <a href="forms.html">서식·양식</a>
       </nav>
     </div>
   </div>
 
-  <!-- 검??배너 구역 (�??법령?�보?�터 ?��??? -->
+  <!-- 검색 배너 구역 (국가법령정보센터 스타일) -->
   <section class="hero-search-section">
     <div class="search-container">
-      <h2 class="search-title">?�방?�크??모든 <strong>?�전보건 ?��? 규정</strong>??검?�합?�다.</h2>
+      <h2 class="search-title">세방테크의 모든 <strong>안전보건 표준 규정</strong>을 검색합니다.</h2>
       
       <div class="search-box-wrapper">
         <div class="filter-select">
           <select id="search-category">
-            <option value="ALL">?�체 규정</option>
-            <option value="MANUAL">매뉴??/option>
-            <option value="PROCEDURE">?�차??/option>
+            <option value="ALL">전체 규정·양식</option>
+            <option value="MANUAL">매뉴얼</option>
+            <option value="PROCEDURE">절차서</option>
             <option value="INSTRUCTION">지침서</option>
+            <option value="FORM">양식·서식</option>
           </select>
         </div>
         <div class="search-input-area">
-          <input type="text" id="search-input" placeholder="검?�어�??�력?�세?? (?? ?�험?�평가, TBM, 비상?�?? ??�?" onkeydown="if(event.key==='Enter') executeSearch()">
+          <input type="text" id="search-input" placeholder="검색어를 입력하세요. (예: 위험성평가, TBM, 비상대응, 제1조)" onkeydown="if(event.key==='Enter') executeSearch()">
         </div>
         <button class="btn-search" onclick="executeSearch()">
-          <i class="fa-solid fa-magnifying-glass"></i> 검 ??        </button>
+          <i class="fa-solid fa-magnifying-glass"></i> 검 색
+        </button>
       </div>
 
       <div class="search-hint">
-        <span><i class="fa-solid fa-circle-info"></i> ?�확??조항 번호???�어�??�력?�면 본문까�? ?�인?�어 즉시 ?�결?�니??</span>
+        <span><i class="fa-solid fa-circle-info"></i> 정확한 조항 번호나 단어를 입력하면 본문까지 색인되어 즉시 연결됩니다.</span>
         <span class="hot-keywords">
-          <strong>추천 검?�어:</strong>
-          <a href="javascript:void(0)" onclick="quickSearch('?�험?�평가')">#?�험?�평가</a>
-          <a href="javascript:void(0)" onclick="quickSearch('?�시?��?')">#?�시?��?</a>
-          <a href="javascript:void(0)" onclick="quickSearch('??�?)">#??�?/a>
+          <strong>추천 검색어:</strong>
+          <a href="javascript:void(0)" onclick="quickSearch('위험성평가')">#위험성평가</a>
+          <a href="javascript:void(0)" onclick="quickSearch('상시평가')">#상시평가</a>
+          <a href="javascript:void(0)" onclick="quickSearch('제1조')">#제1조</a>
         </span>
       </div>
     </div>
   </section>
 
-  <!-- 본문 컨텐�??�역 -->
+  <!-- 통합 검색 결과 섹션 (10개 단위, 매뉴얼/절차서/지침서/양식 유사도순) -->
+  <section class="search-results-section" id="search-results-section" style="display: none;">
+    <div class="search-results-container">
+      <div class="search-results-header">
+        <div class="results-header-left">
+          <h3 class="results-title">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            '<span id="results-keyword" class="highlight-kw"></span>' 검색 결과
+            <span class="results-total-badge" id="results-total-count">0건</span>
+          </h3>
+          <p class="results-subtitle">매뉴얼 ➔ 절차서 ➔ 지침서 ➔ 양식 순으로 관련도순 정렬된 10개 단위 결과입니다.</p>
+        </div>
+        <button class="btn-close-results" onclick="closeSearchResults()" title="검색 결과 닫기">
+          <i class="fa-solid fa-xmark"></i> 닫기
+        </button>
+      </div>
+
+      <!-- 카테고리 필터 탭 -->
+      <div class="search-filter-tabs" id="search-filter-tabs">
+        <button class="s-tab-btn active" data-cat="ALL" onclick="filterSearchCategory('ALL')">
+          전체 (<span id="count-all">0</span>)
+        </button>
+        <button class="s-tab-btn" data-cat="MANUAL" onclick="filterSearchCategory('MANUAL')">
+          <i class="fa-solid fa-book"></i> 매뉴얼 (<span id="count-manual">0</span>)
+        </button>
+        <button class="s-tab-btn" data-cat="PROCEDURE" onclick="filterSearchCategory('PROCEDURE')">
+          <i class="fa-solid fa-file-shield"></i> 절차서 (<span id="count-procedure">0</span>)
+        </button>
+        <button class="s-tab-btn" data-cat="INSTRUCTION" onclick="filterSearchCategory('INSTRUCTION')">
+          <i class="fa-solid fa-clipboard-check"></i> 지침서 (<span id="count-instruction">0</span>)
+        </button>
+        <button class="s-tab-btn" data-cat="FORM" onclick="filterSearchCategory('FORM')">
+          <i class="fa-solid fa-file-lines"></i> 양식·서식 (<span id="count-form">0</span>)
+        </button>
+      </div>
+
+      <!-- 검색 결과 카드 목록 -->
+      <div class="search-results-list" id="search-results-list">
+        <!-- 동적 렌더링 -->
+      </div>
+
+      <!-- 10개 단위 페이지네이션 바 -->
+      <div class="search-pagination" id="search-pagination" style="display: none;">
+        <!-- 동적 생성 -->
+      </div>
+    </div>
+  </section>
+
+  <!-- 본문 컨텐츠 영역 -->
   <main class="portal-main">
     <div class="grid-container">
-      <!-- 좌측: 분야�?체계�??�색 -->
+      <!-- 좌측: 분야별/체계별 탐색 -->
       <section class="card category-card">
         <div class="card-header">
-          <h3><i class="fa-solid fa-sitemap"></i> ?��?체계�?찾기</h3>
+          <h3><i class="fa-solid fa-sitemap"></i> 표준체계별 찾기</h3>
         </div>
         <div class="card-body">
           <div class="tree-category-list" id="tree-category-list">
-            <!-- 1?�계: KOSHA-MS 매뉴??(기본 ?�힘) -->
+            <!-- 1단계: KOSHA-MS 매뉴얼 (기본 접힘) -->
             <div class="foldable-group">
               <div class="cat-row level-1">
-                <button type="button" class="btn-toggle" onclick="toggleFolder(this)" title="?�위 규정 ?�치�??�기">
+                <button type="button" class="btn-toggle" onclick="toggleFolder(this)" title="하위 규정 펼치기/접기">
                   <i class="fa-solid fa-chevron-right"></i>
                 </button>
                 <a href="detail.html?id=MAN-KOSHA-01" class="cat-link">
                   <i class="fa-solid fa-folder folder-icon"></i>
-                  <span class="cat-title">KOSHA-MS 매뉴??/span>
+                  <span class="cat-title">KOSHA-MS 매뉴얼</span>
                 </a>
-                <span class="count-badge">1�?/span>
+                <span class="count-badge">1건</span>
               </div>
 
-              <!-- ?�위 ?�차??컨테?�너 (기본 ?�힘: display:none) -->
+              <!-- 하위 절차서 컨테이너 (기본 접힘: display:none) -->
               <div class="sub-tree-container" style="display: none;">
-                <!-- 2?�계: ?�험?�평가 관�??�차??-->
+                <!-- 2단계: 위험성평가 관리 절차서 -->
                 <div class="foldable-group">
                   <div class="cat-row level-2">
-                    <button type="button" class="btn-toggle" onclick="toggleFolder(this)" title="?�위 지침서 ?�치�??�기">
+                    <button type="button" class="btn-toggle" onclick="toggleFolder(this)" title="하위 지침서 펼치기/접기">
                       <i class="fa-solid fa-chevron-right"></i>
                     </button>
                     <a href="detail.html?id=PRC-KOSHA-01" class="cat-link">
                       <i class="fa-solid fa-file-lines"></i>
-                      <span class="cat-title">?�험?�평가 관�??�차??/span>
+                      <span class="cat-title">위험성평가 관리 절차서</span>
                     </a>
                     <span class="count-badge">ST-PR-001</span>
                   </div>
 
-                  <!-- ?�위 지침서 컨테?�너 (기본 ?�힘: display:none) -->
+                  <!-- 하위 지침서 컨테이너 (기본 접힘: display:none) -->
                   <div class="sub-tree-container" style="display: none;">
-                    <!-- 3?�계: ?�험?�평가 ?�시 지침서 -->
+                    <!-- 3단계: 위험성평가 실시 지침서 -->
                     <div class="cat-row level-3">
                       <span class="tree-leaf-spacer"></span>
                       <a href="detail.html?id=INS-KOSHA-01" class="cat-link">
                         <i class="fa-solid fa-file-code"></i>
-                        <span class="cat-title">?�험?�평가 ?�시 지침서</span>
+                        <span class="cat-title">위험성평가 실시 지침서</span>
                       </a>
                       <span class="count-badge">ST-IN-001</span>
                     </div>
@@ -142,47 +195,47 @@
               </div>
             </div>
 
-            <!-- 1?�계: ISO �?��?��? ?�리�?매뉴??(기본 ?�힘) -->
+            <!-- 1단계: ISO 국제표준 시리즈 매뉴얼 (기본 접힘) -->
             <div class="foldable-group" style="margin-top: 6px;">
               <div class="cat-row level-1">
-                <button type="button" class="btn-toggle" onclick="toggleFolder(this)" title="?�위 규정 ?�치�??�기">
+                <button type="button" class="btn-toggle" onclick="toggleFolder(this)" title="하위 규정 펼치기/접기">
                   <i class="fa-solid fa-chevron-right"></i>
                 </button>
                 <a href="javascript:void(0)" class="cat-link" onclick="toggleFolder(this.previousElementSibling)">
                   <i class="fa-solid fa-folder folder-icon"></i>
-                  <span class="cat-title">ISO ?�리�?매뉴??/span>
+                  <span class="cat-title">ISO 시리즈 매뉴얼</span>
                 </a>
-                <span class="count-badge">3�?/span>
+                <span class="count-badge">3건</span>
               </div>
 
-              <!-- ?�위 ISO 매뉴??목록 (기본 ?�힘: display:none) -->
+              <!-- 하위 ISO 매뉴얼 목록 (기본 접힘: display:none) -->
               <div class="sub-tree-container" style="display: none;">
-                <!-- ISO 45001 (?�전) -->
+                <!-- ISO 45001 (안전) -->
                 <div class="cat-row level-2">
                   <span class="tree-leaf-spacer"></span>
                   <a href="detail.html?id=MAN-ISO-45001" class="cat-link">
                     <i class="fa-solid fa-shield-heart" style="color: #0284c7;"></i>
-                    <span class="cat-title">ISO 45001 (?�전보건) 매뉴??/span>
+                    <span class="cat-title">ISO 45001 (안전보건) 매뉴얼</span>
                   </a>
                   <span class="count-badge">ST-ISO-45001</span>
                 </div>
 
-                <!-- ISO 14001 (?�경) -->
+                <!-- ISO 14001 (환경) -->
                 <div class="cat-row level-2">
                   <span class="tree-leaf-spacer"></span>
                   <a href="detail.html?id=MAN-ISO-14001" class="cat-link">
                     <i class="fa-solid fa-leaf" style="color: #16a34a;"></i>
-                    <span class="cat-title">ISO 14001 (?�경경영) 매뉴??/span>
+                    <span class="cat-title">ISO 14001 (환경경영) 매뉴얼</span>
                   </a>
                   <span class="count-badge">ST-ISO-14001</span>
                 </div>
 
-                <!-- ISO 9001 (?�질) -->
+                <!-- ISO 9001 (품질) -->
                 <div class="cat-row level-2">
                   <span class="tree-leaf-spacer"></span>
                   <a href="detail.html?id=MAN-ISO-9001" class="cat-link">
                     <i class="fa-solid fa-award" style="color: #ea580c;"></i>
-                    <span class="cat-title">ISO 9001 (?�질경영) 매뉴??/span>
+                    <span class="cat-title">ISO 9001 (품질경영) 매뉴얼</span>
                   </a>
                   <span class="count-badge">ST-ISO-9001</span>
                 </div>
@@ -192,74 +245,98 @@
         </div>
       </section>
 
-      <!-- 중앙: 최신 ?�·개??규정 ??(법령?�터 ?��??? -->
+      <!-- 중앙: 최신 제·개정 규정 탭 (법령센터 스타일) -->
       <section class="card recent-card">
         <div class="card-header tab-header">
           <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab('recent')">최신 ?�·개??/button>
-            <button class="tab-btn" onclick="switchTab('manual')">매뉴??/button>
-            <button class="tab-btn" onclick="switchTab('procedure')">?�차??/button>
+            <button class="tab-btn active" onclick="switchTab('recent')">최신 제·개정</button>
+            <button class="tab-btn" onclick="switchTab('manual')">매뉴얼</button>
+            <button class="tab-btn" onclick="switchTab('procedure')">절차서</button>
           </div>
           <span class="today-date" id="current-date-badge"></span>
         </div>
         <div class="card-body">
           <ul class="recent-list" id="recent-doc-list">
-            <!-- JS�??�더�?-->
+            <!-- JS로 렌더링 -->
           </ul>
         </div>
       </section>
 
-      <!-- ?�측: 빠른 ?�션 �??�시�?즐겨찾기 -->
+      <!-- 우측: 빠른 액션 및 실시간/즐겨찾기 -->
       <section class="card side-widget-card">
         <div class="card-header">
-          <h3><i class="fa-solid fa-star"></i> ?�의 즐겨찾는 규정</h3>
+          <h3><i class="fa-solid fa-star"></i> 나의 즐겨찾는 규정</h3>
         </div>
         <div class="card-body">
           <ul class="bookmark-list" id="bookmark-list">
-            <li><a href="detail.html?id=MAN-KOSHA-01"><i class="fa-solid fa-angle-right"></i> ?�전보건경영?�스??매뉴??/a></li>
-            <li><a href="detail.html?id=PRC-KOSHA-01"><i class="fa-solid fa-angle-right"></i> ?�험?�평가 관�??�차??/a></li>
+            <li><a href="detail.html?id=MAN-KOSHA-01"><i class="fa-solid fa-angle-right"></i> 안전보건경영시스템 매뉴얼</a></li>
+            <li><a href="detail.html?id=PRC-KOSHA-01"><i class="fa-solid fa-angle-right"></i> 위험성평가 관리 절차서</a></li>
           </ul>
           <div class="quick-notice-box">
-            <h4><i class="fa-solid fa-print"></i> 보안 ?�쇄 ?�내</h4>
-            <p>�??�털??모든 규정 문서???�쇄 ??출력???�보 �?'비제?�본' ?�터마크가 ?�동?�로 ?�성?�며, ?�쇄 ?�력??기록?�니??</p>
+            <h4><i class="fa-solid fa-print"></i> 보안 인쇄 안내</h4>
+            <p>본 포털의 모든 규정 문서는 인쇄 시 출력자 정보 및 '비제어본' 워터마크가 자동으로 합성되며, 인쇄 이력이 기록됩니다.</p>
+          </div>
+
+          <!-- 방문자 통계 카운터 위젯 -->
+          <div class="visitor-counter-box" style="margin-top: 14px; padding: 12px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+              <span style="font-size: 13px; font-weight: 600; color: #334155; display: flex; align-items: center; gap: 6px;">
+                <i class="fa-solid fa-chart-line" style="color: #0284c7;"></i> 방문자 통계
+              </span>
+              <span style="font-size: 11px; color: #64748b; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-weight: 500;">실시간</span>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 10px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.03);">
+                <div style="font-size: 11px; color: #64748b; margin-bottom: 2px;">오늘 방문자</div>
+                <div id="counter-today" style="font-size: 16px; font-weight: 700; color: #0284c7;">-</div>
+              </div>
+              <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 10px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.03);">
+                <div style="font-size: 11px; color: #64748b; margin-bottom: 2px;">누적 방문자</div>
+                <div id="counter-total" style="font-size: 16px; font-weight: 700; color: #0f172a;">-</div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
     </div>
   </main>
 
-  <!-- ?�터 -->
+  <!-- 푸터 -->
   <footer class="portal-footer">
     <div class="footer-container">
-      <p>(�??�방?�크 ?�전보건경영?�스???�털 | 주�?부?? ?�질?�전보건??| 문의: 02-579-5551(?�선 ?�전보건??</p>
-      <p class="copyright">Copyright &copy; SEBANG TEC CO., LTD. All Rights Reserved. (KOSHA-MS Certified)</p>
+      <p>(주)세방테크 안전보건경영시스템 포털 | 주관부서: 품질안전보건실 | 문의: 02-579-5551(내선 안전보건실)</p>
+      <p class="copyright">Copyright &copy; SEBANG TEC CO., LTD. All Rights Reserved. (KOSHA-MS Certified)
+        <span class="footer-visitor" style="margin-left: 16px; color: #94a3b8; font-size: 12px; display: inline-flex; align-items: center; gap: 6px;">
+          <i class="fa-solid fa-users" style="color: #60a5fa;"></i> 오늘 <strong id="footer-counter-today" style="color: #38bdf8;">-</strong>명 &bull; 누적 <strong id="footer-counter-total" style="color: #f1f5f9;">-</strong>명
+        </span>
+      </p>
     </div>
   </footer>
 
-  <!-- 로그??모달 (GAS ?�메??OTP) -->
+  <!-- 로그인 모달 (GAS 이메일 OTP) -->
   <div id="login-modal" class="modal-backdrop" style="display:none;">
     <div class="modal-dialog">
       <div class="modal-header">
-        <h3><i class="fa-solid fa-lock"></i> ?�내 ?�메??OTP 로그??/h3>
+        <h3><i class="fa-solid fa-lock"></i> 사내 이메일 OTP 로그인</h3>
         <button class="btn-close" onclick="closeLoginModal()">&times;</button>
       </div>
       <div class="modal-body">
-        <p class="login-desc">?�방?�크 ?�내 ?�메??<strong>@sebangtec.com</strong>)�??�회???�증번호(OTP)�?발송?�여 본인 ?�증??진행?�니??</p>
+        <p class="login-desc">세방테크 사내 이메일(<strong>@sebangtec.com</strong>)로 일회용 인증번호(OTP)를 발송하여 본인 인증을 진행합니다.</p>
         
         <div class="form-group" id="group-email">
-          <label for="login-email">?�내 ?�메??/label>
+          <label for="login-email">사내 이메일</label>
           <div class="input-with-btn">
-            <input type="email" id="login-email" placeholder="?? hong@sebangtec.com" onkeydown="if(event.key==='Enter') sendOtp()">
+            <input type="email" id="login-email" placeholder="예: hong@sebangtec.com" onkeydown="if(event.key==='Enter') sendOtp()">
             <button class="btn-action" id="btn-send-otp" onclick="sendOtp()">OTP 발송</button>
           </div>
-          <small class="text-muted">* sebangtec.com ?�메?�만 ?�증???�용?�니??</small>
+          <small class="text-muted">* sebangtec.com 도메인만 인증이 허용됩니다.</small>
         </div>
 
         <div class="form-group" id="group-otp" style="display:none; margin-top: 15px;">
-          <label for="login-otp">?�증번호 (6?�리)</label>
+          <label for="login-otp">인증번호 (6자리)</label>
           <div class="input-with-btn">
-            <input type="text" id="login-otp" maxlength="6" placeholder="?�증번호 6?�리 ?�력" onkeydown="if(event.key==='Enter') verifyOtp()">
-            <button class="btn-primary" id="btn-verify-otp" onclick="verifyOtp()">?�증 ?�료</button>
+            <input type="text" id="login-otp" maxlength="6" placeholder="인증번호 6자리 입력" onkeydown="if(event.key==='Enter') verifyOtp()">
+            <button class="btn-primary" id="btn-verify-otp" onclick="verifyOtp()">인증 완료</button>
           </div>
           <div id="otp-status-msg" class="otp-alert"></div>
         </div>
@@ -267,35 +344,40 @@
     </div>
   </div>
 
-  <!-- 관리자 ?�정 종합 모달 (규정 ?�·개??관�?& 계정 관�? -->
+  <!-- 관리자 설정 종합 모달 (규정 제·개정 관리 & 계정 관리) -->
   <div id="admin-modal" class="modal-backdrop" style="display:none; z-index:10008;">
-    <div class="modal-dialog modal-lg" style="max-width: 780px;">
+    <div class="modal-dialog modal-lg" style="max-width: 1120px; width: 95vw;">
       <div class="modal-header">
-        <h3><i class="fa-solid fa-sliders"></i> 관리자 종합 ?�정</h3>
+        <h3><i class="fa-solid fa-sliders"></i> 관리자 종합 설정</h3>
         <button class="btn-close" onclick="closeAdminModal()">&times;</button>
       </div>
       <div class="modal-body" style="padding: 16px 20px;">
         
-        <!-- 관리자 ??메뉴 -->
+        <!-- 관리자 탭 메뉴 -->
         <div class="admin-tab-bar" style="display:flex; gap:8px; border-bottom:2px solid #e2e8f0; margin-bottom:15px;">
           <button type="button" class="admin-tab-btn active" id="tab-btn-docs" onclick="switchAdminTab('docs')" style="padding:8px 16px; border:none; background:none; font-size:14px; font-weight:700; color:var(--primary); border-bottom:2px solid var(--primary); cursor:pointer; margin-bottom:-2px;">
-            <i class="fa-solid fa-book-bookmark"></i> ?�내 ?��? 규정 ?�·개??관�?          </button>
+            <i class="fa-solid fa-book-bookmark"></i> 사내 표준 규정 제·개정 관리
+          </button>
           <button type="button" class="admin-tab-btn" id="tab-btn-sites" onclick="switchAdminTab('sites')" style="padding:8px 16px; border:none; background:none; font-size:14px; font-weight:600; color:#64748b; cursor:pointer; margin-bottom:-2px;">
-            <i class="fa-solid fa-helmet-safety"></i> ?�장 �??�장?�장 관�?(2026)
+            <i class="fa-solid fa-helmet-safety"></i> 현장 및 현장소장 관리 (2026)
           </button>
           <button type="button" class="admin-tab-btn" id="tab-btn-accounts" onclick="switchAdminTab('accounts')" style="padding:8px 16px; border:none; background:none; font-size:14px; font-weight:600; color:#64748b; cursor:pointer; margin-bottom:-2px;">
-            <i class="fa-solid fa-user-shield"></i> 관리자 계정 권한 관�?          </button>
+            <i class="fa-solid fa-user-shield"></i> 관리자 계정 권한 관리
+          </button>
+          <button type="button" class="admin-tab-btn" id="tab-btn-traffic" onclick="switchAdminTab('traffic')" style="padding:8px 16px; border:none; background:none; font-size:14px; font-weight:600; color:#64748b; cursor:pointer; margin-bottom:-2px;">
+            <i class="fa-solid fa-chart-pie"></i> 접속자 & 유입경로 통계
+          </button>
         </div>
 
-        <!-- ??1: ?��? 규정 ?�·개??관�?(매뉴?? ?�차?? 지침서 ?�택 �??�정) -->
+        <!-- 탭 1: 표준 규정 제·개정 관리 (매뉴얼, 절차서, 지침서 선택 및 수정) -->
         <div id="admin-tab-pane-docs">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-            <p class="admin-desc" style="margin:0;">?�·개??�?본문 ?�집??진행???�내 ?��? 규정???�택??주십?�오.</p>
+            <p class="admin-desc" style="margin:0;">제·개정 및 본문 편집을 진행할 사내 표준 규정을 선택해 주십시오.</p>
             <div style="display:flex; gap:6px;">
               <select id="admin-filter-category" onchange="renderAdminDocList()" style="height:32px; padding:2px 8px; border:1px solid #cbd5e1; border-radius:4px; font-size:12.5px;">
-                <option value="ALL">?�체 규정</option>
-                <option value="MANUAL">매뉴??/option>
-                <option value="PROCEDURE">?�차??/option>
+                <option value="ALL">전체 규정</option>
+                <option value="MANUAL">매뉴얼</option>
+                <option value="PROCEDURE">절차서</option>
                 <option value="INSTRUCTION">지침서</option>
               </select>
             </div>
@@ -307,81 +389,192 @@
                   <th style="padding:9px 12px; text-align:left;">구분</th>
                   <th style="padding:9px 12px; text-align:left;">문서번호</th>
                   <th style="padding:9px 12px; text-align:left;">규정 명칭</th>
-                  <th style="padding:9px 12px; text-align:center;">?�재 버전</th>
-                  <th style="padding:9px 12px; text-align:center;">?�행?�자</th>
-                  <th style="padding:9px 12px; text-align:center;">?�집/개정</th>
+                  <th style="padding:9px 12px; text-align:center;">현재 버전</th>
+                  <th style="padding:9px 12px; text-align:center;">시행일자</th>
+                  <th style="padding:9px 12px; text-align:center;">편집/개정</th>
                 </tr>
               </thead>
               <tbody id="admin-doc-list-tbody">
-                <!-- JS ?�더�?-->
+                <!-- JS 렌더링 -->
               </tbody>
             </table>
           </div>
         </div>
 
-        <!-- ??2: ?�장 �??�장?�장 관�?(2026 ?�장목록 기반) -->
+        <!-- 탭 2: 현장 및 현장소장 관리 (2026 현장목록 기반) -->
         <div id="admin-tab-pane-sites" style="display:none;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:10px;">
-            <p class="admin-desc" style="margin:0;">?�내 2026?�도 ?�장 목록 �?�??�장�?<strong>?�장?�장(?�전책임??</strong> 배치 ?�황?�니?? ?�장??추�??�거????��?????�습?�다.</p>
-            <span id="site-count-badge" style="background:#e0f2fe; color:#0369a1; font-size:12px; font-weight:700; padding:3px 10px; border-radius:12px; white-space:nowrap;">?�장 로딩 �?..</span>
+            <p class="admin-desc" style="margin:0;">사내 2026년도 현장 목록 및 각 현장별 <strong>현장소장(안전책임자)</strong> 현황입니다. 신규 현장을 추가하거나 소장을 관리할 수 있습니다.</p>
+            <span id="site-count-badge" style="background:#e0f2fe; color:#0369a1; font-size:12px; font-weight:700; padding:4px 12px; border-radius:12px; white-space:nowrap;">현장 로딩 중...</span>
           </div>
           
-          <div style="margin-bottom: 12px; display:flex; gap:8px;">
+          <div style="margin-bottom: 12px; display:flex; justify-content:space-between; gap:10px;">
             <div style="position:relative; flex:1;">
               <i class="fa-solid fa-magnifying-glass" style="position:absolute; left:10px; top:10px; color:#94a3b8; font-size:12px;"></i>
-              <input type="text" id="admin-site-search" placeholder="?�장�? ?�장코드, ?�는 ?�장?�장 ?�름 검??.." oninput="filterAdminSites()" style="width:100%; padding:7px 10px 7px 32px; border:1px solid #cbd5e1; border-radius:4px; font-size:13px; outline:none; box-sizing:border-box;">
+              <input type="text" id="admin-site-search" placeholder="현장명, 현장코드, 또는 현장소장 이름 검색..." oninput="filterAdminSites()" style="width:100%; padding:7px 10px 7px 32px; border:1px solid #cbd5e1; border-radius:4px; font-size:13px; outline:none; box-sizing:border-box;">
             </div>
+            <button type="button" class="btn-primary" onclick="showAddSiteRow()" style="white-space:nowrap; padding:6px 14px; font-size:13px; display:inline-flex; align-items:center; gap:6px;">
+              <i class="fa-solid fa-folder-plus"></i> <strong>+ 현장 추가</strong>
+            </button>
           </div>
 
-          <div class="admin-site-table-container" style="border:1px solid #e2e8f0; border-radius:6px; max-height:360px; overflow-y:auto;">
-            <table class="admin-site-table" style="width:100%; border-collapse:collapse; font-size:13px;">
+          <div class="admin-site-table-container" style="border:1px solid #e2e8f0; border-radius:6px; max-height:420px; overflow-y:auto; overflow-x:auto;">
+            <table class="admin-site-table" style="width:100%; min-width:920px; border-collapse:collapse; font-size:13px;">
               <thead style="background-color:#f8fafc; position:sticky; top:0; z-index:2; border-bottom:1px solid #cbd5e1;">
                 <tr>
-                  <th style="padding:9px 12px; text-align:center; width:15%;">?�장코드</th>
-                  <th style="padding:9px 12px; text-align:left; width:45%;">?�장�?(공사�?</th>
-                  <th style="padding:9px 12px; text-align:left; width:22%;">배치???�장?�장</th>
-                  <th style="padding:9px 12px; text-align:center; width:18%;">?�장?�장 추�?</th>
+                  <th style="padding:10px 10px; text-align:center; width:11%; min-width:85px; white-space:nowrap;">현장코드</th>
+                  <th style="padding:10px 12px; text-align:left; width:33%; min-width:210px;">현장명 (공사명)</th>
+                  <th style="padding:10px 12px; text-align:left; width:18%; min-width:130px;">현장소장</th>
+                  <th style="padding:10px 12px; text-align:left; width:18%; min-width:130px;">안전관리자 <span style="font-size:10px; color:#ef4444; font-weight:700;">(필수)</span></th>
+                  <th style="padding:10px 10px; text-align:center; width:20%; min-width:165px; white-space:nowrap;">관리</th>
                 </tr>
               </thead>
+              <tbody>
+                <!-- [현장 추가 입력 컬럼/행 - 기본 숨김] -->
+                <tr id="add-site-row-tr" style="display:none; background-color:#eff6ff; border-bottom:2px solid #3b82f6;">
+                  <td style="padding:8px 8px; text-align:center; vertical-align:middle;">
+                    <input type="text" id="new-site-code" placeholder="예: 2026022" style="width:100%; padding:6px 6px; font-size:12.5px; border:1.5px solid #3b82f6; border-radius:4px; text-align:center; font-weight:700; box-sizing:border-box; outline:none;">
+                  </td>
+                  <td style="padding:8px 8px; vertical-align:middle;">
+                    <input type="text" id="new-site-name" placeholder="신규 현장명 (공사명) 입력" style="width:100%; padding:6px 8px; font-size:12.5px; border:1.5px solid #3b82f6; border-radius:4px; font-weight:600; box-sizing:border-box; outline:none;" onkeydown="if(event.key==='Enter') document.getElementById('new-site-manager').focus()">
+                  </td>
+                  <td style="padding:8px 8px; vertical-align:middle;">
+                    <input type="text" id="new-site-manager" placeholder="현장소장 성명 (필수)" style="width:100%; padding:6px 8px; font-size:12.5px; border:1.5px solid #3b82f6; border-radius:4px; box-sizing:border-box; outline:none;" onkeydown="if(event.key==='Enter') document.getElementById('new-site-safety-manager').focus()">
+                  </td>
+                  <td style="padding:8px 8px; vertical-align:middle;">
+                    <input type="text" id="new-site-safety-manager" placeholder="안전관리자 성명 (필수)" style="width:100%; padding:6px 8px; font-size:12.5px; border:1.5px solid #3b82f6; border-radius:4px; box-sizing:border-box; outline:none;" onkeydown="if(event.key==='Enter') confirmSaveNewSite()">
+                  </td>
+                  <td style="padding:8px 8px; text-align:center; vertical-align:middle; white-space:nowrap;">
+                    <div style="display:inline-flex; gap:6px; justify-content:center; align-items:center; flex-wrap:nowrap;">
+                      <button type="button" class="btn-primary" onclick="confirmSaveNewSite()" style="padding:6px 12px; font-size:12.5px; background:#16a34a; border-color:#15803d; cursor:pointer; white-space:nowrap; display:inline-flex; align-items:center; gap:4px;" title="저장 (JSON 업데이트)"><i class="fa-solid fa-check"></i> 저장</button>
+                      <button type="button" class="btn-cancel" onclick="hideAddSiteRow()" style="padding:6px 9px; font-size:12px; cursor:pointer; white-space:nowrap;" title="취소"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
               <tbody id="admin-site-list-tbody">
-                <!-- JS ?�더�?-->
+                <!-- JS 렌더링 -->
               </tbody>
             </table>
           </div>
         </div>
 
-        <!-- ??3: 관리자 권한 계정 관�?-->
+        <!-- 탭 3: 관리자 권한 계정 관리 -->
         <div id="admin-tab-pane-accounts" style="display:none;">
-          <p class="admin-desc">문서???�·개??�????�디???�집 권한??가�??�내 ?�메??목록?�니??</p>
+          <p class="admin-desc">문서의 제·개정 및 웹 에디터 편집 권한을 가진 사내 이메일 목록입니다.</p>
           <div class="input-with-btn" style="margin-bottom: 15px;">
-            <input type="email" id="new-admin-email" placeholder="추�???관리자 ?�메??(?? test@sebangtec.com)">
-            <button class="btn-primary" onclick="addAdminEmail()">추�?</button>
+            <input type="email" id="new-admin-email" placeholder="추가할 관리자 이메일 (예: test@sebangtec.com)">
+            <button class="btn-primary" onclick="addAdminEmail()">추가</button>
           </div>
           <ul class="admin-list" id="admin-email-list">
-            <!-- JS ?�더�?-->
+            <!-- JS 렌더링 -->
           </ul>
         </div>
 
+        <!-- 탭 4: 접속자 & 유입경로 통계 -->
+        <div id="admin-tab-pane-traffic" style="display:none;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <p class="admin-desc" style="margin:0;">실시간 방문자 수 및 <strong>유입 경로(사내 그룹웨어, 현장 QR코드, 모바일 메신저 등)</strong>와 디바이스 접속 통계입니다.</p>
+            <button type="button" class="btn-sm-row" onclick="renderTrafficTab()" style="padding:4px 10px; font-size:12px; display:inline-flex; align-items:center; gap:4px; cursor:pointer;">
+              <i class="fa-solid fa-arrows-rotate"></i> 새로고침
+            </button>
+          </div>
+
+          <!-- KPI 4단 요약 카드 -->
+          <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px;">
+            <div style="background:#f0f9ff; border:1px solid #bae6fd; border-radius:8px; padding:12px 14px; text-align:center;">
+              <div style="font-size:11.5px; color:#0369a1; font-weight:600;">오늘 방문자</div>
+              <div id="traffic-kpi-today" style="font-size:22px; font-weight:800; color:#0284c7; margin-top:2px;">-</div>
+            </div>
+            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px 14px; text-align:center;">
+              <div style="font-size:11.5px; color:#475569; font-weight:600;">누적 총 방문자</div>
+              <div id="traffic-kpi-total" style="font-size:22px; font-weight:800; color:#0f172a; margin-top:2px;">-</div>
+            </div>
+            <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:12px 14px; text-align:center;">
+              <div style="font-size:11.5px; color:#15803d; font-weight:600;">PC 접속률</div>
+              <div id="traffic-kpi-pc" style="font-size:22px; font-weight:800; color:#16a34a; margin-top:2px;">-</div>
+            </div>
+            <div style="background:#fefce8; border:1px solid #fef08a; border-radius:8px; padding:12px 14px; text-align:center;">
+              <div style="font-size:11.5px; color:#a16207; font-weight:600;">모바일 접속률</div>
+              <div id="traffic-kpi-mobile" style="font-size:22px; font-weight:800; color:#ca8a04; margin-top:2px;">-</div>
+            </div>
+          </div>
+
+          <!-- 유입경로 그래프(좌측) & 실시간 로그(우측) 2단 분할 -->
+          <div style="display:grid; grid-template-columns: 1.1fr 0.9fr; gap:14px; margin-bottom:16px;">
+            <!-- 좌측: 유입경로별 분포 -->
+            <div style="border:1px solid #e2e8f0; border-radius:8px; padding:14px; background:#fff;">
+              <h4 style="font-size:13px; font-weight:700; color:#1e293b; margin-bottom:12px; display:flex; align-items:center; gap:6px;">
+                <i class="fa-solid fa-chart-simple" style="color:#0284c7;"></i> 유입 채널별 방문 분포
+              </h4>
+              <div id="traffic-source-bars" style="display:flex; flex-direction:column; gap:10px;">
+                <!-- JS 렌더링 -->
+              </div>
+            </div>
+
+            <!-- 우측: 최근 실시간 접속 로그 -->
+            <div style="border:1px solid #e2e8f0; border-radius:8px; padding:14px; background:#fff; display:flex; flex-direction:column;">
+              <h4 style="font-size:13px; font-weight:700; color:#1e293b; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                <i class="fa-solid fa-clock-rotate-left" style="color:#16a34a;"></i> 실시간 최근 접속 로그
+              </h4>
+              <div style="flex:1; max-height:240px; overflow-y:auto; border:1px solid #f1f5f9; border-radius:6px;">
+                <table style="width:100%; border-collapse:collapse; font-size:11.5px;">
+                  <thead style="background:#f8fafc; position:sticky; top:0; border-bottom:1px solid #e2e8f0;">
+                    <tr>
+                      <th style="padding:6px 8px; text-align:left;">접속 일시</th>
+                      <th style="padding:6px 8px; text-align:left;">유입 경로</th>
+                      <th style="padding:6px 8px; text-align:center;">기기</th>
+                    </tr>
+                  </thead>
+                  <tbody id="traffic-recent-tbody">
+                    <!-- JS 렌더링 -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- 하단: 유입 추적용 배포 링크 생성기 (공유 편의기능) -->
+          <div style="background:#f8fafc; border:1px dashed #cbd5e1; border-radius:8px; padding:12px 14px;">
+            <div style="font-size:12px; font-weight:700; color:#334155; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+              <i class="fa-solid fa-link" style="color:#0284c7;"></i> 사내 배포용 유입 추적 링크 원클릭 복사
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button type="button" class="btn-sm-row" onclick="copyTrafficLink('qr_poster')" style="padding:5px 10px; font-size:11.5px; background:#fff; cursor:pointer;">
+                <i class="fa-solid fa-qrcode" style="color:#0284c7;"></i> 현장 QR코드용 복사
+              </button>
+              <button type="button" class="btn-sm-row" onclick="copyTrafficLink('groupware')" style="padding:5px 10px; font-size:11.5px; background:#fff; cursor:pointer;">
+                <i class="fa-solid fa-building" style="color:#16a34a;"></i> 그룹웨어 공지용 복사
+              </button>
+              <button type="button" class="btn-sm-row" onclick="copyTrafficLink('kakaotalk')" style="padding:5px 10px; font-size:11.5px; background:#fff; cursor:pointer;">
+                <i class="fa-solid fa-comment" style="color:#eab308;"></i> 카카오톡 단톡방용 복사
+              </button>
+              <button type="button" class="btn-sm-row" onclick="copyTrafficLink('teams')" style="padding:5px 10px; font-size:11.5px; background:#fff; cursor:pointer;">
+                <i class="fa-solid fa-users" style="color:#6366f1;"></i> Teams 메신저용 복사
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- ?�이??초기 ?�속 비�?번호(Gatekeeper) 모달 (GAS ?�동) -->
+  <!-- 사이트 초기 접속 비밀번호(Gatekeeper) 모달 (GAS 연동) -->
   <div id="gate-modal" class="gate-overlay" style="display:none;">
     <div class="gate-card">
       <img src="misc/logo.png" alt="SEBANG" class="gate-corp-logo">
       <div class="gate-icon">
         <i class="fa-solid fa-shield-halved"></i>
       </div>
-      <h2>?�방?�크 ?�내?��??�보?�터</h2>
-      <p class="gate-sub">KOSHA-MS 보안 ?�털 ?�속 ?�증</p>
+      <h2>세방테크 사내표준정보센터</h2>
+      <p class="gate-sub">KOSHA-MS 보안 포털 접속 인증</p>
       <div class="gate-desc">
-        �??�털?� ?�내 ?�직???�용 ?�스?�입?�다.<br>
-        보안 관리자???�해 지?�된 <strong>?�속 비�?번호</strong>�??�력??주십?�오.
+        본 포털은 사내 임직원 전용 시스템입니다.<br>
+        보안 관리자에 의해 지정된 <strong>접속 비밀번호</strong>를 입력해 주십시오.
       </div>
       
       <div class="gate-input-box">
-        <input type="password" id="gate-password" placeholder="?�속 비�?번호 ?�력" onkeydown="if(event.key==='Enter') submitGatePassword()">
+        <input type="password" id="gate-password" placeholder="접속 비밀번호 입력" onkeydown="if(event.key==='Enter') submitGatePassword()">
         <button type="button" class="btn-gate-submit" onclick="submitGatePassword()">
           <i class="fa-solid fa-arrow-right"></i>
         </button>
@@ -389,12 +582,12 @@
       <div id="gate-error-msg" class="gate-error"></div>
       
       <div class="gate-footer">
-        <small><i class="fa-solid fa-lock"></i> Google Apps Script (sebangtec_hse) ?�동 보안 ?�스??/small>
+        <small><i class="fa-solid fa-lock"></i> Google Apps Script (sebangtec_hse) 연동 보안 시스템</small>
       </div>
     </div>
   </div>
 
-  <!-- ?�크립트 로드 -->
+  <!-- 스크립트 로드 -->
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/main.js"></script>

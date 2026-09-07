@@ -1,0 +1,21 @@
+{
+  "id": "FORM-SAFE-03",
+  "title": "현장 안전보건 관리계획서 (요약본)",
+  "docNumber": "ST-FR-SAFE-003",
+  "version": "Rev.3",
+  "effectiveDate": "2026-03-01",
+  "department": "품질안전보건실",
+  "defaultData": {
+    "siteName": "{{SITE_NAME}}",
+    "siteCode": "{{SITE_CODE}}",
+    "siteManager": "{{SITE_MANAGER}}",
+    "docDate": "{{DATE}}",
+    "writer": "{{WRITER}}",
+    "period": "2026.01.01 ~ 2026.12.31",
+    "targetAccidentRate": "0.00% (중대재해 Zero)",
+    "targetManHour": "250,000 인시 무재해 달성",
+    "policy": "1. 안전 최우선의 현장 중심 안전경영 정착\n2. KOSHA-MS 자율안전보건체계 실천 및 위험성평가 내실화\n3. 불안전한 상태 발견 시 전 근로자 작업중지권 적극 보장",
+    "organization": "현장 총괄: {{SITE_MANAGER}} (현장소장)\n안전관리자: {{WRITER}} 차장\n공사관리자: 공사팀장 외 3명\n관리감독자: 배관, 덕트, 용접 반장 6명",
+    "keyActionPlan": "1. 일일 TBM 실명제 및 스마트 위험성평가 연동\n2. 신규 채용자 4시간 집중 교육 및 멘토링 매칭\n3. 매월 4일 안전점검의 날 합동 안전점검 및 포상 실시"
+  }
+}

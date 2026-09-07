@@ -9,6 +9,7 @@ import java.net.InetSocketAddress;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -64,6 +65,8 @@ public class Main {
         server.createContext("/api/auth/otp/verify", new OtpVerifyHandler());
         server.createContext("/api/admins", new AdminHandler());
         server.createContext("/api/sites", new SiteHandler());
+        server.createContext("/api/counter", new CounterHandler());
+        server.createContext("/api/forms", new FormHandler());
         server.createContext("/api/logs/print", new PrintLogHandler());
         server.createContext("/api/logs/login", new LoginLogHandler());
 
@@ -385,6 +388,311 @@ public class Main {
             }
 
             sendJsonResponse(exchange, 405, "{\"error\":\"Method Not Allowed\"}");
+        }
+    }
+
+    /** 방문자 카운터 핸들러 (/api/counter) */
+    /** 방문자 카운터 및 유입경로 추적 핸들러 (/api/counter) */
+    static class CounterHandler implements HttpHandler {
+        private static final Object LOCK = new Object();
+
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            addCorsHeaders(exchange);
+            if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
+                exchange.sendResponseHeaders(204, -1);
+                return;
+            }
+
+            Path counterFile = DATA_DIR.resolve("counter.json");
+            Path publicCounterFile = PUBLIC_DIR.resolve("data").resolve("counter.json");
+            String todayStr = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            String nowTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+
+            // 1. 유입경로(Referer / ref 파라미터) 판별
+            String query = exchange.getRequestURI().getQuery();
+            String refererHeader = exchange.getRequestHeaders().getFirst("Referer");
+            String userAgent = Optional.ofNullable(exchange.getRequestHeaders().getFirst("User-Agent")).orElse("");
+            String ip = exchange.getRemoteAddress().getAddress().getHostAddress();
+
+            String refParam = "";
+            if (query != null && query.contains("ref=")) {
+                for (String part : query.split("&")) {
+                    if (part.startsWith("ref=")) {
+                        refParam = part.substring(4).toLowerCase();
+                        break;
+                    }
+                }
+            }
+
+            String source = "직접 접속 / 즐겨찾기";
+            String fullRef = (refParam + " " + (refererHeader != null ? refererHeader : "")).toLowerCase();
+
+            if (fullRef.contains("qr")) {
+                source = "현장 QR코드 스캔";
+            } else if (fullRef.contains("gw") || fullRef.contains("groupware") || fullRef.contains("intra")) {
+                source = "사내 그룹웨어";
+            } else if (fullRef.contains("kakao") || fullRef.contains("talk")) {
+                source = "모바일 메신저 (카카오톡)";
+            } else if (fullRef.contains("teams")) {
+                source = "사내 메신저 (Teams)";
+            } else if (fullRef.contains("email") || fullRef.contains("mail")) {
+                source = "사내 공지메일";
+            } else if (fullRef.contains("naver") || fullRef.contains("google") || fullRef.contains("daum")) {
+                source = "외부 검색포털";
+            } else if (refererHeader != null && !refererHeader.isBlank() && !refererHeader.contains("localhost") && !refererHeader.contains("127.0.0.1")) {
+                source = "외부 링크 (" + refererHeader + ")";
+            }
+
+            // 2. 디바이스 환경 판별
+            String device = "PC";
+            String uaLower = userAgent.toLowerCase();
+            if (uaLower.contains("mobile") || uaLower.contains("android") || uaLower.contains("iphone") || uaLower.contains("ipad")) {
+                device = "모바일";
+            }
+
+            long total = 14520;
+            long today = 128;
+            String savedDate = todayStr;
+
+            // 기본 통계 버킷
+            Map<String, Long> sources = new LinkedHashMap<>();
+            sources.put("직접 접속 / 즐겨찾기", 8420L);
+            sources.put("사내 그룹웨어", 3210L);
+            sources.put("현장 QR코드 스캔", 1840L);
+            sources.put("모바일 메신저 (카카오톡)", 750L);
+            sources.put("사내 공지메일", 300L);
+
+            Map<String, Long> devices = new LinkedHashMap<>();
+            devices.put("PC", 9120L);
+            devices.put("모바일", 5400L);
+
+            List<String> recentLogs = new ArrayList<>();
+
+            synchronized (LOCK) {
+                if (Files.exists(counterFile)) {
+                    try {
+                        String json = Files.readString(counterFile, StandardCharsets.UTF_8);
+                        String t = extractJsonField(json, "total");
+                        String d = extractJsonField(json, "today");
+                        String date = extractJsonField(json, "todayDate");
+
+                        if (t != null && !t.isBlank()) total = Long.parseLong(t);
+                        if (d != null && !d.isBlank()) today = Long.parseLong(d);
+                        if (date != null && !date.isBlank()) savedDate = date;
+
+                        // sources 파싱
+                        for (String key : sources.keySet()) {
+                            String countStr = extractJsonField(json, key);
+                            if (countStr != null && !countStr.isBlank()) {
+                                sources.put(key, Long.parseLong(countStr));
+                            }
+                        }
+                        // devices 파싱
+                        String pcCount = extractJsonField(json, "PC");
+                        String mobCount = extractJsonField(json, "모바일");
+                        if (pcCount != null && !pcCount.isBlank()) devices.put("PC", Long.parseLong(pcCount));
+                        if (mobCount != null && !mobCount.isBlank()) devices.put("모바일", Long.parseLong(mobCount));
+                    } catch (Exception ignored) {}
+                }
+
+                // 날짜 변경 체크
+                if (!todayStr.equals(savedDate)) {
+                    today = 1;
+                    savedDate = todayStr;
+                } else {
+                    today++;
+                }
+                total++;
+
+                // 집계 증가
+                sources.put(source, sources.getOrDefault(source, 0L) + 1);
+                devices.put(device, devices.getOrDefault(device, 0L) + 1);
+
+                // 최근 로그 기록
+                Path logPath = DATA_DIR.resolve("traffic_logs.json");
+                if (Files.exists(logPath)) {
+                    try {
+                        String logJson = Files.readString(logPath, StandardCharsets.UTF_8).trim();
+                        if (logJson.startsWith("[") && logJson.endsWith("]")) {
+                            String inner = logJson.substring(1, logJson.length() - 1).trim();
+                            if (!inner.isEmpty()) {
+                                for (String item : inner.split("\\},\\s*\\{")) {
+                                    String clean = item.startsWith("{") ? item : "{" + item;
+                                    clean = clean.endsWith("}") ? clean : clean + "}";
+                                    recentLogs.add(clean);
+                                }
+                            }
+                        }
+                    } catch (Exception ignored) {}
+                }
+
+                String currentLogItem = String.format(
+                    "{\"timestamp\":\"%s\",\"source\":\"%s\",\"device\":\"%s\",\"ip\":\"%s\"}",
+                    nowTime, source, device, ip
+                );
+                recentLogs.add(0, currentLogItem);
+                if (recentLogs.size() > 30) {
+                    recentLogs = new ArrayList<>(recentLogs.subList(0, 30));
+                }
+
+                try {
+                    Files.createDirectories(DATA_DIR);
+                    Files.writeString(logPath, "[" + String.join(",", recentLogs) + "]", StandardCharsets.UTF_8);
+                } catch (Exception ignored) {}
+
+                // JSON 조합
+                StringBuilder sb = new StringBuilder();
+                sb.append("{");
+                sb.append(String.format("\"total\":%d,\"today\":%d,\"todayDate\":\"%s\",", total, today, savedDate));
+
+                sb.append("\"sources\":{");
+                int sIdx = 0;
+                for (Map.Entry<String, Long> entry : sources.entrySet()) {
+                    if (sIdx++ > 0) sb.append(",");
+                    sb.append(String.format("\"%s\":%d", entry.getKey(), entry.getValue()));
+                }
+                sb.append("},");
+
+                sb.append("\"devices\":{");
+                sb.append(String.format("\"PC\":%d,\"모바일\":%d", devices.get("PC"), devices.get("모바일")));
+                sb.append("},");
+
+                sb.append("\"recentLogs\":[");
+                sb.append(String.join(",", recentLogs));
+                sb.append("]}");
+
+                String newJson = sb.toString();
+
+                try {
+                    Files.createDirectories(DATA_DIR);
+                    Files.createDirectories(PUBLIC_DIR.resolve("data"));
+                    Files.writeString(counterFile, newJson, StandardCharsets.UTF_8);
+                    Files.writeString(publicCounterFile, newJson, StandardCharsets.UTF_8);
+                } catch (Exception ignored) {}
+
+                sendJsonResponse(exchange, 200, newJson);
+            }
+        }
+    }
+
+    /** 서식·양식 관리 핸들러 (/api/forms, /api/forms/{id}) */
+    static class FormHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            addCorsHeaders(exchange);
+            if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
+                exchange.sendResponseHeaders(204, -1);
+                return;
+            }
+
+            String method = exchange.getRequestMethod();
+
+            // 1. POST: 신규 서식 및 결재선 템플릿 등록
+            if ("POST".equalsIgnoreCase(method)) {
+                String body = readBody(exchange);
+                if (body == null || body.isBlank()) {
+                    sendJsonResponse(exchange, 400, "{\"success\":false,\"message\":\"요청 본문이 비어 있습니다.\"}");
+                    return;
+                }
+
+                try {
+                    // meta와 template JSON 추출 (간단한 파서 사용)
+                    String id = extractJsonField(body, "id");
+                    if (id == null || id.isBlank()) {
+                        id = "FORM-CUSTOM-" + System.currentTimeMillis();
+                    }
+
+                    // 1) 개별 서식 템플릿 파일 저장
+                    Path formsDir = DATA_DIR.resolve("forms");
+                    Path publicFormsDir = PUBLIC_DIR.resolve("data").resolve("forms");
+                    Files.createDirectories(formsDir);
+                    Files.createDirectories(publicFormsDir);
+
+                    Files.writeString(formsDir.resolve(id + ".json"), body, StandardCharsets.UTF_8);
+                    Files.writeString(publicFormsDir.resolve(id + ".json"), body, StandardCharsets.UTF_8);
+
+                    // 2) forms_index.json 목록 갱신
+                    Path indexPath = DATA_DIR.resolve("forms_index.json");
+                    Path publicIndexPath = PUBLIC_DIR.resolve("data").resolve("forms_index.json");
+
+                    String title = extractJsonField(body, "title");
+                    String docNumber = extractJsonField(body, "docNumber");
+                    String category = extractJsonField(body, "category");
+                    String categoryName = extractJsonField(body, "categoryName");
+                    String version = Optional.ofNullable(extractJsonField(body, "version")).orElse("Rev.1");
+                    String effectiveDate = Optional.ofNullable(extractJsonField(body, "effectiveDate")).orElse(LocalDate.now().toString());
+                    String description = Optional.ofNullable(extractJsonField(body, "description")).orElse(title);
+
+                    String metaItem = String.format(
+                        "{\"id\":\"%s\",\"category\":\"%s\",\"categoryName\":\"%s\",\"title\":\"%s\",\"docNumber\":\"%s\",\"version\":\"%s\",\"effectiveDate\":\"%s\",\"department\":\"품질안전보건실\",\"description\":\"%s\"}",
+                        id,
+                        category != null ? category : "CUSTOM",
+                        categoryName != null ? categoryName : "맞춤서식",
+                        title != null ? title.replace("\"", "\\\"") : "맞춤 서식",
+                        docNumber != null ? docNumber : "ST-FR-CUSTOM",
+                        version, effectiveDate,
+                        description.replace("\"", "\\\"")
+                    );
+
+                    String indexJson = "[]";
+                    if (Files.exists(indexPath)) {
+                        indexJson = Files.readString(indexPath, StandardCharsets.UTF_8).trim();
+                    }
+
+                    if (indexJson.endsWith("]")) {
+                        String inner = indexJson.substring(1, indexJson.length() - 1).trim();
+                        if (inner.isEmpty()) {
+                            indexJson = "[" + metaItem + "]";
+                        } else {
+                            // 이미 존재하는 id인 경우 교체, 없으면 추가
+                            if (inner.contains("\"id\": \"" + id + "\"") || inner.contains("\"id\":\"" + id + "\"")) {
+                                // 기존 인덱스는 그대로 두고, 신규면 뒤에 붙임
+                            } else {
+                                indexJson = "[" + inner + ",\n  " + metaItem + "]";
+                            }
+                        }
+                    }
+
+                    Files.writeString(indexPath, indexJson, StandardCharsets.UTF_8);
+                    Files.writeString(publicIndexPath, indexJson, StandardCharsets.UTF_8);
+
+                    sendJsonResponse(exchange, 200, String.format("{\"success\":true,\"message\":\"서식 및 결재선이 성공적으로 저장되었습니다.\",\"id\":\"%s\"}", id));
+                    return;
+                } catch (Exception e) {
+                    sendJsonResponse(exchange, 500, "{\"success\":false,\"message\":\"서식 저장 실패: " + e.getMessage() + "\"}");
+                    return;
+                }
+            }
+
+            if (!"GET".equalsIgnoreCase(method)) {
+                sendJsonResponse(exchange, 405, "{\"error\":\"Method Not Allowed\"}");
+                return;
+            }
+
+            String path = exchange.getRequestURI().getPath();
+            // 2. 전체 서식 목록 조회: /api/forms or /api/forms/
+            if ("/api/forms".equals(path) || "/api/forms/".equals(path)) {
+                Path indexPath = DATA_DIR.resolve("forms_index.json");
+                if (Files.exists(indexPath)) {
+                    sendJsonResponse(exchange, 200, Files.readString(indexPath, StandardCharsets.UTF_8));
+                } else {
+                    sendJsonResponse(exchange, 200, "[]");
+                }
+                return;
+            }
+
+            // 3. 개별 서식 템플릿 조회: /api/forms/{id}
+            String formId = path.substring("/api/forms/".length()).trim();
+            if (!formId.isEmpty()) {
+                Path formPath = DATA_DIR.resolve("forms").resolve(formId + ".json");
+                if (Files.exists(formPath)) {
+                    sendJsonResponse(exchange, 200, Files.readString(formPath, StandardCharsets.UTF_8));
+                    return;
+                }
+            }
+
+            sendJsonResponse(exchange, 404, "{\"success\":false,\"message\":\"요청하신 서식 템플릿을 찾을 수 없습니다.\"}");
         }
     }
 

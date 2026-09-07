@@ -59,6 +59,10 @@
         </div>
       </div>
 
+      <button class="tool-btn" id="btn-toggle-signatures" onclick="toggleSignatureDisplay()" title="결재란 및 승인현황표 내 전자서명 날인 표시/숨김 전환">
+        <i class="fa-solid fa-stamp" style="color:#16a34a;"></i> 전자서명 날인 [ON]
+      </button>
+      <button class="tool-btn" onclick="location.href='forms.html'" title="사내 표준 서식·양식 작성센터로 이동"><i class="fa-solid fa-file-signature"></i> 서식·양식</button>
       <button class="tool-btn" onclick="copyShareUrl()"><i class="fa-solid fa-share-nodes"></i> URL 공유</button>
       <button class="tool-btn" id="btn-bookmark" onclick="toggleBookmark()"><i class="fa-regular fa-star"></i> 즐겨찾기</button>
       <button class="tool-btn" onclick="openRevisionHistoryModal()"><i class="fa-solid fa-clock-rotate-left"></i> 개정이력/신구대조</button>
@@ -191,7 +195,7 @@
       </section>
 
       <!-- ==================================================== -->
-      <!-- [3] 인쇄 3페이지: 신·구 조문 대비표 (Diff / Comparison) -->
+      <!-- [3] 인쇄 3페이지: 목차 및 신·구 조문 대비표 (TOC & Diff) -->
       <!-- ==================================================== -->
       <section class="print-page print-diff-page" id="print-diff-section">
         <div class="print-doc-header">
@@ -199,36 +203,66 @@
             <span class="print-h-left">(주)세방테크 안전보건경영시스템 사내표준</span>
             <span class="print-h-right" id="print-diff-docnum-header">-</span>
           </div>
-          <h2 class="print-page-title"><i class="fa-solid fa-code-compare"></i> 신·구 조문 대비표 (Comparison Table)</h2>
+          <h2 class="print-page-title"><i class="fa-solid fa-list-ol"></i> 1. 목차 및 신·구 조문 대비표 (Table of Contents &amp; Comparison)</h2>
           <div class="print-doc-summary-bar">
             <span><strong>규정명:</strong> <span id="print-diff-doc-title">-</span></span>
             <span id="print-diff-version-info"><strong>개정 비교:</strong> 직전 개정본 대비 변경 조항</span>
           </div>
         </div>
 
-        <div class="print-table-wrap">
-          <table class="print-standard-table print-diff-table">
+        <!-- 1.1 장별 목차 구성표 -->
+        <div class="manual-toc-container" id="manual-toc-box">
+          <h3 class="manual-sub-title"><i class="fa-solid fa-book-bookmark"></i> 1.1 매뉴얼 장별 목차 (Table of Contents)</h3>
+          <table class="print-standard-table toc-table">
             <thead>
               <tr>
-                <th style="width: 16%; text-align:center;">조항/구분</th>
-                <th style="width: 42%; text-align:left;">개정 전 조문 (Previous)</th>
-                <th style="width: 42%; text-align:left;">개정 후 조문 (Current)</th>
+                <th style="width: 12%; text-align:center;">장 (Chapter)</th>
+                <th style="width: 32%; text-align:left;">장별 제목</th>
+                <th style="width: 44%; text-align:left;">주요 구성 내용</th>
+                <th style="width: 12%; text-align:center;">바로가기</th>
               </tr>
             </thead>
-            <tbody id="print-diff-tbody">
-              <!-- JS 렌더링 -->
+            <tbody id="print-toc-tbody">
+              <!-- JS에서 매뉴얼 목차 동적 렌더링 -->
             </tbody>
           </table>
         </div>
 
+        <!-- 1.2 신·구 조문 대비표 -->
+        <div class="manual-diff-container" style="margin-top: 24px;">
+          <h3 class="manual-sub-title"><i class="fa-solid fa-code-compare"></i> 1.2 신·구 조문 대비표 (Comparison Table)</h3>
+          <div class="print-table-wrap">
+            <table class="print-standard-table print-diff-table">
+              <thead>
+                <tr>
+                  <th style="width: 16%; text-align:center;">조항/구분</th>
+                  <th style="width: 42%; text-align:left;">개정 전 조문 (Previous)</th>
+                  <th style="width: 42%; text-align:left;">개정 후 조문 (Current)</th>
+                </tr>
+              </thead>
+              <tbody id="print-diff-tbody">
+                <!-- JS 렌더링 -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
         <div class="print-page-note">
-          ※ 개정 전·후 변경 내용은 변경 조항 단위로 정렬되어 대조 표시됩니다.
+          ※ 1.1 목차의 각 장을 클릭하시면 해당 본문 페이지로 즉시 이동할 수 있습니다.
         </div>
       </section>
 
       <!-- ==================================================== -->
       <!-- [4] 인쇄 4페이지부터: 규정 본문 (Official Main Body) -->
       <!-- ==================================================== -->
+      <!-- 장별 퀵 점프 탭 바 (화면 전용) -->
+      <nav class="chapter-quick-nav no-print" id="chapter-quick-bar" style="display:none;">
+        <span class="quick-nav-label"><i class="fa-solid fa-compass"></i> 장별 바로가기:</span>
+        <div class="quick-nav-buttons" id="quick-nav-buttons">
+          <!-- JS 동적 생성 -->
+        </div>
+      </nav>
+
       <section class="print-body-page" id="print-body-section">
         <!-- 인쇄용 헤더 (인쇄 시에만 상단 노출) -->
         <div class="print-only print-header-box">
@@ -617,7 +651,7 @@
 
   <!-- 관리자 설정 종합 모달 (규정 제·개정 관리 & 계정 관리) -->
   <div id="admin-modal" class="modal-backdrop no-print" style="display:none; z-index:10008;">
-    <div class="modal-dialog modal-lg" style="max-width: 780px;">
+    <div class="modal-dialog modal-lg" style="max-width: 960px; width: 92vw;">
       <div class="modal-header">
         <h3><i class="fa-solid fa-sliders"></i> 관리자 종합 설정</h3>
         <button class="btn-close" onclick="closeAdminModal()">&times;</button>
@@ -672,27 +706,50 @@
         <!-- 탭 2: 현장 및 현장소장 관리 (2026 현장목록 기반) -->
         <div id="admin-tab-pane-sites" style="display:none;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:10px;">
-            <p class="admin-desc" style="margin:0;">사내 2026년도 현장 목록 및 각 현장별 <strong>현장소장(안전책임자)</strong> 배치 현황입니다. 소장을 추가하거나 삭제할 수 있습니다.</p>
-            <span id="site-count-badge" style="background:#e0f2fe; color:#0369a1; font-size:12px; font-weight:700; padding:3px 10px; border-radius:12px; white-space:nowrap;">현장 로딩 중...</span>
+            <p class="admin-desc" style="margin:0;">사내 2026년도 현장 목록 및 각 현장별 <strong>현장소장(안전책임자)</strong> 현황입니다. 신규 현장을 추가하거나 소장을 관리할 수 있습니다.</p>
+            <span id="site-count-badge" style="background:#e0f2fe; color:#0369a1; font-size:12px; font-weight:700; padding:4px 12px; border-radius:12px; white-space:nowrap;">현장 로딩 중...</span>
           </div>
           
-          <div style="margin-bottom: 12px; display:flex; gap:8px;">
+          <div style="margin-bottom: 12px; display:flex; justify-content:space-between; gap:10px;">
             <div style="position:relative; flex:1;">
               <i class="fa-solid fa-magnifying-glass" style="position:absolute; left:10px; top:10px; color:#94a3b8; font-size:12px;"></i>
               <input type="text" id="admin-site-search" placeholder="현장명, 현장코드, 또는 현장소장 이름 검색..." oninput="filterAdminSites()" style="width:100%; padding:7px 10px 7px 32px; border:1px solid #cbd5e1; border-radius:4px; font-size:13px; outline:none; box-sizing:border-box;">
             </div>
+            <button type="button" class="btn-primary" onclick="showAddSiteRow()" style="white-space:nowrap; padding:6px 14px; font-size:13px; display:inline-flex; align-items:center; gap:6px;">
+              <i class="fa-solid fa-folder-plus"></i> <strong>+ 현장 추가</strong>
+            </button>
           </div>
 
-          <div class="admin-site-table-container" style="border:1px solid #e2e8f0; border-radius:6px; max-height:360px; overflow-y:auto;">
-            <table class="admin-site-table" style="width:100%; border-collapse:collapse; font-size:13px;">
+          <div class="admin-site-table-container" style="border:1px solid #e2e8f0; border-radius:6px; max-height:400px; overflow-y:auto; overflow-x:auto;">
+            <table class="admin-site-table" style="width:100%; min-width:760px; border-collapse:collapse; font-size:13px;">
               <thead style="background-color:#f8fafc; position:sticky; top:0; z-index:2; border-bottom:1px solid #cbd5e1;">
                 <tr>
-                  <th style="padding:9px 12px; text-align:center; width:15%;">현장코드</th>
-                  <th style="padding:9px 12px; text-align:left; width:45%;">현장명 (공사명)</th>
-                  <th style="padding:9px 12px; text-align:left; width:22%;">배치된 현장소장</th>
-                  <th style="padding:9px 12px; text-align:center; width:18%;">현장소장 추가</th>
+                  <th style="padding:10px 12px; text-align:center; width:14%; min-width:105px;">현장코드</th>
+                  <th style="padding:10px 12px; text-align:left; width:44%; min-width:240px;">현장명 (공사명)</th>
+                  <th style="padding:10px 12px; text-align:left; width:22%; min-width:140px;">현장소장</th>
+                  <th style="padding:10px 12px; text-align:center; width:20%; min-width:150px;">관리</th>
                 </tr>
               </thead>
+              <tbody>
+                <!-- [현장 추가 입력 컬럼/행 - 기본 숨김] -->
+                <tr id="add-site-row-tr" style="display:none; background-color:#eff6ff; border-bottom:2px solid #3b82f6;">
+                  <td style="padding:8px 8px; text-align:center; vertical-align:middle;">
+                    <input type="text" id="new-site-code" placeholder="예: 2026022" style="width:100%; padding:6px 6px; font-size:12.5px; border:1.5px solid #3b82f6; border-radius:4px; text-align:center; font-weight:700; box-sizing:border-box; outline:none;">
+                  </td>
+                  <td style="padding:8px 8px; vertical-align:middle;">
+                    <input type="text" id="new-site-name" placeholder="신규 현장명 (공사명) 입력" style="width:100%; padding:6px 8px; font-size:12.5px; border:1.5px solid #3b82f6; border-radius:4px; font-weight:600; box-sizing:border-box; outline:none;" onkeydown="if(event.key==='Enter') document.getElementById('new-site-manager').focus()">
+                  </td>
+                  <td style="padding:8px 8px; vertical-align:middle;">
+                    <input type="text" id="new-site-manager" placeholder="현장소장 성명" style="width:100%; padding:6px 8px; font-size:12.5px; border:1.5px solid #3b82f6; border-radius:4px; box-sizing:border-box; outline:none;" onkeydown="if(event.key==='Enter') confirmSaveNewSite()">
+                  </td>
+                  <td style="padding:8px 8px; text-align:center; vertical-align:middle; white-space:nowrap;">
+                    <div style="display:flex; gap:6px; justify-content:center; align-items:center;">
+                      <button type="button" class="btn-primary" onclick="confirmSaveNewSite()" style="padding:6px 12px; font-size:12.5px; background:#16a34a; border-color:#15803d; cursor:pointer; white-space:nowrap; display:inline-flex; align-items:center; gap:4px;" title="저장 (JSON 업데이트)"><i class="fa-solid fa-check"></i> 저장</button>
+                      <button type="button" class="btn-cancel" onclick="hideAddSiteRow()" style="padding:6px 9px; font-size:12px; cursor:pointer; white-space:nowrap;" title="취소"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
               <tbody id="admin-site-list-tbody">
                 <!-- JS 렌더링 -->
               </tbody>

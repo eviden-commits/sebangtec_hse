@@ -53,7 +53,7 @@
         </div>
         <a href="detail.html?id=PRC-KOSHA-01">절차서</a>
         <a href="detail.html?id=INS-KOSHA-01">지침서</a>
-        <a href="#" onclick="alert('서식 및 양식 관리 페이지 준비 중입니다.')">서식·양식</a>
+        <a href="forms.html">서식·양식</a>
       </nav>
     </div>
   </div>
@@ -66,10 +66,11 @@
       <div class="search-box-wrapper">
         <div class="filter-select">
           <select id="search-category">
-            <option value="ALL">전체 규정</option>
+            <option value="ALL">전체 규정·양식</option>
             <option value="MANUAL">매뉴얼</option>
             <option value="PROCEDURE">절차서</option>
             <option value="INSTRUCTION">지침서</option>
+            <option value="FORM">양식·서식</option>
           </select>
         </div>
         <div class="search-input-area">
@@ -88,6 +89,54 @@
           <a href="javascript:void(0)" onclick="quickSearch('상시평가')">#상시평가</a>
           <a href="javascript:void(0)" onclick="quickSearch('제1조')">#제1조</a>
         </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 통합 검색 결과 섹션 (10개 단위, 매뉴얼/절차서/지침서/양식 유사도순) -->
+  <section class="search-results-section" id="search-results-section" style="display: none;">
+    <div class="search-results-container">
+      <div class="search-results-header">
+        <div class="results-header-left">
+          <h3 class="results-title">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            '<span id="results-keyword" class="highlight-kw"></span>' 검색 결과
+            <span class="results-total-badge" id="results-total-count">0건</span>
+          </h3>
+          <p class="results-subtitle">매뉴얼 ➔ 절차서 ➔ 지침서 ➔ 양식 순으로 관련도순 정렬된 10개 단위 결과입니다.</p>
+        </div>
+        <button class="btn-close-results" onclick="closeSearchResults()" title="검색 결과 닫기">
+          <i class="fa-solid fa-xmark"></i> 닫기
+        </button>
+      </div>
+
+      <!-- 카테고리 필터 탭 -->
+      <div class="search-filter-tabs" id="search-filter-tabs">
+        <button class="s-tab-btn active" data-cat="ALL" onclick="filterSearchCategory('ALL')">
+          전체 (<span id="count-all">0</span>)
+        </button>
+        <button class="s-tab-btn" data-cat="MANUAL" onclick="filterSearchCategory('MANUAL')">
+          <i class="fa-solid fa-book"></i> 매뉴얼 (<span id="count-manual">0</span>)
+        </button>
+        <button class="s-tab-btn" data-cat="PROCEDURE" onclick="filterSearchCategory('PROCEDURE')">
+          <i class="fa-solid fa-file-shield"></i> 절차서 (<span id="count-procedure">0</span>)
+        </button>
+        <button class="s-tab-btn" data-cat="INSTRUCTION" onclick="filterSearchCategory('INSTRUCTION')">
+          <i class="fa-solid fa-clipboard-check"></i> 지침서 (<span id="count-instruction">0</span>)
+        </button>
+        <button class="s-tab-btn" data-cat="FORM" onclick="filterSearchCategory('FORM')">
+          <i class="fa-solid fa-file-lines"></i> 양식·서식 (<span id="count-form">0</span>)
+        </button>
+      </div>
+
+      <!-- 검색 결과 카드 목록 -->
+      <div class="search-results-list" id="search-results-list">
+        <!-- 동적 렌더링 -->
+      </div>
+
+      <!-- 10개 단위 페이지네이션 바 -->
+      <div class="search-pagination" id="search-pagination" style="display: none;">
+        <!-- 동적 생성 -->
       </div>
     </div>
   </section>
@@ -227,6 +276,26 @@
             <h4><i class="fa-solid fa-print"></i> 보안 인쇄 안내</h4>
             <p>본 포털의 모든 규정 문서는 인쇄 시 출력자 정보 및 '비제어본' 워터마크가 자동으로 합성되며, 인쇄 이력이 기록됩니다.</p>
           </div>
+
+          <!-- 방문자 통계 카운터 위젯 -->
+          <div class="visitor-counter-box" style="margin-top: 14px; padding: 12px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+              <span style="font-size: 13px; font-weight: 600; color: #334155; display: flex; align-items: center; gap: 6px;">
+                <i class="fa-solid fa-chart-line" style="color: #0284c7;"></i> 방문자 통계
+              </span>
+              <span style="font-size: 11px; color: #64748b; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-weight: 500;">실시간</span>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 10px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.03);">
+                <div style="font-size: 11px; color: #64748b; margin-bottom: 2px;">오늘 방문자</div>
+                <div id="counter-today" style="font-size: 16px; font-weight: 700; color: #0284c7;">-</div>
+              </div>
+              <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 10px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.03);">
+                <div style="font-size: 11px; color: #64748b; margin-bottom: 2px;">누적 방문자</div>
+                <div id="counter-total" style="font-size: 16px; font-weight: 700; color: #0f172a;">-</div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     </div>
@@ -236,7 +305,11 @@
   <footer class="portal-footer">
     <div class="footer-container">
       <p>(주)세방테크 안전보건경영시스템 포털 | 주관부서: 품질안전보건실 | 문의: 02-579-5551(내선 안전보건실)</p>
-      <p class="copyright">Copyright &copy; SEBANG TEC CO., LTD. All Rights Reserved. (KOSHA-MS Certified)</p>
+      <p class="copyright">Copyright &copy; SEBANG TEC CO., LTD. All Rights Reserved. (KOSHA-MS Certified)
+        <span class="footer-visitor" style="margin-left: 16px; color: #94a3b8; font-size: 12px; display: inline-flex; align-items: center; gap: 6px;">
+          <i class="fa-solid fa-users" style="color: #60a5fa;"></i> 오늘 <strong id="footer-counter-today" style="color: #38bdf8;">-</strong>명 &bull; 누적 <strong id="footer-counter-total" style="color: #f1f5f9;">-</strong>명
+        </span>
+      </p>
     </div>
   </footer>
 
@@ -273,7 +346,7 @@
 
   <!-- 관리자 설정 종합 모달 (규정 제·개정 관리 & 계정 관리) -->
   <div id="admin-modal" class="modal-backdrop" style="display:none; z-index:10008;">
-    <div class="modal-dialog modal-lg" style="max-width: 780px;">
+    <div class="modal-dialog modal-lg" style="max-width: 1120px; width: 95vw;">
       <div class="modal-header">
         <h3><i class="fa-solid fa-sliders"></i> 관리자 종합 설정</h3>
         <button class="btn-close" onclick="closeAdminModal()">&times;</button>
@@ -290,6 +363,9 @@
           </button>
           <button type="button" class="admin-tab-btn" id="tab-btn-accounts" onclick="switchAdminTab('accounts')" style="padding:8px 16px; border:none; background:none; font-size:14px; font-weight:600; color:#64748b; cursor:pointer; margin-bottom:-2px;">
             <i class="fa-solid fa-user-shield"></i> 관리자 계정 권한 관리
+          </button>
+          <button type="button" class="admin-tab-btn" id="tab-btn-traffic" onclick="switchAdminTab('traffic')" style="padding:8px 16px; border:none; background:none; font-size:14px; font-weight:600; color:#64748b; cursor:pointer; margin-bottom:-2px;">
+            <i class="fa-solid fa-chart-pie"></i> 접속자 & 유입경로 통계
           </button>
         </div>
 
@@ -328,27 +404,54 @@
         <!-- 탭 2: 현장 및 현장소장 관리 (2026 현장목록 기반) -->
         <div id="admin-tab-pane-sites" style="display:none;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:10px;">
-            <p class="admin-desc" style="margin:0;">사내 2026년도 현장 목록 및 각 현장별 <strong>현장소장(안전책임자)</strong> 배치 현황입니다. 소장을 추가하거나 삭제할 수 있습니다.</p>
-            <span id="site-count-badge" style="background:#e0f2fe; color:#0369a1; font-size:12px; font-weight:700; padding:3px 10px; border-radius:12px; white-space:nowrap;">현장 로딩 중...</span>
+            <p class="admin-desc" style="margin:0;">사내 2026년도 현장 목록 및 각 현장별 <strong>현장소장(안전책임자)</strong> 현황입니다. 신규 현장을 추가하거나 소장을 관리할 수 있습니다.</p>
+            <span id="site-count-badge" style="background:#e0f2fe; color:#0369a1; font-size:12px; font-weight:700; padding:4px 12px; border-radius:12px; white-space:nowrap;">현장 로딩 중...</span>
           </div>
           
-          <div style="margin-bottom: 12px; display:flex; gap:8px;">
+          <div style="margin-bottom: 12px; display:flex; justify-content:space-between; gap:10px;">
             <div style="position:relative; flex:1;">
               <i class="fa-solid fa-magnifying-glass" style="position:absolute; left:10px; top:10px; color:#94a3b8; font-size:12px;"></i>
               <input type="text" id="admin-site-search" placeholder="현장명, 현장코드, 또는 현장소장 이름 검색..." oninput="filterAdminSites()" style="width:100%; padding:7px 10px 7px 32px; border:1px solid #cbd5e1; border-radius:4px; font-size:13px; outline:none; box-sizing:border-box;">
             </div>
+            <button type="button" class="btn-primary" onclick="showAddSiteRow()" style="white-space:nowrap; padding:6px 14px; font-size:13px; display:inline-flex; align-items:center; gap:6px;">
+              <i class="fa-solid fa-folder-plus"></i> <strong>+ 현장 추가</strong>
+            </button>
           </div>
 
-          <div class="admin-site-table-container" style="border:1px solid #e2e8f0; border-radius:6px; max-height:360px; overflow-y:auto;">
-            <table class="admin-site-table" style="width:100%; border-collapse:collapse; font-size:13px;">
+          <div class="admin-site-table-container" style="border:1px solid #e2e8f0; border-radius:6px; max-height:420px; overflow-y:auto; overflow-x:auto;">
+            <table class="admin-site-table" style="width:100%; min-width:920px; border-collapse:collapse; font-size:13px;">
               <thead style="background-color:#f8fafc; position:sticky; top:0; z-index:2; border-bottom:1px solid #cbd5e1;">
                 <tr>
-                  <th style="padding:9px 12px; text-align:center; width:15%;">현장코드</th>
-                  <th style="padding:9px 12px; text-align:left; width:45%;">현장명 (공사명)</th>
-                  <th style="padding:9px 12px; text-align:left; width:22%;">배치된 현장소장</th>
-                  <th style="padding:9px 12px; text-align:center; width:18%;">현장소장 추가</th>
+                  <th style="padding:10px 10px; text-align:center; width:11%; min-width:85px; white-space:nowrap;">현장코드</th>
+                  <th style="padding:10px 12px; text-align:left; width:33%; min-width:210px;">현장명 (공사명)</th>
+                  <th style="padding:10px 12px; text-align:left; width:18%; min-width:130px;">현장소장</th>
+                  <th style="padding:10px 12px; text-align:left; width:18%; min-width:130px;">안전관리자 <span style="font-size:10px; color:#ef4444; font-weight:700;">(필수)</span></th>
+                  <th style="padding:10px 10px; text-align:center; width:20%; min-width:165px; white-space:nowrap;">관리</th>
                 </tr>
               </thead>
+              <tbody>
+                <!-- [현장 추가 입력 컬럼/행 - 기본 숨김] -->
+                <tr id="add-site-row-tr" style="display:none; background-color:#eff6ff; border-bottom:2px solid #3b82f6;">
+                  <td style="padding:8px 8px; text-align:center; vertical-align:middle;">
+                    <input type="text" id="new-site-code" placeholder="예: 2026022" style="width:100%; padding:6px 6px; font-size:12.5px; border:1.5px solid #3b82f6; border-radius:4px; text-align:center; font-weight:700; box-sizing:border-box; outline:none;">
+                  </td>
+                  <td style="padding:8px 8px; vertical-align:middle;">
+                    <input type="text" id="new-site-name" placeholder="신규 현장명 (공사명) 입력" style="width:100%; padding:6px 8px; font-size:12.5px; border:1.5px solid #3b82f6; border-radius:4px; font-weight:600; box-sizing:border-box; outline:none;" onkeydown="if(event.key==='Enter') document.getElementById('new-site-manager').focus()">
+                  </td>
+                  <td style="padding:8px 8px; vertical-align:middle;">
+                    <input type="text" id="new-site-manager" placeholder="현장소장 성명 (필수)" style="width:100%; padding:6px 8px; font-size:12.5px; border:1.5px solid #3b82f6; border-radius:4px; box-sizing:border-box; outline:none;" onkeydown="if(event.key==='Enter') document.getElementById('new-site-safety-manager').focus()">
+                  </td>
+                  <td style="padding:8px 8px; vertical-align:middle;">
+                    <input type="text" id="new-site-safety-manager" placeholder="안전관리자 성명 (필수)" style="width:100%; padding:6px 8px; font-size:12.5px; border:1.5px solid #3b82f6; border-radius:4px; box-sizing:border-box; outline:none;" onkeydown="if(event.key==='Enter') confirmSaveNewSite()">
+                  </td>
+                  <td style="padding:8px 8px; text-align:center; vertical-align:middle; white-space:nowrap;">
+                    <div style="display:inline-flex; gap:6px; justify-content:center; align-items:center; flex-wrap:nowrap;">
+                      <button type="button" class="btn-primary" onclick="confirmSaveNewSite()" style="padding:6px 12px; font-size:12.5px; background:#16a34a; border-color:#15803d; cursor:pointer; white-space:nowrap; display:inline-flex; align-items:center; gap:4px;" title="저장 (JSON 업데이트)"><i class="fa-solid fa-check"></i> 저장</button>
+                      <button type="button" class="btn-cancel" onclick="hideAddSiteRow()" style="padding:6px 9px; font-size:12px; cursor:pointer; white-space:nowrap;" title="취소"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
               <tbody id="admin-site-list-tbody">
                 <!-- JS 렌더링 -->
               </tbody>
@@ -368,6 +471,90 @@
           </ul>
         </div>
 
+        <!-- 탭 4: 접속자 & 유입경로 통계 -->
+        <div id="admin-tab-pane-traffic" style="display:none;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <p class="admin-desc" style="margin:0;">실시간 방문자 수 및 <strong>유입 경로(사내 그룹웨어, 현장 QR코드, 모바일 메신저 등)</strong>와 디바이스 접속 통계입니다.</p>
+            <button type="button" class="btn-sm-row" onclick="renderTrafficTab()" style="padding:4px 10px; font-size:12px; display:inline-flex; align-items:center; gap:4px; cursor:pointer;">
+              <i class="fa-solid fa-arrows-rotate"></i> 새로고침
+            </button>
+          </div>
+
+          <!-- KPI 4단 요약 카드 -->
+          <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px;">
+            <div style="background:#f0f9ff; border:1px solid #bae6fd; border-radius:8px; padding:12px 14px; text-align:center;">
+              <div style="font-size:11.5px; color:#0369a1; font-weight:600;">오늘 방문자</div>
+              <div id="traffic-kpi-today" style="font-size:22px; font-weight:800; color:#0284c7; margin-top:2px;">-</div>
+            </div>
+            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px 14px; text-align:center;">
+              <div style="font-size:11.5px; color:#475569; font-weight:600;">누적 총 방문자</div>
+              <div id="traffic-kpi-total" style="font-size:22px; font-weight:800; color:#0f172a; margin-top:2px;">-</div>
+            </div>
+            <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:12px 14px; text-align:center;">
+              <div style="font-size:11.5px; color:#15803d; font-weight:600;">PC 접속률</div>
+              <div id="traffic-kpi-pc" style="font-size:22px; font-weight:800; color:#16a34a; margin-top:2px;">-</div>
+            </div>
+            <div style="background:#fefce8; border:1px solid #fef08a; border-radius:8px; padding:12px 14px; text-align:center;">
+              <div style="font-size:11.5px; color:#a16207; font-weight:600;">모바일 접속률</div>
+              <div id="traffic-kpi-mobile" style="font-size:22px; font-weight:800; color:#ca8a04; margin-top:2px;">-</div>
+            </div>
+          </div>
+
+          <!-- 유입경로 그래프(좌측) & 실시간 로그(우측) 2단 분할 -->
+          <div style="display:grid; grid-template-columns: 1.1fr 0.9fr; gap:14px; margin-bottom:16px;">
+            <!-- 좌측: 유입경로별 분포 -->
+            <div style="border:1px solid #e2e8f0; border-radius:8px; padding:14px; background:#fff;">
+              <h4 style="font-size:13px; font-weight:700; color:#1e293b; margin-bottom:12px; display:flex; align-items:center; gap:6px;">
+                <i class="fa-solid fa-chart-simple" style="color:#0284c7;"></i> 유입 채널별 방문 분포
+              </h4>
+              <div id="traffic-source-bars" style="display:flex; flex-direction:column; gap:10px;">
+                <!-- JS 렌더링 -->
+              </div>
+            </div>
+
+            <!-- 우측: 최근 실시간 접속 로그 -->
+            <div style="border:1px solid #e2e8f0; border-radius:8px; padding:14px; background:#fff; display:flex; flex-direction:column;">
+              <h4 style="font-size:13px; font-weight:700; color:#1e293b; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                <i class="fa-solid fa-clock-rotate-left" style="color:#16a34a;"></i> 실시간 최근 접속 로그
+              </h4>
+              <div style="flex:1; max-height:240px; overflow-y:auto; border:1px solid #f1f5f9; border-radius:6px;">
+                <table style="width:100%; border-collapse:collapse; font-size:11.5px;">
+                  <thead style="background:#f8fafc; position:sticky; top:0; border-bottom:1px solid #e2e8f0;">
+                    <tr>
+                      <th style="padding:6px 8px; text-align:left;">접속 일시</th>
+                      <th style="padding:6px 8px; text-align:left;">유입 경로</th>
+                      <th style="padding:6px 8px; text-align:center;">기기</th>
+                    </tr>
+                  </thead>
+                  <tbody id="traffic-recent-tbody">
+                    <!-- JS 렌더링 -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- 하단: 유입 추적용 배포 링크 생성기 (공유 편의기능) -->
+          <div style="background:#f8fafc; border:1px dashed #cbd5e1; border-radius:8px; padding:12px 14px;">
+            <div style="font-size:12px; font-weight:700; color:#334155; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+              <i class="fa-solid fa-link" style="color:#0284c7;"></i> 사내 배포용 유입 추적 링크 원클릭 복사
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button type="button" class="btn-sm-row" onclick="copyTrafficLink('qr_poster')" style="padding:5px 10px; font-size:11.5px; background:#fff; cursor:pointer;">
+                <i class="fa-solid fa-qrcode" style="color:#0284c7;"></i> 현장 QR코드용 복사
+              </button>
+              <button type="button" class="btn-sm-row" onclick="copyTrafficLink('groupware')" style="padding:5px 10px; font-size:11.5px; background:#fff; cursor:pointer;">
+                <i class="fa-solid fa-building" style="color:#16a34a;"></i> 그룹웨어 공지용 복사
+              </button>
+              <button type="button" class="btn-sm-row" onclick="copyTrafficLink('kakaotalk')" style="padding:5px 10px; font-size:11.5px; background:#fff; cursor:pointer;">
+                <i class="fa-solid fa-comment" style="color:#eab308;"></i> 카카오톡 단톡방용 복사
+              </button>
+              <button type="button" class="btn-sm-row" onclick="copyTrafficLink('teams')" style="padding:5px 10px; font-size:11.5px; background:#fff; cursor:pointer;">
+                <i class="fa-solid fa-users" style="color:#6366f1;"></i> Teams 메신저용 복사
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

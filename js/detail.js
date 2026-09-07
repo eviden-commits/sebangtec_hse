@@ -1,11 +1,11 @@
 /**
- * ?�세 문서 뷰어, 보안 ?�쇄 ?�터마크, ?�구?��? ?�시격리 ?�에?�터 로직 (detail.js)
+ * 상세 문서 뷰어, 보안 인쇄 워터마크, 신구대조, 임시격리 웹에디터 로직 (detail.js)
  */
 let currentDoc = null;
 let allDocs = [];
 let activeClauseId = null;
 
-// ?�시 메모�?격리 ?�디???�태 (Sandbox Draft)
+// 임시 메모리 격리 에디터 상태 (Sandbox Draft)
 let draftDoc = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -18,20 +18,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadAllDocuments();
   await loadDocument(docId, clauseParam, searchKeyword);
 
-  // 관리자 ?�정 모달 ?�에???action=edit �?진입??경우 즉시 ?�디???�픈
+  // 관리자 설정 모달 등에서 ?action=edit 로 진입한 경우 즉시 에디터 오픈
   if (actionParam === 'edit') {
     setTimeout(() => {
       if (AUTH.isAdmin()) {
         openDraftEditorModal();
       } else {
-        alert('규정 ?�·개?�을 ?�해?�는 관리자 로그?�이 ?�요?�니??');
+        alert('규정 제·개정을 위해서는 관리자 로그인이 필요합니다.');
         openLoginModal();
       }
     }, 350);
   }
 });
 
-// ?�체 문서 로드 (?�리 구성??
+// 전체 문서 로드 (트리 구성용)
 async function loadAllDocuments() {
   try {
     allDocs = await API.getDocuments();
@@ -40,30 +40,33 @@ async function loadAllDocuments() {
   }
 }
 
-// 개별 문서 로드 �??�더�?async function loadDocument(docId, targetClause, keyword) {
+// 개별 문서 로드 및 렌더링
+async function loadDocument(docId, targetClause, keyword) {
   try {
     currentDoc = await API.getDocument(docId);
     renderDocument(currentDoc);
     renderHierarchyTree(docId);
     renderClauseJumpList();
 
-    // 즐겨찾기 ?�태 갱신
+    // 즐겨찾기 상태 갱신
     updateBookmarkButton();
 
-    // 최고 관리자 ?�구 ?�출 ?��? ?�어
+    // 최고 관리자 도구 노출 여부 제어
     updateSuperAdminToolbar();
 
-    // ?�정 조항 ?�링???�크�?    if (targetClause) {
+    // 특정 조항 딥링크 스크롤
+    if (targetClause) {
       setTimeout(() => {
         scrollToClause(targetClause);
       }, 200);
     }
 
-    // 검?�어 ?�이?�이??    if (keyword) {
+    // 검색어 하이라이팅
+    if (keyword) {
       highlightKeyword(keyword);
     }
   } catch (e) {
-    alert('문서�?불러?????�습?�다: ' + e.message);
+    alert('문서를 불러올 수 없습니다: ' + e.message);
   }
 }
 
@@ -78,8 +81,9 @@ function updateSuperAdminToolbar() {
   }
 }
 
-// 문서 본문 ?�더�?function renderDocument(doc) {
-  document.title = `${doc.title} - ?�방?�크 KOSHA-MS`;
+// 문서 본문 렌더링
+function renderDocument(doc) {
+  document.title = `${doc.title} - 세방테크 KOSHA-MS`;
   document.getElementById('doc-title-bar').innerText = doc.title;
   document.getElementById('doc-main-title').innerText = doc.title;
   document.getElementById('doc-ver-tag').innerText = doc.currentVersion;
@@ -91,25 +95,89 @@ function updateSuperAdminToolbar() {
   document.getElementById('meta-doc-dept').innerText = doc.department || '-';
 
   const bodyEl = document.getElementById('doc-content-body');
-  bodyEl.innerHTML = doc.currentContent || '<p>본문 ?�용???�습?�다.</p>';
+  bodyEl.innerHTML = doc.currentContent || '<p>본문 내용이 없습니다.</p>';
 
-  // �?조항 ?�릭 ?�벤??�??�커 지??  bodyEl.querySelectorAll('.doc-article').forEach(art => {
+  // 각 조항 클릭 이벤트 및 앵커 지원
+  bodyEl.querySelectorAll('.doc-article').forEach(art => {
     art.addEventListener('click', () => {
       activeClauseId = art.id;
     });
   });
 
-  // 공식 4?�계 ?�쇄 ?�이지 ?�이???��? ??개정?????�구비교 ??본문) 준�?  preparePrintPages(doc);
+  // 매뉴얼 전용 장별 퀵 네비게이션 바 렌더링
+  renderChapterQuickBar(doc);
+
+  // 공식 4단계 인쇄 페이지 데이터(표지 ➔ 개정표 ➔ 신구비교 ➔ 본문) 준비
+  preparePrintPages(doc);
+
+  // 전자서명 자동 매칭 적용 (민경진, 최난새, 정재빈, 강치성, 박계석 등)
+  setTimeout(() => {
+    if (typeof applySignaturesToDocument === 'function') {
+      applySignaturesToDocument();
+    }
+  }, 100);
+}
+
+// 매뉴얼 장별 퀵 네비게이션 바 (상단 플로팅 바)
+function renderChapterQuickBar(doc) {
+  const barEl = document.getElementById('chapter-quick-bar');
+  const buttonsEl = document.getElementById('quick-nav-buttons');
+  if (!barEl || !buttonsEl) return;
+
+  if (doc.category === 'MANUAL' || (doc.tableOfContents && doc.tableOfContents.length > 0)) {
+    barEl.style.display = 'flex';
+    buttonsEl.innerHTML = '';
+
+    // 1p 표지, 2p 개정표, 3p 목차/신구대비
+    const basicPages = [
+      { label: '표지 (1p)', target: 'print-cover-section' },
+      { label: '0.개정이력 (2p)', target: 'print-revision-section' },
+      { label: '1.목차/신구대비 (3p)', target: 'print-diff-section' }
+    ];
+
+    basicPages.forEach(p => {
+      const btn = document.createElement('button');
+      btn.className = 'btn-chap-jump';
+      btn.innerHTML = `<i class="fa-solid fa-file-lines"></i> ${p.label}`;
+      btn.onclick = () => scrollToClause(p.target);
+      buttonsEl.appendChild(btn);
+    });
+
+    // 4p부터: 본문 각 장 (1장 ~ 10장)
+    const defaultChapters = [
+      { num: 1, title: '목차' },
+      { num: 2, title: '적용범위' },
+      { num: 3, title: '용어정의' },
+      { num: 4, title: '조직상황' },
+      { num: 5, title: '리더십' },
+      { num: 6, title: '계획수립' },
+      { num: 7, title: '지원' },
+      { num: 8, title: '실행' },
+      { num: 9, title: '성과평가' },
+      { num: 10, title: '개선' }
+    ];
+
+    defaultChapters.forEach(c => {
+      const btn = document.createElement('button');
+      btn.className = 'btn-chap-jump';
+      btn.innerHTML = `<strong>제${c.num}장</strong> ${c.title}`;
+      btn.title = `제${c.num}장 ${c.title} 바로가기`;
+      btn.onclick = () => scrollToClause(`chap-${c.num}`);
+      buttonsEl.appendChild(btn);
+    });
+  } else {
+    barEl.style.display = 'none';
+  }
 }
 
 function getCategoryName(cat) {
-  if (cat === 'MANUAL') return 'KOSHA 매뉴??;
-  if (cat === 'PROCEDURE') return '?�차??;
+  if (cat === 'MANUAL') return 'KOSHA 매뉴얼';
+  if (cat === 'PROCEDURE') return '절차서';
   if (cat === 'INSTRUCTION') return '지침서';
-  return '?�내 ?��?';
+  return '사내 표준';
 }
 
-// 좌측 ?��? 체계 ?�리 ?�더�?(+ ?�식 규정 추�? �??��? 기능 ?�계)
+// 좌측 표준 체계 트리 렌더링 (+ 자식 규정 추가 및 폐지 기능 연계)
 function renderHierarchyTree(currentDocId) {
   const treeArea = document.getElementById('hierarchy-tree-area');
   if (!treeArea) return;
@@ -117,25 +185,27 @@ function renderHierarchyTree(currentDocId) {
 
   const isAdminUser = AUTH.isAdmin();
 
-  // ?�리 ?�더???�체 추�? 버튼 ?�출 ?�태 ?�기??  const addBtn = document.querySelector('.btn-tree-add');
+  // 트리 헤더의 전체 추가 버튼 노출 상태 동기화
+  const addBtn = document.querySelector('.btn-tree-add');
   if (addBtn) {
     addBtn.style.display = isAdminUser ? 'inline-flex' : 'none';
   }
 
-  // 매뉴??찾기 (최상??
+  // 매뉴얼 찾기 (최상위)
   const manuals = allDocs.filter(d => d.category === 'MANUAL');
 
   manuals.forEach(m => {
     const mNode = createTreeNodeElement(m, 0, currentDocId, isAdminUser, 'PROCEDURE');
     treeArea.appendChild(mNode);
 
-    // ?��? ?�차?�들
+    // 하부 절차서들
     const procs = allDocs.filter(d => d.parentId === m.id || (m.childrenIds && m.childrenIds.includes(d.id)));
     procs.forEach(p => {
       const pNode = createTreeNodeElement(p, 1, currentDocId, isAdminUser, 'INSTRUCTION');
       treeArea.appendChild(pNode);
 
-      // ?��? 지침서??      const insts = allDocs.filter(d => d.parentId === p.id || (p.childrenIds && p.childrenIds.includes(d.id)));
+      // 하부 지침서들
+      const insts = allDocs.filter(d => d.parentId === p.id || (p.childrenIds && p.childrenIds.includes(d.id)));
       insts.forEach(ins => {
         const insNode = createTreeNodeElement(ins, 2, currentDocId, isAdminUser, null);
         treeArea.appendChild(insNode);
@@ -143,7 +213,7 @@ function renderHierarchyTree(currentDocId) {
     });
   });
 
-  // ?�위가 지?�되지 ?��? 기�? ?�차??지침서가 ?�는 경우 처리
+  // 상위가 지정되지 않은 기타 절차서/지침서가 있는 경우 처리
   const assignedIds = new Set([
     ...manuals.map(d => d.id),
     ...manuals.flatMap(m => allDocs.filter(d => d.parentId === m.id || (m.childrenIds && m.childrenIds.includes(d.id))).map(d => d.id)),
@@ -158,7 +228,7 @@ function renderHierarchyTree(currentDocId) {
   }
 }
 
-// ?�리 ?�드 ?�리먼트 ?�성 ?�퍼
+// 트리 노드 엘리먼트 생성 헬퍼
 function createTreeNodeElement(doc, depth, currentDocId, isAdminUser, childCategoryToAdd) {
   const node = document.createElement('div');
   node.className = `tree-node depth-${depth} ${doc.id === currentDocId ? 'active' : ''}`;
@@ -171,12 +241,12 @@ function createTreeNodeElement(doc, depth, currentDocId, isAdminUser, childCateg
   if (isAdminUser) {
     actionsHtml = '<div class="node-actions">';
     if (childCategoryToAdd) {
-      const childName = childCategoryToAdd === 'PROCEDURE' ? '?�차?? : '지침서';
-      actionsHtml += `<button type="button" class="btn-node-opt" onclick="event.stopPropagation(); openNewDocModal('${childCategoryToAdd}', '${doc.id}')" title="?�위 ${childName} 추�?"><i class="fa-solid fa-plus"></i></button>`;
+      const childName = childCategoryToAdd === 'PROCEDURE' ? '절차서' : '지침서';
+      actionsHtml += `<button type="button" class="btn-node-opt" onclick="event.stopPropagation(); openNewDocModal('${childCategoryToAdd}', '${doc.id}')" title="하위 ${childName} 추가"><i class="fa-solid fa-plus"></i></button>`;
     }
-    // 최상??매뉴??MAN-KOSHA-01)?� ?�전???�해 ?��? 버튼 ?�외
+    // 최상위 매뉴얼(MAN-KOSHA-01)은 안전을 위해 폐지 버튼 제외
     if (doc.id !== 'MAN-KOSHA-01') {
-      actionsHtml += `<button type="button" class="btn-node-opt opt-del" onclick="event.stopPropagation(); deleteDocumentById('${doc.id}', '${escapeHtml(doc.title)}')" title="규정 ?��?/??��"><i class="fa-solid fa-trash-can"></i></button>`;
+      actionsHtml += `<button type="button" class="btn-node-opt opt-del" onclick="event.stopPropagation(); deleteDocumentById('${doc.id}', '${escapeHtml(doc.title)}')" title="규정 폐지/삭제"><i class="fa-solid fa-trash-can"></i></button>`;
     }
     actionsHtml += '</div>';
   }
@@ -192,22 +262,72 @@ function createTreeNodeElement(doc, depth, currentDocId, isAdminUser, childCateg
   return node;
 }
 
-// 조항 목차 ?�프 리스???�성
+// 조항 목차 점프 리스트 생성 (매뉴얼 및 일반 규정 통합 스마트 조항 트리)
 function renderClauseJumpList() {
   const listEl = document.getElementById('clause-nav-list');
   if (!listEl) return;
   listEl.innerHTML = '';
 
-  const articles = document.querySelectorAll('.doc-article');
-  articles.forEach(art => {
-    const titleEl = art.querySelector('.article-title');
-    if (titleEl) {
-      const text = titleEl.innerText.trim();
+  // 1. 매뉴얼 상단 기본 3대 페이지 (표지, 개정이력, 목차)
+  if (currentDoc && currentDoc.category === 'MANUAL') {
+    const basicPages = [
+      { id: 'print-cover-section', icon: 'fa-file-lines', title: '사내표준 표지 (1p)' },
+      { id: 'print-revision-section', icon: 'fa-clock-rotate-left', title: '0. 제·개정 관리 이력표 (2p)' },
+      { id: 'print-diff-section', icon: 'fa-list-check', title: '1. 목차 및 신구대비표 (3p)' }
+    ];
+
+    basicPages.forEach(item => {
       const li = document.createElement('li');
-      li.innerHTML = `<a href="javascript:void(0)" onclick="scrollToClause('${art.id}')"><i class="fa-solid fa-angle-right"></i> ${text}</a>`;
+      li.className = 'clause-nav-basic';
+      li.innerHTML = `<a href="javascript:void(0)" onclick="scrollToClause('${item.id}')"><i class="fa-solid ${item.icon}"></i> <span>${item.title}</span></a>`;
       listEl.appendChild(li);
-    }
-  });
+    });
+
+    const divider = document.createElement('li');
+    divider.style.cssText = 'border-bottom: 1px solid #e2e8f0; margin: 8px 0; list-style: none;';
+    listEl.appendChild(divider);
+  }
+
+  // 2. 본문 장(Chapter) 및 조항(Article) 스캔 및 렌더링
+  const chapters = document.querySelectorAll('.manual-chapter');
+  if (chapters.length > 0) {
+    // 매뉴얼 장별 구조
+    chapters.forEach(ch => {
+      const chId = ch.id;
+      const chTitle = ch.dataset.chapterTitle || ch.getAttribute('data-chapter-title') || chId;
+
+      // 장 헤더 아이템
+      const chLi = document.createElement('li');
+      chLi.className = 'clause-nav-chapter';
+      chLi.style.cssText = 'margin-top: 8px; font-weight: 700; background: #f8fafc; border-radius: 4px; border-left: 3px solid var(--primary);';
+      chLi.innerHTML = `<a href="javascript:void(0)" onclick="scrollToClause('${chId}')" style="color: var(--primary-dark); padding: 7px 10px; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-bookmark" style="font-size:12px; color:var(--primary);"></i> <span>${escapeHtml(chTitle)}</span></a>`;
+      listEl.appendChild(chLi);
+
+      // 장 내부 조항들
+      const arts = ch.querySelectorAll('.doc-article');
+      arts.forEach(art => {
+        const titleEl = art.querySelector('.article-title');
+        const artText = titleEl ? titleEl.innerText.trim() : art.id;
+        const artLi = document.createElement('li');
+        artLi.className = 'clause-nav-article';
+        artLi.style.cssText = 'padding-left: 12px; font-size: 13px; margin: 2px 0;';
+        artLi.innerHTML = `<a href="javascript:void(0)" onclick="scrollToClause('${art.id}')" style="color: #475569; padding: 4px 8px; display: flex; align-items: center; gap: 6px; border-radius: 4px; transition: background-color 0.15s;"><i class="fa-solid fa-angle-right" style="font-size:10px; color:#94a3b8; flex-shrink:0;"></i> <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(artText)}</span></a>`;
+        listEl.appendChild(artLi);
+      });
+    });
+  } else {
+    // 일반 규정 모드 (단순 조항 목록)
+    const articles = document.querySelectorAll('.doc-article');
+    articles.forEach(art => {
+      const titleEl = art.querySelector('.article-title');
+      if (titleEl) {
+        const text = titleEl.innerText.trim();
+        const li = document.createElement('li');
+        li.innerHTML = `<a href="javascript:void(0)" onclick="scrollToClause('${art.id}')"><i class="fa-solid fa-angle-right"></i> ${escapeHtml(text)}</a>`;
+        listEl.appendChild(li);
+      }
+    });
+  }
 }
 
 function scrollToClause(clauseId) {
@@ -222,7 +342,8 @@ function scrollToClause(clauseId) {
   }
 }
 
-// 본문 ??검???�이?�이??function searchInDoc() {
+// 본문 내 검색 하이라이팅
+function searchInDoc() {
   const keyword = document.getElementById('mini-search-input').value.trim();
   if (!keyword) return;
   highlightKeyword(keyword);
@@ -241,7 +362,7 @@ function highlightKeyword(keyword) {
 }
 
 // ----------------------------------------------------------------
-// [최고 관리자 ?�용 메뉴 �??�쇄/?�운로드 ?�어]
+// [최고 관리자 전용 메뉴 및 인쇄/다운로드 제어]
 // ----------------------------------------------------------------
 function toggleSuperAdminMenu() {
   const menu = document.getElementById('menu-superadmin');
@@ -250,7 +371,7 @@ function toggleSuperAdminMenu() {
   }
 }
 
-// ?��? ?�릭 ???�롭?�운 ?�기
+// 외부 클릭 시 드롭다운 닫기
 document.addEventListener('click', (e) => {
   const dropdown = document.getElementById('super-admin-dropdown');
   if (dropdown && !dropdown.contains(e.target)) {
@@ -259,10 +380,10 @@ document.addEventListener('click', (e) => {
   }
 });
 
-/** 1. 최고 관리자 ?�용: 공식 관리본 ?�쇄 (?�터마크 ?�전 ??�� & 관리본 ?�장) */
+/** 1. 최고 관리자 전용: 공식 관리본 인쇄 (워터마크 완전 삭제 & 관리본 도장) */
 async function triggerOfficialControlledPrint() {
   if (!AUTH.isSuperAdmin()) {
-    alert('관리본(?�터마크 ??��) ?�쇄??최고 관리자�?가?�합?�다.');
+    alert('관리본(워터마크 삭제) 인쇄는 최고 관리자만 가능합니다.');
     return;
   }
 
@@ -271,16 +392,16 @@ async function triggerOfficialControlledPrint() {
   const now = new Date();
   const timeStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
 
-  // ?�터마크 ?�이???�전 초기??(배경 ?�터마크 ??��)
+  // 워터마크 레이어 완전 초기화 (배경 워터마크 삭제)
   const watermarkLayer = document.getElementById('print-watermark-layer');
   if (watermarkLayer) {
     watermarkLayer.style.backgroundImage = 'none';
   }
 
-  // ?�단 ?�더: 공식 관리본 ?�기
+  // 상단 헤더: 공식 관리본 표기
   const headerMeta = document.getElementById('print-watermark-text');
   if (headerMeta) {
-    headerMeta.innerHTML = `<strong style="color:#d9480f;font-size:11pt;">[관리본 - CONTROLLED COPY]</strong> | 출력?? ${userEmail} | 출력?�시: ${timeStr} | (�??�방?�크 KOSHA-MS`;
+    headerMeta.innerHTML = `<strong style="color:#d9480f;font-size:11pt;">[관리본 - CONTROLLED COPY]</strong> | 출력자: ${userEmail} | 출력일시: ${timeStr} | (주)세방테크 KOSHA-MS`;
   }
 
   const classTag = document.getElementById('print-doc-classification-tag');
@@ -288,39 +409,41 @@ async function triggerOfficialControlledPrint() {
     classTag.innerHTML = '<strong style="color:#d9480f;">[관리본 - CONTROLLED COPY]</strong>';
   }
 
-  // 4?�계 ?�쇄 ?�이??최신??  if (currentDoc) preparePrintPages(currentDoc);
+  // 4단계 인쇄 데이터 최신화
+  if (currentDoc) preparePrintPages(currentDoc);
 
-  // 감사 로그 ?�송
-  await API.logPrint(currentDoc.id, currentDoc.title, `${userEmail} [관리본 출력 / ?�터마크 ?�외]`);
+  // 감사 로그 전송
+  await API.logPrint(currentDoc.id, currentDoc.title, `${userEmail} [관리본 출력 / 워터마크 제외]`);
 
-  // ?�롭?�운 ?�기 �??�쇄 �??�출
+  // 드롭다운 닫기 및 인쇄 창 호출
   const menu = document.getElementById('menu-superadmin');
   if (menu) menu.style.display = 'none';
 
   window.print();
 }
 
-/** 2. ?�반 ?�용?�용: 비�?리본 ?�쇄 (?�각선 ?�터마크 강제 ?��?) */
+/** 2. 일반 사용자용: 비관리본 인쇄 (대각선 워터마크 강제 유지) */
 async function triggerSecurityPrint() {
   const user = AUTH.getUser();
-  const userEmail = user ? user.email : '?�반?�용??비�?리본)';
+  const userEmail = user ? user.email : '일반사용자(비관리본)';
   const now = new Date();
   const timeStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
 
-  // 1. ?�쇄???�단 ?�더 ?�스??주입 (비�?리본 명시)
+  // 1. 인쇄용 상단 헤더 텍스트 주입 (비관리본 명시)
   const headerMeta = document.getElementById('print-watermark-text');
   if (headerMeta) {
-    headerMeta.innerText = `출력?? ${userEmail} | 출력?�시: ${timeStr} | 문서보안: 비�?리본 (UNCONTROLLED COPY)`;
+    headerMeta.innerText = `출력자: ${userEmail} | 출력일시: ${timeStr} | 문서보안: 비관리본 (UNCONTROLLED COPY)`;
   }
 
   const classTag = document.getElementById('print-doc-classification-tag');
   if (classTag) {
-    classTag.innerText = '[비�?리본 - UNCONTROLLED COPY]';
+    classTag.innerText = '[비관리본 - UNCONTROLLED COPY]';
   }
 
-  // 4?�계 ?�쇄 ?�이??최신??  if (currentDoc) preparePrintPages(currentDoc);
+  // 4단계 인쇄 데이터 최신화
+  if (currentDoc) preparePrintPages(currentDoc);
 
-  // 2. ?�각선 45??반투�??�터마크 캔버???�성 �?배경 ?��?지 강제 ?�용
+  // 2. 대각선 45도 반투명 워터마크 캔버스 생성 및 배경 이미지 강제 적용
   const canvas = document.createElement('canvas');
   canvas.width = 460;
   canvas.height = 300;
@@ -328,27 +451,27 @@ async function triggerSecurityPrint() {
   ctx.rotate(-25 * Math.PI / 180);
   ctx.font = 'bold 15px "Pretendard", "Malgun Gothic", sans-serif';
   ctx.fillStyle = '#000000';
-  ctx.fillText('(�??�방?�크 KOSHA-MS [비�?리본]', -30, 160);
+  ctx.fillText('(주)세방테크 KOSHA-MS [비관리본]', -30, 160);
   ctx.font = '12px "Pretendard", "Malgun Gothic", sans-serif';
-  ctx.fillText(`출력?? ${userEmail}`, -30, 185);
-  ctx.fillText(`출력?�시: ${timeStr}`, -30, 205);
+  ctx.fillText(`출력자: ${userEmail}`, -30, 185);
+  ctx.fillText(`출력일시: ${timeStr}`, -30, 205);
 
   const watermarkLayer = document.getElementById('print-watermark-layer');
   if (watermarkLayer) {
     watermarkLayer.style.backgroundImage = `url(${canvas.toDataURL()})`;
   }
 
-  // 3. 백엔?�로 ?�쇄 감사 로그 비동�??�송
-  await API.logPrint(currentDoc.id, currentDoc.title, `${userEmail} [비�?리본 출력]`);
+  // 3. 백엔드로 인쇄 감사 로그 비동기 전송
+  await API.logPrint(currentDoc.id, currentDoc.title, `${userEmail} [비관리본 출력]`);
 
-  // 4. ?�쇄 ?�이?�로�??�출
+  // 4. 인쇄 다이얼로그 호출
   window.print();
 }
 
-/** 3. 최고 관리자 ?�용: Word (.doc/.docx) ?�운로드 */
+/** 3. 최고 관리자 전용: Word (.doc/.docx) 다운로드 */
 function downloadAsDocx() {
   if (!AUTH.isSuperAdmin()) {
-    alert('DOCX ?�운로드??최고 관리자�?가?�합?�다.');
+    alert('DOCX 다운로드는 최고 관리자만 가능합니다.');
     return;
   }
 
@@ -356,7 +479,7 @@ function downloadAsDocx() {
     <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
     <head><meta charset='utf-8'><title>${currentDoc.title}</title>
     <style>
-      body { font-family: 'Malgun Gothic', '맑�? 고딕', sans-serif; line-height: 1.7; font-size: 11pt; color: #111; }
+      body { font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; line-height: 1.7; font-size: 11pt; color: #111; }
       table.doc-header-tbl { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
       table.doc-header-tbl th, table.doc-header-tbl td { border: 1px solid #333; padding: 7px 10px; font-size: 10pt; }
       table.doc-header-tbl th { background-color: #f1f3f5; }
@@ -371,16 +494,16 @@ function downloadAsDocx() {
       <table class="doc-header-tbl">
         <tr>
           <th colspan="4" style="text-align:center;font-size:13pt;background-color:#194a9a;color:#ffffff;font-weight:bold;">
-            (�??�방?�크 ?�전보건경영?�스???��? [관리본]
+            (주)세방테크 안전보건경영시스템 표준 [관리본]
           </th>
         </tr>
         <tr>
           <th width="20%">문서번호</th><td width="30%">${currentDoc.docNumber || '-'}</td>
-          <th width="20%">?�·개?�구�?/th><td width="30%">${currentDoc.currentVersion || '-'}</td>
+          <th width="20%">제·개정구분</th><td width="30%">${currentDoc.currentVersion || '-'}</td>
         </tr>
         <tr>
-          <th>?�행?�자</th><td>${currentDoc.effectiveDate || '-'}</td>
-          <th>주�?부??/th><td>${currentDoc.department || '-'}</td>
+          <th>시행일자</th><td>${currentDoc.effectiveDate || '-'}</td>
+          <th>주관부서</th><td>${currentDoc.department || '-'}</td>
         </tr>
       </table>
       <h1 class="main-title">${currentDoc.title}</h1>
@@ -392,30 +515,30 @@ function downloadAsDocx() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `[?�방?�크]_${currentDoc.docNumber}_${currentDoc.title}_(${currentDoc.currentVersion}).doc`;
+  a.download = `[세방테크]_${currentDoc.docNumber}_${currentDoc.title}_(${currentDoc.currentVersion}).doc`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 
-  // 메뉴 ?�기
+  // 메뉴 닫기
   const menu = document.getElementById('menu-superadmin');
   if (menu) menu.style.display = 'none';
 }
 
-/** 4. 최고 관리자 ?�용: PDF ?�운로드 (?�터마크 ?�외 ?�린 PDF) */
+/** 4. 최고 관리자 전용: PDF 다운로드 (워터마크 제외 클린 PDF) */
 function downloadAsPdf() {
   if (!AUTH.isSuperAdmin()) {
-    alert('PDF ?�운로드??최고 관리자�?가?�합?�다.');
+    alert('PDF 다운로드는 최고 관리자만 가능합니다.');
     return;
   }
-  // ?�터마크 ?�는 공식 관리본 ?�쇄 ?�리�????�?�에??"PDF�??�?? ?�택 ?�도
-  alert("?�내: ?�쇄 ?�이?�로�?창에??[?�?? PDF�??�?????�택?�시�??�터마크가 ?�는 고화�??�린 PDF�??�운로드?�니??");
+  // 워터마크 없는 공식 관리본 인쇄 트리거 후 대상에서 "PDF로 저장" 선택 유도
+  alert("안내: 인쇄 다이얼로그 창에서 [대상: PDF로 저장]을 선택하시면 워터마크가 없는 고화질 클린 PDF로 다운로드됩니다.");
   triggerOfficialControlledPrint();
 }
 
 // ----------------------------------------------------------------
-// [URL ?�축 / ?�링??공유]
+// [URL 단축 / 딥링크 공유]
 // ----------------------------------------------------------------
 function copyShareUrl() {
   let shareUrl = `${window.location.origin}/detail.html?id=${currentDoc.id}`;
@@ -423,24 +546,24 @@ function copyShareUrl() {
     shareUrl += `&clause=${activeClauseId}#${activeClauseId}`;
   }
   navigator.clipboard.writeText(shareUrl).then(() => {
-    alert(`조항 ?�링??공유 주소가 ?�립보드??복사?�었?�니??\n\n${shareUrl}`);
+    alert(`조항 딥링크 공유 주소가 클립보드에 복사되었습니다!\n\n${shareUrl}`);
   }).catch(() => {
-    prompt('공유 링크�?복사?�세??', shareUrl);
+    prompt('공유 링크를 복사하세요:', shareUrl);
   });
 }
 
 // ----------------------------------------------------------------
-// [즐겨찾기 ?��?]
+// [즐겨찾기 토글]
 // ----------------------------------------------------------------
 function toggleBookmark() {
   const bookmarks = JSON.parse(localStorage.getItem('sebang_bookmarks') || '[]');
   const idx = bookmarks.indexOf(currentDoc.id);
   if (idx >= 0) {
     bookmarks.splice(idx, 1);
-    alert('즐겨찾기?�서 ?�거?�었?�니??');
+    alert('즐겨찾기에서 제거되었습니다.');
   } else {
     bookmarks.push(currentDoc.id);
-    alert('즐겨찾기???�록?�었?�니??');
+    alert('즐겨찾기에 등록되었습니다.');
   }
   localStorage.setItem('sebang_bookmarks', JSON.stringify(bookmarks));
   updateBookmarkButton();
@@ -452,7 +575,7 @@ function updateBookmarkButton() {
   const bookmarks = JSON.parse(localStorage.getItem('sebang_bookmarks') || '[]');
   if (bookmarks.includes(currentDoc.id)) {
     btn.classList.add('active');
-    btn.innerHTML = `<i class="fa-solid fa-star"></i> 즐겨찾기 ?�제`;
+    btn.innerHTML = `<i class="fa-solid fa-star"></i> 즐겨찾기 해제`;
   } else {
     btn.classList.remove('active');
     btn.innerHTML = `<i class="fa-regular fa-star"></i> 즐겨찾기`;
@@ -460,15 +583,15 @@ function updateBookmarkButton() {
 }
 
 // ----------------------------------------------------------------
-// [?�시 메모�????�디??(Sandbox Draft Modal - ?�염 방�?)]
+// [임시 메모리 웹 에디터 (Sandbox Draft Modal - 오염 방지)]
 // ----------------------------------------------------------------
 function openDraftEditorModal() {
   if (!AUTH.isAdmin()) {
-    alert('문서 ?�정 권한???�습?�다. 관리자 ?�메?�로 로그?�해 주세??');
+    alert('문서 수정 권한이 없습니다. 관리자 이메일로 로그인해 주세요.');
     return;
   }
 
-  // ?�서�??�이???�염 방�?�??�해 깊�? 복사(Deep Clone)?�여 ?�시 메모�?객체 ?�성
+  // 실서버 데이터 오염 방지를 위해 깊은 복사(Deep Clone)하여 임시 메모리 객체 생성
   draftDoc = JSON.parse(JSON.stringify(currentDoc));
 
   document.getElementById('edit-doc-title').value = draftDoc.title || '';
@@ -480,7 +603,7 @@ function openDraftEditorModal() {
   const editorArea = document.getElementById('draft-editor-area');
   editorArea.innerHTML = draftDoc.currentContent || '';
 
-  // ?�디????커서 ?�치(Range) ?�시�??�???�벤???�록
+  // 에디터 내 커서 위치(Range) 실시간 저장 이벤트 등록
   editorArea.addEventListener('keyup', saveEditorSelection);
   editorArea.addEventListener('mouseup', saveEditorSelection);
   editorArea.addEventListener('focus', saveEditorSelection);
@@ -489,14 +612,14 @@ function openDraftEditorModal() {
 }
 
 function closeDraftEditorModal() {
-  if (confirm('?�성 중인 ?�시 ?�용???�기?�니?? ?�으?�겠?�니�?')) {
+  if (confirm('작성 중인 임시 내용이 파기됩니다. 닫으시겠습니까?')) {
     draftDoc = null;
     savedEditorRange = null;
     document.getElementById('editor-modal').style.display = 'none';
   }
 }
 
-// ?�디??커서(Range) 보존
+// 에디터 커서(Range) 보존
 let savedEditorRange = null;
 
 function saveEditorSelection() {
@@ -518,7 +641,7 @@ function restoreEditorSelection() {
   }
 }
 
-// 리치 ?�스???�식 명령
+// 리치 텍스트 서식 명령
 function formatDoc(cmd, val = null) {
   document.getElementById('draft-editor-area').focus();
   restoreEditorSelection();
@@ -526,7 +649,7 @@ function formatDoc(cmd, val = null) {
   saveEditorSelection();
 }
 
-// 조항 추�? 모달 ?�기 (?�목/본문 분리 ?�력, ?�음 번호 ?�동 감�?)
+// 조항 추가 모달 열기 (제목/본문 분리 입력, 다음 번호 자동 감지)
 function openArticleModal() {
   const editorArea = document.getElementById('draft-editor-area');
   const existingArticles = editorArea.querySelectorAll('.doc-article');
@@ -535,7 +658,7 @@ function openArticleModal() {
   existingArticles.forEach(art => {
     const numEl = art.querySelector('.art-num');
     if (numEl) {
-      const m = numEl.textContent.match(/??s*(\d+)\s*�?);
+      const m = numEl.textContent.match(/제\s*(\d+)\s*조/);
       if (m) {
         const n = parseInt(m[1], 10);
         if (n > maxNum) maxNum = n;
@@ -544,7 +667,7 @@ function openArticleModal() {
   });
 
   const nextNum = (maxNum > 0) ? maxNum + 1 : (existingArticles.length + 1);
-  document.getElementById('modal-art-num').value = `??{nextNum}�?;
+  document.getElementById('modal-art-num').value = `제${nextNum}조`;
   document.getElementById('modal-art-title').value = '';
   document.getElementById('modal-art-body').value = '';
 
@@ -558,14 +681,14 @@ function closeArticleModal() {
   document.getElementById('article-modal').style.display = 'none';
 }
 
-// 모달 ?????? ??, ??1., 가.) 기호 간편 ?�입
+// 모달 내 항(①, ②), 호(1., 가.) 기호 간편 삽입
 function insertParagraphSymbol(sym) {
   const textarea = document.getElementById('modal-art-body');
   const start = textarea.selectionStart;
   const end = textarea.selectionEnd;
   const val = textarea.value;
 
-  // ?�재 커서가 줄의 ?�작???�니�?줄바�????�입
+  // 현재 커서가 줄의 시작이 아니면 줄바꿈 후 삽입
   const prefix = (start > 0 && val[start - 1] !== '\n') ? '\n' : '';
   textarea.value = val.substring(0, start) + prefix + sym + val.substring(end);
   textarea.focus();
@@ -573,18 +696,18 @@ function insertParagraphSymbol(sym) {
   textarea.setSelectionRange(nextPos, nextPos);
 }
 
-// ?�규 조항 ?�인 �??�디??�??�래??'??�? ?�립 블록?�로 ?�입
+// 신규 조항 확인 및 에디터 맨 아래에 '새 줄' 독립 블록으로 삽입
 function confirmAddArticle() {
-  const artNum = document.getElementById('modal-art-num').value.trim() || '?�n�?;
-  const artTitle = document.getElementById('modal-art-title').value.trim() || '조항 ?�목';
-  const rawBody = document.getElementById('modal-art-body').value.trim() || '???�기???��? ?�차 ?�용???�력?�십?�오.';
+  const artNum = document.getElementById('modal-art-num').value.trim() || '제n조';
+  const artTitle = document.getElementById('modal-art-title').value.trim() || '조항 제목';
+  const rawBody = document.getElementById('modal-art-body').value.trim() || '① 여기에 세부 절차 내용을 입력하십시오.';
 
-  // 본문???�러 �??? ????HTML <p> ?�위�?변??(기존???�입??<a> 링크 ?�그??보존)
+  // 본문의 여러 줄(항, 호)을 HTML <p> 단위로 변환 (기존에 삽입된 <a> 링크 태그는 보존)
   const bodyParagraphs = rawBody.split('\n')
     .map(line => line.trim())
     .filter(line => line.length > 0)
     .map(line => {
-      // 만약 링크 ?�그(<a ...)가 ?�함?�어 ?�으�??�그�?보존?�고, ?�으�?escapeHtml ?�용
+      // 만약 링크 태그(<a ...)가 포함되어 있으면 태그를 보존하고, 없으면 escapeHtml 적용
       if (/<a\s+[^>]*href=/i.test(line)) {
         return `<p class="article-body">${line}</p>`;
       }
@@ -592,7 +715,7 @@ function confirmAddArticle() {
     })
     .join('\n');
 
-  // 조항 번호 ID 추출 (?? ??�?-> art-5)
+  // 조항 번호 ID 추출 (예: 제5조 -> art-5)
   const numMatch = artNum.match(/\d+/);
   const idSuffix = numMatch ? numMatch[0] : Date.now();
   const articleId = `art-${idSuffix}`;
@@ -606,10 +729,11 @@ function confirmAddArticle() {
 
   const editorArea = document.getElementById('draft-editor-area');
   
-  // 기존 본문 ?�에 ?�립????줄로 ?�전?�게 결합
+  // 기존 본문 뒤에 독립된 새 줄로 안전하게 결합
   editorArea.insertAdjacentHTML('beforeend', newArticleHtml);
 
-  // 추�?????조항 ?�치�?부?�럽�??�크�?  const addedEl = document.getElementById(articleId);
+  // 추가된 새 조항 위치로 부드럽게 스크롤
+  const addedEl = document.getElementById(articleId);
   if (addedEl) {
     addedEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
     addedEl.style.transition = 'background-color 0.8s';
@@ -622,17 +746,18 @@ function confirmAddArticle() {
   closeArticleModal();
 }
 
-// ?�위 ?�환???�플�?추�? (?�축???�는 ?�전 ?�출 ?��?
+// 하위 호환용 템플릿 추가 (단축키 또는 이전 호출 대비)
 function insertArticleTemplate() {
   openArticleModal();
 }
 
-// ??Table) ?�입 ?�이?�로�?function insertTableDialog() {
-  const rows = parseInt(prompt('?�성???�의 ??Row) 개수 (기본: 3):', '3'), 10) || 3;
-  const cols = parseInt(prompt('?�성???�의 ??Column) 개수 (기본: 3):', '3'), 10) || 3;
+// 표(Table) 삽입 다이얼로그
+function insertTableDialog() {
+  const rows = parseInt(prompt('생성할 표의 행(Row) 개수 (기본: 3):', '3'), 10) || 3;
+  const cols = parseInt(prompt('생성할 표의 열(Column) 개수 (기본: 3):', '3'), 10) || 3;
 
   if (rows <= 0 || cols <= 0 || rows > 20 || cols > 10) {
-    alert('?��? 1~20�? ?��? 1~10�??�이�??�력??주십?�오.');
+    alert('행은 1~20개, 열은 1~10개 사이로 입력해 주십시오.');
     return;
   }
 
@@ -645,7 +770,7 @@ function insertArticleTemplate() {
   for (let r = 1; r <= rows; r++) {
     tableHtml += '<tr>';
     for (let c = 1; c <= cols; c++) {
-      tableHtml += `<td style="border:1px solid #cbd5e1; padding:8px 12px;">?�용 (${r}, ${c})</td>`;
+      tableHtml += `<td style="border:1px solid #cbd5e1; padding:8px 12px;">내용 (${r}, ${c})</td>`;
     }
     tableHtml += '</tr>';
   }
@@ -658,7 +783,7 @@ function insertRefLink() {
   openLinkPickerModal();
 }
 
-// 개정 차수 ?�동 추천
+// 개정 차수 자동 추천
 function bumpVersion(ver) {
   if (!ver) return 'Rev.1';
   const m = ver.match(/Rev\.?(\d+)/i);
@@ -668,11 +793,11 @@ function bumpVersion(ver) {
   return ver + '.1';
 }
 
-// 최종 발행 �??�용
+// 최종 발행 및 적용
 async function publishDraftChanges() {
   const summary = document.getElementById('edit-doc-summary').value.trim();
   if (!summary) {
-    alert('개정 ?�유 �?주요 변�??�약??반드???�력?�야 ?�니??');
+    alert('개정 사유 및 주요 변경 요약을 반드시 입력해야 합니다.');
     document.getElementById('edit-doc-summary').focus();
     return;
   }
@@ -683,7 +808,7 @@ async function publishDraftChanges() {
   const newDate = document.getElementById('edit-doc-date').value;
   const newContent = document.getElementById('draft-editor-area').innerHTML;
 
-  // ?�시 메모�?객체 갱신
+  // 임시 메모리 객체 갱신
   draftDoc.title = document.getElementById('edit-doc-title').value.trim();
   draftDoc.docNumber = document.getElementById('edit-doc-num').value.trim();
   draftDoc.currentVersion = newVer;
@@ -702,19 +827,19 @@ async function publishDraftChanges() {
   try {
     const res = await API.saveDocument(draftDoc);
     if (res.success) {
-      alert(`[${newVer}] ?�공?�으�?발행?�어 ?�내 ?�털???�용?�었?�니??`);
+      alert(`[${newVer}] 성공적으로 발행되어 사내 포털에 적용되었습니다!`);
       document.getElementById('editor-modal').style.display = 'none';
       location.reload();
     } else {
-      alert('?�???�패: ' + res.message);
+      alert('저장 실패: ' + res.message);
     }
   } catch (e) {
-    alert('?�??�??�신 ?�류가 발생?�습?�다.');
+    alert('저장 중 통신 오류가 발생했습니다.');
   }
 }
 
 // ----------------------------------------------------------------
-// [개정?�력 �??�구?��?(Diff)]
+// [개정이력 및 신구대조 (Diff)]
 // ----------------------------------------------------------------
 function openRevisionHistoryModal() {
   const listEl = document.getElementById('rev-timeline-list');
@@ -722,20 +847,20 @@ function openRevisionHistoryModal() {
 
   const revs = currentDoc.revisions || [];
   if (revs.length === 0) {
-    listEl.innerHTML = '<p>기록??개정 ?�력???�습?�다.</p>';
+    listEl.innerHTML = '<p>기록된 개정 이력이 없습니다.</p>';
   } else {
     revs.slice().reverse().forEach(r => {
       const item = document.createElement('div');
       item.className = 'rev-timeline-item';
       item.innerHTML = `
-        <strong>${r.version}</strong> (${r.date}) - ?�성?? ${r.author || '-'}<br>
-        <span style="color:#555;">?�유: ${r.summary || '최초 ?�정'}</span>
+        <strong>${r.version}</strong> (${r.date}) - 작성자: ${r.author || '-'}<br>
+        <span style="color:#555;">사유: ${r.summary || '최초 제정'}</span>
       `;
       listEl.appendChild(item);
     });
   }
 
-  // ?�구?��??�시
+  // 신구대조 표시
   if (revs.length >= 2) {
     const prev = revs[revs.length - 2];
     const curr = revs[revs.length - 1];
@@ -747,7 +872,7 @@ function openRevisionHistoryModal() {
   } else {
     document.getElementById('diff-prev-version').innerText = '-';
     document.getElementById('diff-curr-version').innerText = currentDoc.currentVersion;
-    document.getElementById('diff-prev-content').innerText = '최초 ?�정본으�??�전 비교 ?�?�이 ?�습?�다.';
+    document.getElementById('diff-prev-content').innerText = '최초 제정본으로 이전 비교 대상이 없습니다.';
     document.getElementById('diff-curr-content').innerText = stripHtml(currentDoc.currentContent || '');
   }
 
@@ -774,19 +899,23 @@ function escapeHtml(str) {
     .replace(/'/g, '&#039;');
 }
 
-// 간단???�구?��??�이?�이??function highlightChanges(oldText, newText) {
+// 간단한 신구대조 하이라이트
+function highlightChanges(oldText, newText) {
   if (oldText === newText) return newText;
   return `<span class="diff-add">${newText}</span>`;
 }
 
 // ================================================================
-// [공식 ?�쇄 체계] ?��? ??개정?????�구비교 ??본문 ?�이??준�?// ================================================================
+// [공식 인쇄 체계] 표지 ➔ 개정표 ➔ 신구비교 ➔ 본문 데이터 준비
+// ================================================================
 function preparePrintPages(doc) {
   if (!doc) return;
 
-  // [1] ?��? (Cover Page) 주입
+  // [1] 1페이지: 표지 (Cover Page) 주입
   const coverCat = document.getElementById('print-cover-cat');
-  if (coverCat) coverCat.innerText = getCategoryName(doc.category);
+  if (coverCat) {
+    coverCat.innerText = doc.category === 'MANUAL' ? 'KOSHA-MS 사내표준 매뉴얼' : getCategoryName(doc.category);
+  }
 
   const coverTitle = document.getElementById('print-cover-title');
   if (coverTitle) coverTitle.innerText = doc.title || '-';
@@ -800,8 +929,8 @@ function preparePrintPages(doc) {
   const metaVer = document.getElementById('print-cover-meta-ver');
   if (metaVer) metaVer.innerText = doc.currentVersion || 'Rev.1';
 
-  const firstDate = (doc.revisions && doc.revisions.length > 0 && doc.revisions[0].date) 
-    ? doc.revisions[0].date 
+  const firstDate = doc.initialDate || (doc.revisions && doc.revisions.length > 0 && doc.revisions[0].date) 
+    ? (doc.initialDate || doc.revisions[0].date) 
     : (doc.effectiveDate || '-');
   const metaInitDate = document.getElementById('print-cover-meta-initdate');
   if (metaInitDate) metaInitDate.innerText = firstDate;
@@ -810,9 +939,12 @@ function preparePrintPages(doc) {
   if (metaEffDate) metaEffDate.innerText = doc.effectiveDate || '-';
 
   const metaDept = document.getElementById('print-cover-meta-dept');
-  if (metaDept) metaDept.innerText = doc.department || '?�질?�전보건??;
+  if (metaDept) metaDept.innerText = doc.department || '품질안전보건실';
 
-  // [2] ?�·개??관�??�력??(Revision History) 주입
+  const coverWriter = document.getElementById('print-cover-writer');
+  if (coverWriter) coverWriter.innerText = doc.department || '품질안전보건실';
+
+  // [2] 2페이지: 제·개정 관리 이력표 (Revision History) 주입 - 과거 이력 100% 전부 수록
   const revDocNumHeader = document.getElementById('print-rev-docnum-header');
   if (revDocNumHeader) revDocNumHeader.innerText = doc.docNumber || '-';
 
@@ -833,22 +965,26 @@ function preparePrintPages(doc) {
         <tr>
           <td style="text-align:center; font-weight:600;">${escapeHtml(doc.currentVersion || 'Rev.0')}</td>
           <td style="text-align:center;">${escapeHtml(doc.effectiveDate || '-')}</td>
-          <td>최초 ?�정 �?KOSHA-MS ?��? ?�록</td>
-          <td style="text-align:center;">?�질?�전보건??/td>
-          <td style="text-align:center; color:#15803d; font-weight:600;">?�인 ?�료</td>
+          <td>최초 제정 및 KOSHA-MS 표준 등록</td>
+          <td style="text-align:center;">품질안전보건실</td>
+          <td style="text-align:center; color:#15803d; font-weight:600;">승인 완료</td>
         </tr>
       `;
     } else {
       let revHtml = '';
       revs.forEach((r, idx) => {
-        const defaultSummary = idx === 0 ? '최초 ?�정 �??�행' : '?�기 개정 �?법규 검??보완';
+        const verDisplay = String(r.version).startsWith('Rev') ? r.version : `Rev.${r.version} (${r.version}차)`;
+        const pagePrefix = r.page ? `<span style="color:#0284c7; font-weight:600;">[${escapeHtml(r.page)}]</span> ` : '';
+        const defaultSummary = idx === 0 ? '최초 제정 및 시행' : '정기 개정 및 법규 검토 보완';
+        const summaryText = r.summary || defaultSummary;
+
         revHtml += `
           <tr>
-            <td style="text-align:center; font-weight:600;">${escapeHtml(r.version || `Rev.${idx}`)}</td>
+            <td style="text-align:center; font-weight:700; color:#0f172a;">${escapeHtml(verDisplay)}</td>
             <td style="text-align:center;">${escapeHtml(r.date || '-')}</td>
-            <td>${escapeHtml(r.summary || defaultSummary)}</td>
-            <td style="text-align:center;">${escapeHtml(r.author || '?�전보건??)}</td>
-            <td style="text-align:center; color:#15803d; font-weight:600;">?�인 ?�료</td>
+            <td>${pagePrefix}${escapeHtml(summaryText)}</td>
+            <td style="text-align:center;">${escapeHtml(r.author || '품질안전보건실')}</td>
+            <td style="text-align:center; color:#15803d; font-weight:600;">승인 완료</td>
           </tr>
         `;
       });
@@ -856,49 +992,138 @@ function preparePrintPages(doc) {
     }
   }
 
-  // [3] ?�·구 조문 ?�비표 (Comparison Table) 주입
+  // [3] 3페이지: 목차 및 신·구 조문 대비표 주입
   const diffDocNumHeader = document.getElementById('print-diff-docnum-header');
   if (diffDocNumHeader) diffDocNumHeader.innerText = doc.docNumber || '-';
 
   const diffDocTitle = document.getElementById('print-diff-doc-title');
   if (diffDocTitle) diffDocTitle.innerText = doc.title || '-';
 
+  // 3-1. 매뉴얼 장별 목차 (1.1 TOC)
+  const tocBox = document.getElementById('manual-toc-box');
+  const tocTbody = document.getElementById('print-toc-tbody');
+  if (tocBox && tocTbody) {
+    if (doc.tableOfContents && doc.tableOfContents.length > 0) {
+      tocBox.style.display = 'block';
+      let tocHtml = '';
+      doc.tableOfContents.forEach(item => {
+        const targetId = item.chapter === 0 ? 'print-revision-section' :
+                         item.chapter === 1 ? 'print-diff-section' : `chap-${item.chapter}`;
+        const chapBadge = item.chapter === 0 ? '0. 개정이력' :
+                          item.chapter === 1 ? '1. 목차' : `제${item.chapter}장`;
+        tocHtml += `
+          <tr>
+            <td style="text-align:center; font-weight:700; color:#0369a1;">${escapeHtml(chapBadge)}</td>
+            <td style="font-weight:600; color:#0f172a;">${escapeHtml(item.title)}</td>
+            <td style="color:#475569; font-size:12.5px;">${escapeHtml(item.sub || '-')}</td>
+            <td style="text-align:center;">
+              <button class="btn-toc-jump" onclick="scrollToClause('${targetId}')">이동 <i class="fa-solid fa-arrow-right"></i></button>
+            </td>
+          </tr>
+        `;
+      });
+      tocTbody.innerHTML = tocHtml;
+    } else {
+      tocBox.style.display = 'none';
+    }
+  }
+
+  // 3-2. 신·구 조문 대비표 (1.2 Diff)
   const diffVersionInfo = document.getElementById('print-diff-version-info');
   const diffTbody = document.getElementById('print-diff-tbody');
 
   if (diffTbody) {
-    const revs = doc.revisions || [];
-    if (revs.length >= 2) {
-      const prevRev = revs[revs.length - 2];
-      const currRev = revs[revs.length - 1];
-
+    if (doc.category === 'MANUAL' || doc.id === 'MAN-KOSHA-01') {
       if (diffVersionInfo) {
-        diffVersionInfo.innerHTML = `<strong>개정 비교:</strong> 직전 <u>${escapeHtml(prevRev.version)}</u> ?��??�행 <u>${escapeHtml(currRev.version)}</u> (${escapeHtml(currRev.date)})`;
-      }
-
-      diffTbody.innerHTML = renderPrintDiffRows(prevRev.content || '', currRev.content || doc.currentContent || '');
-    } else {
-      if (diffVersionInfo) {
-        diffVersionInfo.innerHTML = `<strong>개정 비교:</strong> 최초 ?�정�?(${escapeHtml(doc.currentVersion || 'Rev.0')})`;
+        diffVersionInfo.innerHTML = `<strong>개정 비교:</strong> 제12차 개정본(2025) 대비 <u>제13차 최신 개정본 (${escapeHtml(doc.effectiveDate || '2026.01.02')} 시행)</u>`;
       }
       diffTbody.innerHTML = `
-        <tr style="height: 120px;">
-          <td colspan="3" style="text-align:center; vertical-align:middle; color:#64748b; font-size:10pt; line-height:1.6;">
-            ??�?규정?� 최초 ?�정�??�는 직전 개정 ?�력 ?�음)?�로 ?�·구 조문 ?��??�?�이 ?�습?�다.<br>
-            <span style="font-size:9pt; color:#94a3b8;">(?�행 규정 본문?� ?�음 ?�이지??본문 ?�을 참조?�십?�오)</span>
+        <tr>
+          <td style="text-align:center; font-weight:600; background:#f8fafc;">제5장 5.3<br><small>업무분장</small></td>
+          <td style="color:#64748b; font-size:12px;">
+            · 안전보건총괄, 공사팀, 관리팀<br>
+            · 기존 직제 기준의 업무분장
+          </td>
+          <td style="color:#0f172a; font-size:12px;">
+            · <span style="background:#dbeafe; font-weight:600;">본사 직제개편 반영:</span> 품질안전보건실로 부서 개편<br>
+            · 현장 안전보건책임자 역할 구체화 및 전결권 명시
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align:center; font-weight:600; background:#f8fafc;">제6장 6.1<br><small>위험성평가</small></td>
+          <td style="color:#64748b; font-size:12px;">
+            · 일반 빈도·강도법에 따른 위험성평가 운영
+          </td>
+          <td style="color:#0f172a; font-size:12px;">
+            · <span style="background:#dbeafe; font-weight:600;">SIF(중대사고 잠재사건) 평가제도 신설:</span> 위험도 6 이상 항목 전사 집중관리<br>
+            · 3×3 매트릭스 적용 및 개선 우선순위 확립
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align:center; font-weight:600; background:#f8fafc;">제6장 6.2<br><small>방침 및 목표</small></td>
+          <td style="color:#64748b; font-size:12px;">
+            · 2025년도 안전보건 방침 및 목표
+          </td>
+          <td style="color:#0f172a; font-size:12px;">
+            · <span style="background:#dbeafe; font-weight:600;">2026년도 방침/목표 갱신:</span> '중대재해 사고 제로'<br>
+            · 슬로건 '함께하는 세방문화, 높아지는 안전의식' 제정 공표
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align:center; font-weight:600; background:#f8fafc;">제8장 8.1<br><small>운영계획</small></td>
+          <td style="color:#64748b; font-size:12px;">
+            · 일반 고위험작업 허가제 운영
+          </td>
+          <td style="color:#0f172a; font-size:12px;">
+            · <span style="background:#dbeafe; font-weight:600;">SIF 1등급 작업 관리감독자 의무 배치:</span> 기술검토회의 정례화<br>
+            · 근로자 작업중지권 실질적 보장 (불이익 금지·비밀보장 명시)
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align:center; font-weight:600; background:#f8fafc;">제10장 10.3<br><small>상벌기준</small></td>
+          <td style="color:#64748b; font-size:12px;">
+            · 연간 우수현장 포상 기준 (최대 300만원)
+          </td>
+          <td style="color:#0f172a; font-size:12px;">
+            · <span style="background:#dbeafe; font-weight:600;">포상 및 관리기준 강화:</span> 최우수현장 포상금 500만원 상향<br>
+            · 평가 최하위 2개 현장 차기년도 본사 시범현장 특별관리 지정
           </td>
         </tr>
       `;
+    } else {
+      const revs = doc.revisions || [];
+      if (revs.length >= 2) {
+        const prevRev = revs[revs.length - 2];
+        const currRev = revs[revs.length - 1];
+
+        if (diffVersionInfo) {
+          diffVersionInfo.innerHTML = `<strong>개정 비교:</strong> 직전 <u>${escapeHtml(prevRev.version)}</u> 대비 현행 <u>${escapeHtml(currRev.version)}</u> (${escapeHtml(currRev.date)})`;
+        }
+
+        diffTbody.innerHTML = renderPrintDiffRows(prevRev.content || '', currRev.content || doc.currentContent || '');
+      } else {
+        if (diffVersionInfo) {
+          diffVersionInfo.innerHTML = `<strong>개정 비교:</strong> 최초 제정본 (${escapeHtml(doc.currentVersion || 'Rev.0')})`;
+        }
+        diffTbody.innerHTML = `
+          <tr style="height: 120px;">
+            <td colspan="3" style="text-align:center; vertical-align:middle; color:#64748b; font-size:10pt; line-height:1.6;">
+              ※ 본 규정은 최초 제정본(또는 직전 개정 이력 없음)으로 신·구 조문 대조 대상이 없습니다.<br>
+              <span style="font-size:9pt; color:#94a3b8;">(현행 규정 본문은 다음 페이지의 본문 장을 참조하십시오)</span>
+            </td>
+          </tr>
+        `;
+      }
     }
   }
 }
 
-// 조항 ?�위 ?�구조문?�조표 ?�성 ?�퍼
+// 조항 단위 신구조문대조표 생성 헬퍼
 function renderPrintDiffRows(prevHtml, currHtml) {
   const prevArticles = parseArticlesFromHtml(prevHtml);
   const currArticles = parseArticlesFromHtml(currHtml);
 
-  // 조항 ??번호 �??�목) 모음
+  // 조항 키(번호 및 제목) 모음
   const allKeys = [];
   const keySet = new Set();
 
@@ -930,18 +1155,18 @@ function renderPrintDiffRows(prevHtml, currHtml) {
     const cText = c ? c.bodyText.trim() : '';
     const title = (c ? c.title : (p ? p.title : key)) || key;
 
-    // ?�용???�르거나 ?�설/??��??경우 ?�조표??반영
+    // 내용이 다르거나 신설/삭제된 경우 대조표에 반영
     if (pText !== cText || !p || !c) {
       changedCount++;
       let prevCell = '';
       let currCell = '';
 
       if (!p) {
-        prevCell = '<span style="color:#94a3b8; font-style:italic;">[?�설 - ?�전 조항 ?�음]</span>';
+        prevCell = '<span style="color:#94a3b8; font-style:italic;">[신설 - 이전 조항 없음]</span>';
         currCell = `<strong style="color:#0f172a;">${escapeHtml(cText)}</strong>`;
       } else if (!c) {
         prevCell = `<span style="text-decoration:line-through; color:#dc2626;">${escapeHtml(pText)}</span>`;
-        currCell = '<span style="color:#dc2626; font-style:italic;">[??�� ?��???</span>';
+        currCell = '<span style="color:#dc2626; font-style:italic;">[삭제 폐지됨]</span>';
       } else {
         prevCell = escapeHtml(pText);
         currCell = `<mark style="background:#fef08a; padding:1px 3px; font-weight:600;">${escapeHtml(cText)}</mark>`;
@@ -957,7 +1182,7 @@ function renderPrintDiffRows(prevHtml, currHtml) {
     }
   });
 
-  // 만약 조항 ?�싱 결과 변경점???�거??비구조화 HTML??경우
+  // 만약 조항 파싱 결과 변경점이 없거나 비구조화 HTML인 경우
   if (changedCount === 0) {
     const pPlain = stripHtml(prevHtml).trim();
     const cPlain = stripHtml(currHtml).trim();
@@ -965,7 +1190,7 @@ function renderPrintDiffRows(prevHtml, currHtml) {
     if (pPlain !== cPlain) {
       return `
         <tr>
-          <td style="text-align:center; font-weight:700; vertical-align:top;">본문 ?�면 개정</td>
+          <td style="text-align:center; font-weight:700; vertical-align:top;">본문 전면 개정</td>
           <td style="vertical-align:top;">${escapeHtml(pPlain.substring(0, 500))}${pPlain.length > 500 ? '...' : ''}</td>
           <td style="vertical-align:top;"><mark style="background:#fef08a;">${escapeHtml(cPlain.substring(0, 500))}${cPlain.length > 500 ? '...' : ''}</mark></td>
         </tr>
@@ -975,7 +1200,7 @@ function renderPrintDiffRows(prevHtml, currHtml) {
     return `
       <tr>
         <td colspan="3" style="text-align:center; padding:25px; color:#64748b;">
-          ??�?개정본�? 조항??추�?/??��/문구 변�??�이 ?�탈???�비 ?�는 체계 ?��? 목적?�로 개정?�었?�니??
+          ※ 본 개정본은 조항의 추가/삭제/문구 변경 없이 오탈자 정비 또는 체계 유지 목적으로 개정되었습니다.
         </td>
       </tr>
     `;
@@ -984,7 +1209,7 @@ function renderPrintDiffRows(prevHtml, currHtml) {
   return diffRowsHtml;
 }
 
-// HTML?�서 조항 ?�싱 ?�틸리티
+// HTML에서 조항 파싱 유틸리티
 function parseArticlesFromHtml(html) {
   if (!html) return [];
   const container = document.createElement('div');
@@ -997,10 +1222,10 @@ function parseArticlesFromHtml(html) {
   articles.forEach((art, idx) => {
     const titleEl = art.querySelector('.article-title');
     const numEl = art.querySelector('.art-num');
-    const titleText = titleEl ? titleEl.innerText.trim() : `??{idx+1}�?;
+    const titleText = titleEl ? titleEl.innerText.trim() : `제${idx+1}조`;
     const key = numEl ? numEl.innerText.trim() : (titleText.split(' ')[0] || `art-${idx}`);
 
-    // 본문 ?�용 ?�스??추출
+    // 본문 내용 텍스트 추출
     const bodyEls = art.querySelectorAll('.article-body');
     let bodyText = '';
     if (bodyEls.length > 0) {
@@ -1019,7 +1244,8 @@ function parseArticlesFromHtml(html) {
   return results;
 }
 
-// 브라?��? 기본 ?�쇄(Ctrl+P) ?�출 ?�에???�쇄 ?�이???�동 최신??window.addEventListener('beforeprint', () => {
+// 브라우저 기본 인쇄(Ctrl+P) 호출 전에도 인쇄 데이터 자동 최신화
+window.addEventListener('beforeprint', () => {
   if (currentDoc) {
     preparePrintPages(currentDoc);
   }
@@ -1027,11 +1253,11 @@ function parseArticlesFromHtml(html) {
 
 
 // ----------------------------------------------------------------
-// [모달 4] ?�규 ?�차??/ 지침서 추�? & ?��? 관�?로직
+// [모달 4] 신규 절차서 / 지침서 추가 & 폐지 관리 로직
 // ----------------------------------------------------------------
 function openNewDocModal(targetCategory = 'PROCEDURE', parentId = null) {
   if (!AUTH.isAdmin()) {
-    alert('규정 ?�정 �?추�???관리자 권한???�요?�니??');
+    alert('규정 제정 및 추가는 관리자 권한이 필요합니다.');
     return;
   }
 
@@ -1040,13 +1266,13 @@ function openNewDocModal(targetCategory = 'PROCEDURE', parentId = null) {
 
   updateParentOptions(targetCategory, parentId);
 
-  // 기본�??�정
+  // 기본값 설정
   document.getElementById('new-doc-title').value = '';
   document.getElementById('new-doc-date').value = new Date().toISOString().split('T')[0];
-  document.getElementById('new-doc-dept').value = '?�질?�전보건??;
-  document.getElementById('new-doc-summary').value = 'KOSHA-MS ?�전보건경영체계 고도?�에 ?�른 ?�규 규정 ?�정';
+  document.getElementById('new-doc-dept').value = '품질안전보건실';
+  document.getElementById('new-doc-summary').value = 'KOSHA-MS 안전보건경영체계 고도화에 따른 신규 규정 제정';
 
-  // 추천 문서번호 ?�정
+  // 추천 문서번호 설정
   suggestDocNumber(targetCategory);
 
   document.getElementById('new-doc-modal').style.display = 'flex';
@@ -1072,26 +1298,28 @@ function updateParentOptions(category, selectedParentId) {
   if (category === 'MANUAL') {
     const opt = document.createElement('option');
     opt.value = '';
-    opt.textContent = '(최상??매뉴??- ?�위 ?�음)';
+    opt.textContent = '(최상위 매뉴얼 - 상위 없음)';
     parentSelect.appendChild(opt);
     return;
   }
 
   if (category === 'PROCEDURE') {
-    // ?�차?�는 매뉴?�을 부모로 가�?    const manuals = allDocs.filter(d => d.category === 'MANUAL');
+    // 절차서는 매뉴얼을 부모로 가짐
+    const manuals = allDocs.filter(d => d.category === 'MANUAL');
     manuals.forEach(m => {
       const opt = document.createElement('option');
       opt.value = m.id;
-      opt.textContent = `[매뉴?? ${m.title}`;
+      opt.textContent = `[매뉴얼] ${m.title}`;
       if (selectedParentId === m.id) opt.selected = true;
       parentSelect.appendChild(opt);
     });
   } else if (category === 'INSTRUCTION') {
-    // 지침서???�차?��? 부모로 가�?    const procs = allDocs.filter(d => d.category === 'PROCEDURE');
+    // 지침서는 절차서를 부모로 가짐
+    const procs = allDocs.filter(d => d.category === 'PROCEDURE');
     procs.forEach(p => {
       const opt = document.createElement('option');
       opt.value = p.id;
-      opt.textContent = `[?�차?? ${p.title}`;
+      opt.textContent = `[절차서] ${p.title}`;
       if (selectedParentId === p.id) opt.selected = true;
       parentSelect.appendChild(opt);
     });
@@ -1111,11 +1339,11 @@ async function confirmCreateNewDoc() {
   const parentId = document.getElementById('new-doc-parent').value || null;
   const docNumber = document.getElementById('new-doc-num').value.trim() || 'ST-DOC-001';
   const effectiveDate = document.getElementById('new-doc-date').value || new Date().toISOString().split('T')[0];
-  const department = document.getElementById('new-doc-dept').value.trim() || '?�질?�전보건??;
-  const summary = document.getElementById('new-doc-summary').value.trim() || '?�규 규정 최초 ?�정';
+  const department = document.getElementById('new-doc-dept').value.trim() || '품질안전보건실';
+  const summary = document.getElementById('new-doc-summary').value.trim() || '신규 규정 최초 제정';
 
   if (!title) {
-    alert('규정 명칭(?�목)???�력??주십?�오.');
+    alert('규정 명칭(제목)을 입력해 주십시오.');
     document.getElementById('new-doc-title').focus();
     return;
   }
@@ -1129,19 +1357,19 @@ async function confirmCreateNewDoc() {
 
   const defaultContent = `
 <div class="doc-article" id="art-1">
-  <h3 class="article-title"><span class="art-num">??�?/span> (목적)</h3>
-  <p class="article-body">�?규정?� (�??�방?�크???�전보건경영?�스???�영???�어 ${escapeHtml(title)}??관???��? 기�? �??�차�??�립?�을 목적?�로 ?�다.</p>
+  <h3 class="article-title"><span class="art-num">제1조</span> (목적)</h3>
+  <p class="article-body">본 규정은 (주)세방테크의 안전보건경영시스템 운영에 있어 ${escapeHtml(title)}에 관한 세부 기준 및 절차를 확립함을 목적으로 한다.</p>
 </div>
 
 <div class="doc-article" id="art-2">
-  <h3 class="article-title"><span class="art-num">??�?/span> (?�용범위)</h3>
-  <p class="article-body">?�사??본사 �?모든 ?�공 ?�장, 관�??�력?�체???�업 ?�차???�용?�다.</p>
+  <h3 class="article-title"><span class="art-num">제2조</span> (적용범위)</h3>
+  <p class="article-body">회사의 본사 및 모든 시공 현장, 관계 협력업체의 작업 절차에 적용한다.</p>
 </div>
 
 <div class="doc-article" id="art-3">
-  <h3 class="article-title"><span class="art-num">??�?/span> (책임�?권한)</h3>
-  <p class="article-body">??총괄책임?�는 �?규정???�반 ?�행 ?�태�?감독?�고 ?�요??조치�?취하?�야 ?�다.</p>
-  <p class="article-body">???�장 관리책?�자???�당 ?�업 착수 ??�?규정??명시???�전보건 조치가 ?�료?�었?��? ?�인?�여???�다.</p>
+  <h3 class="article-title"><span class="art-num">제3조</span> (책임과 권한)</h3>
+  <p class="article-body">① 총괄책임자는 본 규정의 제반 이행 실태를 감독하고 필요한 조치를 취하여야 한다.</p>
+  <p class="article-body">② 현장 관리책임자는 해당 작업 착수 전 본 규정에 명시된 안전보건 조치가 완료되었는지 확인하여야 한다.</p>
 </div>`;
 
   const newDoc = {
@@ -1167,9 +1395,10 @@ async function confirmCreateNewDoc() {
   };
 
   try {
-    // 1. ??문서 ?�??    await API.saveDocument(newDoc);
+    // 1. 새 문서 저장
+    await API.saveDocument(newDoc);
 
-    // 2. 부�?문서??childrenIds???�록
+    // 2. 부모 문서의 childrenIds에 등록
     if (parentId) {
       const parentDoc = allDocs.find(d => d.id === parentId);
       if (parentDoc) {
@@ -1181,65 +1410,66 @@ async function confirmCreateNewDoc() {
       }
     }
 
-    alert(`?�규 ${getCategoryName(category)} [${title}]??가) ?�록?�었?�니??\n?�당 규정 ?�세 ?�이지�??�동?�니??`);
+    alert(`신규 ${getCategoryName(category)} [${title}]이(가) 등록되었습니다.\n해당 규정 상세 페이지로 이동합니다.`);
     closeNewDocModal();
     location.href = `detail.html?id=${newId}`;
   } catch (err) {
-    alert('규정 ?�록 �??�류가 발생?�습?�다: ' + err.message);
+    alert('규정 등록 중 오류가 발생했습니다: ' + err.message);
   }
 }
 
-// 규정 ?��? / ??��
+// 규정 폐지 / 삭제
 async function deleteDocumentById(docId, docTitle) {
   if (!AUTH.isAdmin()) {
-    alert('규정 ?��???관리자 권한???�요?�니??');
+    alert('규정 폐지는 관리자 권한이 필요합니다.');
     return;
   }
 
-  const confirmMsg = `[주의] '${docTitle}' (${docId}) 규정???��?(??��)?�시겠습?�까?\n\n?��???규정?� ?�털 �?계층 ?�리?�서 즉시 ?�외?�니??`;
+  const confirmMsg = `[주의] '${docTitle}' (${docId}) 규정을 폐지(삭제)하시겠습니까?\n\n폐지된 규정은 포털 및 계층 트리에서 즉시 제외됩니다.`;
   if (!confirm(confirmMsg)) return;
 
   try {
     await API.deleteDocument(docId);
-    alert(`'${docTitle}' 규정???�상?�으�??��??�었?�니??`);
+    alert(`'${docTitle}' 규정이 정상적으로 폐지되었습니다.`);
     
-    // ?�재 보고 ?�던 문서가 ??��??문서??경우 최상??매뉴?�로 ?�동
+    // 현재 보고 있던 문서가 삭제된 문서인 경우 최상위 매뉴얼로 이동
     if (currentDoc && currentDoc.id === docId) {
       location.href = 'detail.html?id=MAN-KOSHA-01';
     } else {
-      // 목록 ?�갱??      allDocs = await API.getDocuments();
+      // 목록 재갱신
+      allDocs = await API.getDocuments();
       renderHierarchyTree(currentDoc ? currentDoc.id : 'MAN-KOSHA-01');
     }
   } catch (err) {
-    alert('규정 ?��? �??�류가 발생?�습?�다: ' + err.message);
+    alert('규정 폐지 중 오류가 발생했습니다: ' + err.message);
   }
 }
 
 // ----------------------------------------------------------------
-// [모달 5] ?�계 규정 �?조항 ?�링???�리�?브라?��? 로직
+// [모달 5] 연계 규정 및 조항 딥링크 트리맵 브라우저 로직
 // ----------------------------------------------------------------
 let pickerSelectedDoc = null;
 let pickerSelectedClause = null;
 let pickerLoadedDocsCache = {};
-let pickerTargetContext = 'editor'; // 'editor' ?�는 'modal-art-body'
+let pickerTargetContext = 'editor'; // 'editor' 또는 'modal-art-body'
 
 async function openLinkPickerModal(targetContext = 'editor') {
   pickerTargetContext = targetContext;
   pickerSelectedDoc = null;
   pickerSelectedClause = null;
 
-  // ?�디?�에???�출??경우 ?�재 커서 ?�치 보존
+  // 에디터에서 호출한 경우 현재 커서 위치 보존
   if (targetContext === 'editor') {
     saveEditorSelection();
   }
 
   document.getElementById('link-picker-search').value = '';
-  document.getElementById('link-target-display').innerText = '?�택?��? ?�음';
+  document.getElementById('link-target-display').innerText = '선택되지 않음';
   document.getElementById('link-custom-text').value = '';
   document.getElementById('btn-confirm-link').disabled = true;
 
-  document.getElementById('picker-clauses-title').innerHTML = '<i class="fa-solid fa-list-ol"></i> 조항 ?�택 (좌측?�서 규정??먼�? ?�택?�세??';
-  document.getElementById('picker-clause-list').innerHTML = '<div class="picker-empty-guide">좌측?�서 규정???�택?�면 ?��? 조항 목록???�시?�니??</div>';
+  document.getElementById('picker-clauses-title').innerHTML = '<i class="fa-solid fa-list-ol"></i> 조항 선택 (좌측에서 규정을 먼저 선택하세요)';
+  document.getElementById('picker-clause-list').innerHTML = '<div class="picker-empty-guide">좌측에서 규정을 선택하면 세부 조항 목록이 표시됩니다.</div>';
 
   renderLinkPickerTree(allDocs);
 
@@ -1253,7 +1483,8 @@ function closeLinkPickerModal() {
   document.getElementById('link-picker-modal').style.display = 'none';
 }
 
-// ?�리�??�더�?function renderLinkPickerTree(docsToRender) {
+// 트리맵 렌더링
+function renderLinkPickerTree(docsToRender) {
   const treeListEl = document.getElementById('picker-tree-list');
   treeListEl.innerHTML = '';
 
@@ -1273,7 +1504,8 @@ function closeLinkPickerModal() {
     });
   });
 
-  // 기�? 미분�?  const assigned = new Set([
+  // 기타 미분류
+  const assigned = new Set([
     ...manuals.map(d => d.id),
     ...manuals.flatMap(m => docsToRender.filter(d => d.parentId === m.id || (m.childrenIds && m.childrenIds.includes(d.id))).map(d => d.id)),
     ...docsToRender.filter(d => d.category === 'INSTRUCTION').map(d => d.id)
@@ -1296,7 +1528,7 @@ function appendPickerTreeItem(doc, depth, container) {
   container.appendChild(item);
 }
 
-// ?�정 규정 ?�택 ???�당 규정??조항 목록 비동�??�싱 �??�출
+// 특정 규정 선택 시 해당 규정의 조항 목록 비동기 파싱 및 노출
 async function selectPickerDoc(doc) {
   pickerSelectedDoc = doc;
   pickerSelectedClause = null;
@@ -1305,14 +1537,14 @@ async function selectPickerDoc(doc) {
   const currentItem = document.getElementById(`picker-item-${doc.id}`);
   if (currentItem) currentItem.classList.add('active');
 
-  // ?�택 ?�약 ?�데?�트 (규정 ?�체 링크 ?�폴??
+  // 선택 요약 업데이트 (규정 전체 링크 디폴트)
   document.getElementById('link-target-display').innerText = `[${getCategoryName(doc.category)}] ${doc.title}`;
   document.getElementById('link-custom-text').value = `[${doc.title}]`;
   document.getElementById('btn-confirm-link').disabled = false;
 
-  document.getElementById('picker-clauses-title').innerHTML = `<i class="fa-solid fa-list-ol"></i> <strong>${escapeHtml(doc.title)}</strong> ?��? 조항 목록`;
+  document.getElementById('picker-clauses-title').innerHTML = `<i class="fa-solid fa-list-ol"></i> <strong>${escapeHtml(doc.title)}</strong> 세부 조항 목록`;
   const clauseListEl = document.getElementById('picker-clause-list');
-  clauseListEl.innerHTML = '<div style="padding:15px; text-align:center; color:#64748b;"><i class="fa-solid fa-spinner fa-spin"></i> 조항 로딩 �?..</div>';
+  clauseListEl.innerHTML = '<div style="padding:15px; text-align:center; color:#64748b;"><i class="fa-solid fa-spinner fa-spin"></i> 조항 로딩 중...</div>';
 
   try {
     let fullDoc = pickerLoadedDocsCache[doc.id];
@@ -1323,20 +1555,21 @@ async function selectPickerDoc(doc) {
 
     renderPickerClauses(fullDoc);
   } catch (err) {
-    clauseListEl.innerHTML = '<div style="color:#e03131; padding:15px;">조항??불러?��? 못했?�니?? 규정 ?�체???�??링크??가?�합?�다.</div>';
+    clauseListEl.innerHTML = '<div style="color:#e03131; padding:15px;">조항을 불러오지 못했습니다. 규정 전체에 대한 링크는 가능합니다.</div>';
   }
 }
 
-// 조항 목록 ?�더�?function renderPickerClauses(doc) {
+// 조항 목록 렌더링
+function renderPickerClauses(doc) {
   const clauseListEl = document.getElementById('picker-clause-list');
   clauseListEl.innerHTML = '';
 
-  // 규정 ?�체 바로가�??�션 (최상??
+  // 규정 전체 바로가기 옵션 (최상단)
   const allDocOption = document.createElement('div');
   allDocOption.className = 'picker-clause-item active';
   allDocOption.innerHTML = `
-    <div class="picker-clause-num"><i class="fa-solid fa-file-export"></i> 규정 ?�문 바로가�?(?�정 조항 미�???</div>
-    <div class="picker-clause-preview">${escapeHtml(doc.title)} 문서 ?�체�??�동?�는 링크�??�성?�니??</div>
+    <div class="picker-clause-num"><i class="fa-solid fa-file-export"></i> 규정 전문 바로가기 (특정 조항 미지정)</div>
+    <div class="picker-clause-preview">${escapeHtml(doc.title)} 문서 전체로 이동하는 링크를 생성합니다.</div>
   `;
   allDocOption.onclick = () => {
     pickerSelectedClause = null;
@@ -1347,7 +1580,7 @@ async function selectPickerDoc(doc) {
   };
   clauseListEl.appendChild(allDocOption);
 
-  // HTML 본문?�서 .doc-article ?�소??추출
+  // HTML 본문에서 .doc-article 요소들 추출
   const tempDiv = document.createElement('div');
   tempDiv.innerHTML = doc.currentContent || '';
   const articles = tempDiv.querySelectorAll('.doc-article');
@@ -1355,7 +1588,7 @@ async function selectPickerDoc(doc) {
   if (articles.length === 0) {
     const emptyNotice = document.createElement('div');
     emptyNotice.className = 'picker-empty-guide';
-    emptyNotice.textContent = '?�록???��? 조항???�습?�다.';
+    emptyNotice.textContent = '등록된 세부 조항이 없습니다.';
     clauseListEl.appendChild(emptyNotice);
     return;
   }
@@ -1390,7 +1623,7 @@ async function selectPickerDoc(doc) {
   });
 }
 
-// ?�시�?검???�터�?(규정�?+ 조항 검??
+// 실시간 검색 필터링 (규정명 + 조항 검색)
 function filterLinkPicker() {
   const query = document.getElementById('link-picker-search').value.trim().toLowerCase();
   if (!query) {
@@ -1404,16 +1637,16 @@ function filterLinkPicker() {
 
   renderLinkPickerTree(matchedDocs);
 
-  // 검?�어가 ?�을 ??�?번째 검??결과 ?�동 ?�택
+  // 검색어가 있을 때 첫 번째 검색 결과 자동 선택
   if (matchedDocs.length > 0) {
     selectPickerDoc(matchedDocs[0]);
   }
 }
 
-// ?�택 ?�료 �??�디??본문(?�는 ?�규 조항 모달 textarea)???�이?�링???�입
+// 선택 완료 및 에디터 본문(또는 신규 조항 모달 textarea)에 하이퍼링크 삽입
 function confirmInsertLink() {
   if (!pickerSelectedDoc) {
-    alert('?�계??규정???�택??주십?�오.');
+    alert('연계할 규정을 선택해 주십시오.');
     return;
   }
 
@@ -1429,9 +1662,9 @@ function confirmInsertLink() {
       : `[${pickerSelectedDoc.title}]`;
   }
 
-  const linkHtml = `<a href="${targetUrl}" class="ref-link" style="color:#1d4ed8; text-decoration:underline; font-weight:600;" target="_self" title="${escapeHtml(pickerSelectedDoc.title)} 바로가�?>${escapeHtml(displayText)}</a> `;
+  const linkHtml = `<a href="${targetUrl}" class="ref-link" style="color:#1d4ed8; text-decoration:underline; font-weight:600;" target="_self" title="${escapeHtml(pickerSelectedDoc.title)} 바로가기">${escapeHtml(displayText)}</a> `;
 
-  // 1. ?�규 조항 추�? 모달(textarea)?�서 ?�출??경우
+  // 1. 신규 조항 추가 모달(textarea)에서 호출된 경우
   if (pickerTargetContext === 'modal-art-body') {
     const textarea = document.getElementById('modal-art-body');
     if (textarea) {
@@ -1445,11 +1678,11 @@ function confirmInsertLink() {
       textarea.setSelectionRange(nextPos, nextPos);
     }
   } else {
-    // 2. 메인 ???�디??contenteditable)?�서 ?�출??경우
+    // 2. 메인 웹 에디터(contenteditable)에서 호출된 경우
     const editorArea = document.getElementById('draft-editor-area');
     editorArea.focus();
 
-    // ?�?�된 커서 ?�치가 ?�효?�면 ?�당 ?�치???�입, ?�으�?�??�에 ?�전 추�?
+    // 저장된 커서 위치가 유효하면 해당 위치에 삽입, 없으면 맨 끝에 안전 추가
     if (savedEditorRange) {
       restoreEditorSelection();
       try {

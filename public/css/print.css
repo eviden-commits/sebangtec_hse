@@ -405,5 +405,35 @@
     background-color: #f1f5f9 !important;
     font-weight: 700;
   }
+
+  /* [핵심] 매뉴얼 장(Chapter) 전환 시 강제 새 페이지 넘김 (이어서 쓰기 절대 금지) */
+  .manual-chapter {
+    display: block !important;
+    page-break-before: always !important;
+    break-before: page !important;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+
+  .manual-header-box {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    margin-bottom: 5mm !important;
+  }
+
+  /* 전자서명 인감 인쇄 스타일 */
+  .stamp-slot {
+    position: relative !important;
+    display: inline-block !important;
+  }
+  .auto-stamp-img {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 38px !important;
+    height: 38px !important;
+    object-fit: contain !important;
+  }
 }
 

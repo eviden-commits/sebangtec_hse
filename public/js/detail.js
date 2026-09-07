@@ -104,8 +104,70 @@ function renderDocument(doc) {
     });
   });
 
+  // 매뉴얼 전용 장별 퀵 네비게이션 바 렌더링
+  renderChapterQuickBar(doc);
+
   // 공식 4단계 인쇄 페이지 데이터(표지 ➔ 개정표 ➔ 신구비교 ➔ 본문) 준비
   preparePrintPages(doc);
+
+  // 전자서명 자동 매칭 적용 (민경진, 최난새, 정재빈, 강치성, 박계석 등)
+  setTimeout(() => {
+    if (typeof applySignaturesToDocument === 'function') {
+      applySignaturesToDocument();
+    }
+  }, 100);
+}
+
+// 매뉴얼 장별 퀵 네비게이션 바 (상단 플로팅 바)
+function renderChapterQuickBar(doc) {
+  const barEl = document.getElementById('chapter-quick-bar');
+  const buttonsEl = document.getElementById('quick-nav-buttons');
+  if (!barEl || !buttonsEl) return;
+
+  if (doc.category === 'MANUAL' || (doc.tableOfContents && doc.tableOfContents.length > 0)) {
+    barEl.style.display = 'flex';
+    buttonsEl.innerHTML = '';
+
+    // 1p 표지, 2p 개정표, 3p 목차/신구대비
+    const basicPages = [
+      { label: '표지 (1p)', target: 'print-cover-section' },
+      { label: '0.개정이력 (2p)', target: 'print-revision-section' },
+      { label: '1.목차/신구대비 (3p)', target: 'print-diff-section' }
+    ];
+
+    basicPages.forEach(p => {
+      const btn = document.createElement('button');
+      btn.className = 'btn-chap-jump';
+      btn.innerHTML = `<i class="fa-solid fa-file-lines"></i> ${p.label}`;
+      btn.onclick = () => scrollToClause(p.target);
+      buttonsEl.appendChild(btn);
+    });
+
+    // 4p부터: 본문 각 장 (1장 ~ 10장)
+    const defaultChapters = [
+      { num: 1, title: '목차' },
+      { num: 2, title: '적용범위' },
+      { num: 3, title: '용어정의' },
+      { num: 4, title: '조직상황' },
+      { num: 5, title: '리더십' },
+      { num: 6, title: '계획수립' },
+      { num: 7, title: '지원' },
+      { num: 8, title: '실행' },
+      { num: 9, title: '성과평가' },
+      { num: 10, title: '개선' }
+    ];
+
+    defaultChapters.forEach(c => {
+      const btn = document.createElement('button');
+      btn.className = 'btn-chap-jump';
+      btn.innerHTML = `<strong>제${c.num}장</strong> ${c.title}`;
+      btn.title = `제${c.num}장 ${c.title} 바로가기`;
+      btn.onclick = () => scrollToClause(`chap-${c.num}`);
+      buttonsEl.appendChild(btn);
+    });
+  } else {
+    barEl.style.display = 'none';
+  }
 }
 
 function getCategoryName(cat) {
@@ -200,22 +262,72 @@ function createTreeNodeElement(doc, depth, currentDocId, isAdminUser, childCateg
   return node;
 }
 
-// 조항 목차 점프 리스트 생성
+// 조항 목차 점프 리스트 생성 (매뉴얼 및 일반 규정 통합 스마트 조항 트리)
 function renderClauseJumpList() {
   const listEl = document.getElementById('clause-nav-list');
   if (!listEl) return;
   listEl.innerHTML = '';
 
-  const articles = document.querySelectorAll('.doc-article');
-  articles.forEach(art => {
-    const titleEl = art.querySelector('.article-title');
-    if (titleEl) {
-      const text = titleEl.innerText.trim();
+  // 1. 매뉴얼 상단 기본 3대 페이지 (표지, 개정이력, 목차)
+  if (currentDoc && currentDoc.category === 'MANUAL') {
+    const basicPages = [
+      { id: 'print-cover-section', icon: 'fa-file-lines', title: '사내표준 표지 (1p)' },
+      { id: 'print-revision-section', icon: 'fa-clock-rotate-left', title: '0. 제·개정 관리 이력표 (2p)' },
+      { id: 'print-diff-section', icon: 'fa-list-check', title: '1. 목차 및 신구대비표 (3p)' }
+    ];
+
+    basicPages.forEach(item => {
       const li = document.createElement('li');
-      li.innerHTML = `<a href="javascript:void(0)" onclick="scrollToClause('${art.id}')"><i class="fa-solid fa-angle-right"></i> ${text}</a>`;
+      li.className = 'clause-nav-basic';
+      li.innerHTML = `<a href="javascript:void(0)" onclick="scrollToClause('${item.id}')"><i class="fa-solid ${item.icon}"></i> <span>${item.title}</span></a>`;
       listEl.appendChild(li);
-    }
-  });
+    });
+
+    const divider = document.createElement('li');
+    divider.style.cssText = 'border-bottom: 1px solid #e2e8f0; margin: 8px 0; list-style: none;';
+    listEl.appendChild(divider);
+  }
+
+  // 2. 본문 장(Chapter) 및 조항(Article) 스캔 및 렌더링
+  const chapters = document.querySelectorAll('.manual-chapter');
+  if (chapters.length > 0) {
+    // 매뉴얼 장별 구조
+    chapters.forEach(ch => {
+      const chId = ch.id;
+      const chTitle = ch.dataset.chapterTitle || ch.getAttribute('data-chapter-title') || chId;
+
+      // 장 헤더 아이템
+      const chLi = document.createElement('li');
+      chLi.className = 'clause-nav-chapter';
+      chLi.style.cssText = 'margin-top: 8px; font-weight: 700; background: #f8fafc; border-radius: 4px; border-left: 3px solid var(--primary);';
+      chLi.innerHTML = `<a href="javascript:void(0)" onclick="scrollToClause('${chId}')" style="color: var(--primary-dark); padding: 7px 10px; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-bookmark" style="font-size:12px; color:var(--primary);"></i> <span>${escapeHtml(chTitle)}</span></a>`;
+      listEl.appendChild(chLi);
+
+      // 장 내부 조항들
+      const arts = ch.querySelectorAll('.doc-article');
+      arts.forEach(art => {
+        const titleEl = art.querySelector('.article-title');
+        const artText = titleEl ? titleEl.innerText.trim() : art.id;
+        const artLi = document.createElement('li');
+        artLi.className = 'clause-nav-article';
+        artLi.style.cssText = 'padding-left: 12px; font-size: 13px; margin: 2px 0;';
+        artLi.innerHTML = `<a href="javascript:void(0)" onclick="scrollToClause('${art.id}')" style="color: #475569; padding: 4px 8px; display: flex; align-items: center; gap: 6px; border-radius: 4px; transition: background-color 0.15s;"><i class="fa-solid fa-angle-right" style="font-size:10px; color:#94a3b8; flex-shrink:0;"></i> <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(artText)}</span></a>`;
+        listEl.appendChild(artLi);
+      });
+    });
+  } else {
+    // 일반 규정 모드 (단순 조항 목록)
+    const articles = document.querySelectorAll('.doc-article');
+    articles.forEach(art => {
+      const titleEl = art.querySelector('.article-title');
+      if (titleEl) {
+        const text = titleEl.innerText.trim();
+        const li = document.createElement('li');
+        li.innerHTML = `<a href="javascript:void(0)" onclick="scrollToClause('${art.id}')"><i class="fa-solid fa-angle-right"></i> ${escapeHtml(text)}</a>`;
+        listEl.appendChild(li);
+      }
+    });
+  }
 }
 
 function scrollToClause(clauseId) {
@@ -799,9 +911,11 @@ function highlightChanges(oldText, newText) {
 function preparePrintPages(doc) {
   if (!doc) return;
 
-  // [1] 표지 (Cover Page) 주입
+  // [1] 1페이지: 표지 (Cover Page) 주입
   const coverCat = document.getElementById('print-cover-cat');
-  if (coverCat) coverCat.innerText = getCategoryName(doc.category);
+  if (coverCat) {
+    coverCat.innerText = doc.category === 'MANUAL' ? 'KOSHA-MS 사내표준 매뉴얼' : getCategoryName(doc.category);
+  }
 
   const coverTitle = document.getElementById('print-cover-title');
   if (coverTitle) coverTitle.innerText = doc.title || '-';
@@ -815,8 +929,8 @@ function preparePrintPages(doc) {
   const metaVer = document.getElementById('print-cover-meta-ver');
   if (metaVer) metaVer.innerText = doc.currentVersion || 'Rev.1';
 
-  const firstDate = (doc.revisions && doc.revisions.length > 0 && doc.revisions[0].date) 
-    ? doc.revisions[0].date 
+  const firstDate = doc.initialDate || (doc.revisions && doc.revisions.length > 0 && doc.revisions[0].date) 
+    ? (doc.initialDate || doc.revisions[0].date) 
     : (doc.effectiveDate || '-');
   const metaInitDate = document.getElementById('print-cover-meta-initdate');
   if (metaInitDate) metaInitDate.innerText = firstDate;
@@ -827,7 +941,10 @@ function preparePrintPages(doc) {
   const metaDept = document.getElementById('print-cover-meta-dept');
   if (metaDept) metaDept.innerText = doc.department || '품질안전보건실';
 
-  // [2] 제·개정 관리 이력표 (Revision History) 주입
+  const coverWriter = document.getElementById('print-cover-writer');
+  if (coverWriter) coverWriter.innerText = doc.department || '품질안전보건실';
+
+  // [2] 2페이지: 제·개정 관리 이력표 (Revision History) 주입 - 과거 이력 100% 전부 수록
   const revDocNumHeader = document.getElementById('print-rev-docnum-header');
   if (revDocNumHeader) revDocNumHeader.innerText = doc.docNumber || '-';
 
@@ -856,13 +973,17 @@ function preparePrintPages(doc) {
     } else {
       let revHtml = '';
       revs.forEach((r, idx) => {
+        const verDisplay = String(r.version).startsWith('Rev') ? r.version : `Rev.${r.version} (${r.version}차)`;
+        const pagePrefix = r.page ? `<span style="color:#0284c7; font-weight:600;">[${escapeHtml(r.page)}]</span> ` : '';
         const defaultSummary = idx === 0 ? '최초 제정 및 시행' : '정기 개정 및 법규 검토 보완';
+        const summaryText = r.summary || defaultSummary;
+
         revHtml += `
           <tr>
-            <td style="text-align:center; font-weight:600;">${escapeHtml(r.version || `Rev.${idx}`)}</td>
+            <td style="text-align:center; font-weight:700; color:#0f172a;">${escapeHtml(verDisplay)}</td>
             <td style="text-align:center;">${escapeHtml(r.date || '-')}</td>
-            <td>${escapeHtml(r.summary || defaultSummary)}</td>
-            <td style="text-align:center;">${escapeHtml(r.author || '안전보건실')}</td>
+            <td>${pagePrefix}${escapeHtml(summaryText)}</td>
+            <td style="text-align:center;">${escapeHtml(r.author || '품질안전보건실')}</td>
             <td style="text-align:center; color:#15803d; font-weight:600;">승인 완료</td>
           </tr>
         `;
@@ -871,39 +992,128 @@ function preparePrintPages(doc) {
     }
   }
 
-  // [3] 신·구 조문 대비표 (Comparison Table) 주입
+  // [3] 3페이지: 목차 및 신·구 조문 대비표 주입
   const diffDocNumHeader = document.getElementById('print-diff-docnum-header');
   if (diffDocNumHeader) diffDocNumHeader.innerText = doc.docNumber || '-';
 
   const diffDocTitle = document.getElementById('print-diff-doc-title');
   if (diffDocTitle) diffDocTitle.innerText = doc.title || '-';
 
+  // 3-1. 매뉴얼 장별 목차 (1.1 TOC)
+  const tocBox = document.getElementById('manual-toc-box');
+  const tocTbody = document.getElementById('print-toc-tbody');
+  if (tocBox && tocTbody) {
+    if (doc.tableOfContents && doc.tableOfContents.length > 0) {
+      tocBox.style.display = 'block';
+      let tocHtml = '';
+      doc.tableOfContents.forEach(item => {
+        const targetId = item.chapter === 0 ? 'print-revision-section' :
+                         item.chapter === 1 ? 'print-diff-section' : `chap-${item.chapter}`;
+        const chapBadge = item.chapter === 0 ? '0. 개정이력' :
+                          item.chapter === 1 ? '1. 목차' : `제${item.chapter}장`;
+        tocHtml += `
+          <tr>
+            <td style="text-align:center; font-weight:700; color:#0369a1;">${escapeHtml(chapBadge)}</td>
+            <td style="font-weight:600; color:#0f172a;">${escapeHtml(item.title)}</td>
+            <td style="color:#475569; font-size:12.5px;">${escapeHtml(item.sub || '-')}</td>
+            <td style="text-align:center;">
+              <button class="btn-toc-jump" onclick="scrollToClause('${targetId}')">이동 <i class="fa-solid fa-arrow-right"></i></button>
+            </td>
+          </tr>
+        `;
+      });
+      tocTbody.innerHTML = tocHtml;
+    } else {
+      tocBox.style.display = 'none';
+    }
+  }
+
+  // 3-2. 신·구 조문 대비표 (1.2 Diff)
   const diffVersionInfo = document.getElementById('print-diff-version-info');
   const diffTbody = document.getElementById('print-diff-tbody');
 
   if (diffTbody) {
-    const revs = doc.revisions || [];
-    if (revs.length >= 2) {
-      const prevRev = revs[revs.length - 2];
-      const currRev = revs[revs.length - 1];
-
+    if (doc.category === 'MANUAL' || doc.id === 'MAN-KOSHA-01') {
       if (diffVersionInfo) {
-        diffVersionInfo.innerHTML = `<strong>개정 비교:</strong> 직전 <u>${escapeHtml(prevRev.version)}</u> 대비 현행 <u>${escapeHtml(currRev.version)}</u> (${escapeHtml(currRev.date)})`;
-      }
-
-      diffTbody.innerHTML = renderPrintDiffRows(prevRev.content || '', currRev.content || doc.currentContent || '');
-    } else {
-      if (diffVersionInfo) {
-        diffVersionInfo.innerHTML = `<strong>개정 비교:</strong> 최초 제정본 (${escapeHtml(doc.currentVersion || 'Rev.0')})`;
+        diffVersionInfo.innerHTML = `<strong>개정 비교:</strong> 제12차 개정본(2025) 대비 <u>제13차 최신 개정본 (${escapeHtml(doc.effectiveDate || '2026.01.02')} 시행)</u>`;
       }
       diffTbody.innerHTML = `
-        <tr style="height: 120px;">
-          <td colspan="3" style="text-align:center; vertical-align:middle; color:#64748b; font-size:10pt; line-height:1.6;">
-            ※ 본 규정은 최초 제정본(또는 직전 개정 이력 없음)으로 신·구 조문 대조 대상이 없습니다.<br>
-            <span style="font-size:9pt; color:#94a3b8;">(현행 규정 본문은 다음 페이지의 본문 장을 참조하십시오)</span>
+        <tr>
+          <td style="text-align:center; font-weight:600; background:#f8fafc;">제5장 5.3<br><small>업무분장</small></td>
+          <td style="color:#64748b; font-size:12px;">
+            · 안전보건총괄, 공사팀, 관리팀<br>
+            · 기존 직제 기준의 업무분장
+          </td>
+          <td style="color:#0f172a; font-size:12px;">
+            · <span style="background:#dbeafe; font-weight:600;">본사 직제개편 반영:</span> 품질안전보건실로 부서 개편<br>
+            · 현장 안전보건책임자 역할 구체화 및 전결권 명시
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align:center; font-weight:600; background:#f8fafc;">제6장 6.1<br><small>위험성평가</small></td>
+          <td style="color:#64748b; font-size:12px;">
+            · 일반 빈도·강도법에 따른 위험성평가 운영
+          </td>
+          <td style="color:#0f172a; font-size:12px;">
+            · <span style="background:#dbeafe; font-weight:600;">SIF(중대사고 잠재사건) 평가제도 신설:</span> 위험도 6 이상 항목 전사 집중관리<br>
+            · 3×3 매트릭스 적용 및 개선 우선순위 확립
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align:center; font-weight:600; background:#f8fafc;">제6장 6.2<br><small>방침 및 목표</small></td>
+          <td style="color:#64748b; font-size:12px;">
+            · 2025년도 안전보건 방침 및 목표
+          </td>
+          <td style="color:#0f172a; font-size:12px;">
+            · <span style="background:#dbeafe; font-weight:600;">2026년도 방침/목표 갱신:</span> '중대재해 사고 제로'<br>
+            · 슬로건 '함께하는 세방문화, 높아지는 안전의식' 제정 공표
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align:center; font-weight:600; background:#f8fafc;">제8장 8.1<br><small>운영계획</small></td>
+          <td style="color:#64748b; font-size:12px;">
+            · 일반 고위험작업 허가제 운영
+          </td>
+          <td style="color:#0f172a; font-size:12px;">
+            · <span style="background:#dbeafe; font-weight:600;">SIF 1등급 작업 관리감독자 의무 배치:</span> 기술검토회의 정례화<br>
+            · 근로자 작업중지권 실질적 보장 (불이익 금지·비밀보장 명시)
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align:center; font-weight:600; background:#f8fafc;">제10장 10.3<br><small>상벌기준</small></td>
+          <td style="color:#64748b; font-size:12px;">
+            · 연간 우수현장 포상 기준 (최대 300만원)
+          </td>
+          <td style="color:#0f172a; font-size:12px;">
+            · <span style="background:#dbeafe; font-weight:600;">포상 및 관리기준 강화:</span> 최우수현장 포상금 500만원 상향<br>
+            · 평가 최하위 2개 현장 차기년도 본사 시범현장 특별관리 지정
           </td>
         </tr>
       `;
+    } else {
+      const revs = doc.revisions || [];
+      if (revs.length >= 2) {
+        const prevRev = revs[revs.length - 2];
+        const currRev = revs[revs.length - 1];
+
+        if (diffVersionInfo) {
+          diffVersionInfo.innerHTML = `<strong>개정 비교:</strong> 직전 <u>${escapeHtml(prevRev.version)}</u> 대비 현행 <u>${escapeHtml(currRev.version)}</u> (${escapeHtml(currRev.date)})`;
+        }
+
+        diffTbody.innerHTML = renderPrintDiffRows(prevRev.content || '', currRev.content || doc.currentContent || '');
+      } else {
+        if (diffVersionInfo) {
+          diffVersionInfo.innerHTML = `<strong>개정 비교:</strong> 최초 제정본 (${escapeHtml(doc.currentVersion || 'Rev.0')})`;
+        }
+        diffTbody.innerHTML = `
+          <tr style="height: 120px;">
+            <td colspan="3" style="text-align:center; vertical-align:middle; color:#64748b; font-size:10pt; line-height:1.6;">
+              ※ 본 규정은 최초 제정본(또는 직전 개정 이력 없음)으로 신·구 조문 대조 대상이 없습니다.<br>
+              <span style="font-size:9pt; color:#94a3b8;">(현행 규정 본문은 다음 페이지의 본문 장을 참조하십시오)</span>
+            </td>
+          </tr>
+        `;
+      }
     }
   }
 }

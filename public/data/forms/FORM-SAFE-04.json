@@ -1,0 +1,33 @@
+{
+  "id": "FORM-SAFE-04",
+  "title": "노·사 안전보건 협의체 회의록",
+  "docNumber": "ST-FR-SAFE-004",
+  "version": "Rev.2",
+  "effectiveDate": "2026-03-01",
+  "department": "품질안전보건실",
+  "defaultData": {
+    "siteName": "{{SITE_NAME}}",
+    "siteCode": "{{SITE_CODE}}",
+    "siteManager": "{{SITE_MANAGER}}",
+    "docDate": "{{DATE}}",
+    "meetingPlace": "현장 대회의실",
+    "chairperson": "{{SITE_MANAGER}} (현장소장)",
+    "employerAttendees": "현장소장, 안전관리자, 공무팀장, 공사팀장 (총 4명)",
+    "workerAttendees": "협력업체 대표 2명, 근로자 대표 3명 (총 5명)",
+    "agendaItems": [
+      {
+        "agenda": "1. 하절기/동절기 근로자 건강장해 예방 대책",
+        "result": "휴게실 냉·난방기 추가 설치 및 식수·식염포도당 항시 비치 의결"
+      },
+      {
+        "agenda": "2. 야간 및 휴일작업 사전승인제 준수",
+        "result": "관리감독자 부재 시 작업 일체 불허, 비상연락망 재정비 의결"
+      },
+      {
+        "agenda": "3. 위험성평가 근로자 참여율 제고 방안",
+        "result": "TBM 시 근로자 위험제안함 운영 및 우수 제안자 분기별 온누리상품권 지급"
+      }
+    ],
+    "chairpersonRemark": "노사 상호 신뢰와 원활한 소통을 바탕으로 중대재해 없는 안전한 현장을 만듭시다."
+  }
+}

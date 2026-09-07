@@ -1,4 +1,4 @@
-/* (�??�방?�크 KOSHA-MS ?�전보건경영?�스??공식 ?��? ?�쇄 ?��???(print.css) */
+/* (주)세방테크 KOSHA-MS 안전보건경영시스템 공식 표준 인쇄 스타일 (print.css) */
 @media print {
   @page {
     size: A4 portrait;
@@ -20,7 +20,7 @@
     font-family: 'Pretendard', 'Malgun Gothic', sans-serif;
   }
 
-  /* ?�면 ?�용 UI ?�소 ?��? */
+  /* 화면 전용 UI 요소 숨김 */
   .no-print,
   .detail-header,
   .action-toolbar,
@@ -32,7 +32,7 @@
     display: none !important;
   }
 
-  /* ?�쇄 ?�용 ?�소 ?�시 */
+  /* 인쇄 전용 요소 표시 */
   .print-only {
     display: block !important;
   }
@@ -48,7 +48,7 @@
     max-width: 100% !important;
   }
 
-  /* ?�각선 보안 ?�터마크 ?�이??(출력???�보 ?�함 - 비�?리본 ???�동) */
+  /* 대각선 보안 워터마크 레이어 (출력자 정보 포함 - 비관리본 시 작동) */
   .watermark-bg {
     position: fixed;
     top: 0;
@@ -62,7 +62,7 @@
   }
 
   /* ==================================================== */
-  /* [1] ?�쇄 1?�이지: ?�내 ?��? ?��? (Cover Page) */
+  /* [1] 인쇄 1페이지: 사내 표준 표지 (Cover Page) */
   /* ==================================================== */
   .print-cover-page {
     display: flex !important;
@@ -141,7 +141,7 @@
     gap: 16px;
   }
 
-  /* 결재?� (?�성 / 검??/ ?�인) */
+  /* 결재란 (작성 / 검토 / 승인) */
   .cover-approval-box {
     display: flex;
     justify-content: flex-end;
@@ -181,7 +181,7 @@
     color: #334155;
   }
 
-  /* 문서 메�? ?�보 ??*/
+  /* 문서 메타 정보 표 */
   .cover-info-table {
     width: 100%;
     border-collapse: collapse;
@@ -228,7 +228,7 @@
   }
 
   /* ==================================================== */
-  /* [2] ?�쇄 2?�이지: ?�·개??관�??�력??(Revision History) */
+  /* [2] 인쇄 2페이지: 제·개정 관리 이력표 (Revision History) */
   /* ==================================================== */
   .print-revision-page {
     display: block !important;
@@ -240,7 +240,7 @@
   }
 
   /* ==================================================== */
-  /* [3] ?�쇄 3?�이지: ?�·구 조문 ?�비표 (Diff / Comparison) */
+  /* [3] 인쇄 3페이지: 신·구 조문 대비표 (Diff / Comparison) */
   /* ==================================================== */
   .print-diff-page {
     display: block !important;
@@ -251,7 +251,7 @@
     padding-top: 5mm;
   }
 
-  /* 공통 ?�쇄 ?�이지 ?�더 */
+  /* 공통 인쇄 페이지 헤더 */
   .print-doc-header {
     border-bottom: 2px solid #000;
     padding-bottom: 10px;
@@ -284,7 +284,7 @@
     border-radius: 4px;
   }
 
-  /* ?��? ?�이�?(개정?? ?�구?�조표) */
+  /* 표준 테이블 (개정표, 신구대조표) */
   .print-table-wrap {
     margin-bottom: 15px;
   }
@@ -318,7 +318,7 @@
   }
 
   /* ==================================================== */
-  /* [4] ?�쇄 4?�이지부?? 본문 (Main Body Page) */
+  /* [4] 인쇄 4페이지부터: 본문 (Main Body Page) */
   /* ==================================================== */
   .print-body-page {
     display: block !important;
@@ -326,7 +326,7 @@
     break-before: auto;
   }
 
-  /* 본문 ?�단 ?�쇄 ?�더 */
+  /* 본문 상단 인쇄 헤더 */
   .print-header-box {
     border-bottom: 2px solid #000;
     padding-bottom: 6px;
@@ -363,7 +363,7 @@
     color: #000;
   }
 
-  /* 조항 ?��???*/
+  /* 조항 스타일 */
   .doc-article {
     page-break-inside: avoid;
     break-inside: avoid;
@@ -386,7 +386,7 @@
     margin-bottom: 4px;
   }
 
-  /* 본문 ?????�쇄 최적??*/
+  /* 본문 내 표 인쇄 최적화 */
   .content-table {
     width: 100% !important;
     border-collapse: collapse !important;
@@ -404,6 +404,36 @@
   .content-table th {
     background-color: #f1f5f9 !important;
     font-weight: 700;
+  }
+
+  /* [핵심] 매뉴얼 장(Chapter) 전환 시 강제 새 페이지 넘김 (이어서 쓰기 절대 금지) */
+  .manual-chapter {
+    display: block !important;
+    page-break-before: always !important;
+    break-before: page !important;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+
+  .manual-header-box {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    margin-bottom: 5mm !important;
+  }
+
+  /* 전자서명 인감 인쇄 스타일 */
+  .stamp-slot {
+    position: relative !important;
+    display: inline-block !important;
+  }
+  .auto-stamp-img {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 38px !important;
+    height: 38px !important;
+    object-fit: contain !important;
   }
 }
 

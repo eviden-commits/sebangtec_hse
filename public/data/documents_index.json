@@ -1,14 +1,16 @@
-﻿[
+[
   {
     "id": "MAN-KOSHA-01",
     "category": "MANUAL",
     "parentId": null,
     "title": "안전보건경영시스템 매뉴얼 (KOSHA-MS)",
-    "docNumber": "ST-MN-001",
-    "currentVersion": "Rev.3",
-    "effectiveDate": "2026-03-01",
+    "docNumber": "SB-SHM-100",
+    "currentVersion": "Rev.13",
+    "effectiveDate": "2026-01-02",
     "department": "품질안전보건실",
-    "childrenIds": ["PRC-KOSHA-01"]
+    "childrenIds": [
+      "PRC-KOSHA-01"
+    ]
   },
   {
     "id": "MAN-ISO-45001",
@@ -52,7 +54,9 @@
     "currentVersion": "Rev.2",
     "effectiveDate": "2026-03-01",
     "department": "품질안전보건실",
-    "childrenIds": ["INS-KOSHA-01"]
+    "childrenIds": [
+      "INS-KOSHA-01"
+    ]
   },
   {
     "id": "INS-KOSHA-01",
